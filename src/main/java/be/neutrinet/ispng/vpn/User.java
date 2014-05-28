@@ -19,6 +19,7 @@ package be.neutrinet.ispng.vpn;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import java.util.Date;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
@@ -32,10 +33,20 @@ public class User {
     public int id;
     @DatabaseField(canBeNull = false, index = true, unique = true)
     public String email;
-    @DatabaseField
+    @DatabaseField(canBeNull = false)
     public String name;
-    @DatabaseField
+    @DatabaseField(canBeNull = false)
     public String lastName;
+    @DatabaseField
+    public String street;
+    @DatabaseField
+    public int postalCode;
+    @DatabaseField
+    public String municipality;
+    @DatabaseField(canBeNull = false)
+    public String birthPlace;
+    @DatabaseField(canBeNull = false)
+    public Date birthDate;
     @DatabaseField(canBeNull = false)
     public String password;
     @DatabaseField
