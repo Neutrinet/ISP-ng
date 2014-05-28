@@ -6,7 +6,7 @@
 
 package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.i18n.I10N;
+import be.neutrinet.ispng.i18n.I18N;
 
 /**
  *
@@ -33,6 +33,6 @@ public class ClientError {
 
     public ClientError(String key) {
         this.errorKey = key;
-        this.message = I10N.get(key);
+        this.message = I18N.get(key);
     }
 }
