@@ -1,0 +1,135 @@
+@font-face {
+    font-family: "Open Sans";
+    url: "fonts/OpenSans-Regular.ttf";
+}
+
+@font-face {
+    font-family: "Open Sans";
+    font-weight: bold;
+    url: "fonts/OpenSans-Bold.ttf";
+}
+
+html, body {
+    color: #EEE;
+    height: 100%;
+    width: 100%;
+    font-family: "Open Sans";
+}
+
+#starz {
+    position: absolute;
+    width: 100%;
+    height: 100%;  
+    left: 0;
+    top: 0;
+    z-index: -10;
+}
+
+#starz canvas {
+    position: fixed;
+    z-index: -10;
+}
+
+#container {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: 100%;
+    text-align: justify;
+    z-index: 10;
+    background-color: rgba(50, 50, 50, 0.9);
+}
+
+#content {
+    text-align: justify;
+    margin-top: 10px;
+    display: inline-block;
+    min-height: 70%;
+}
+
+#paint-it-black {
+    text-shadow: 0 0 10px #FFF;
+    font-weight: bold;
+    color: #222;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+header {
+    padding-top: 5px;
+    padding-bottom: 20px;
+    font-weight: bold;
+    color: #CCC;
+    text-shadow: 0 0 5px #666;
+    position: relative;
+}
+
+header div {
+    position: absolute;
+    top: 40px;
+    right: 30px;
+}
+
+footer {
+    text-align: center;
+    height: 50px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+h2 {
+    font-size: 22px;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+p a {
+    font-weight: bold;
+}
+
+.list-group-item {
+    background-color: #333;
+}
+
+.bootstrap-switch {
+    float: right;
+}
+
+@media only screen and (max-device-width: 480px) {
+    #container {
+        
+    }
+    
+    header {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    #content {
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+}
+
+@media only screen and (min-device-width: 800px) {
+    #container {
+        border-left: 2px solid #444;
+        border-right: 2px solid #444;
+    }
+    
+    header {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+    
+    #content {
+        margin-left: 30px;
+        margin-right: 30px;
+    }
+
+    footer {
+        width: 760px;
+    }
+}

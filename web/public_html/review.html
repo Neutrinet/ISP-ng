@@ -1,0 +1,34 @@
+<h2>Almost there!</h2>
+<h3>Addresses</h3>
+<p>We have the following IP addresses available for you. However due to exhaustion
+    of the IPv4 address space, we kindly ask you to <b>consider if you need an IPv4 address</b>.
+    You can always change your mind and request an IPv4 address (if available) or hand back
+    your assigned IPv4 address should you not need it anymore.<br />
+    We have plenty of IPv6 addresses available, so you're getting a <b>whole /64 subnet</b>
+    by default!
+</p>
+<form>
+<ul class="list-group" id="ip-address">
+    <li class="list-group-item"><span class="ip-address" id="ip4-address">No IPv4 address selected</span>
+        <input type="checkbox" value="ipv4" />
+    </li>
+    <li class="list-group-item"><span class="ip-address" id="ip6-address">2001:913:1000:ffff::/64</span>
+        <input type="checkbox" value="ipv6" checked disabled />
+    </li>
+</ul>
+</form>
+<h3>Review your information</h3>
+<p>Please review the following information and make sure it is up to date:</p>
+<div id="user-details"></div>
+<div class="btn-group">
+    <input class="btn btn-info" type="button" value="Edit your information (NONFUNCTIONAL ATM)" />
+    <input class="btn btn-primary" type="button" value="Confirm and register" />
+</div>
+<style>
+    .ip-address {
+        font-size: 20px;
+        font-weight: bold;
+        text-shadow: 0 0 5px #555;
+    }
+
+</style>
