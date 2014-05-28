@@ -17,7 +17,7 @@
  */
 package be.neutrinet.ispng;
 
-import be.neutrinet.ispng.vpn.API;
+import be.fedict.eid.applet.service.AppletServiceServlet;
 import be.neutrinet.ispng.vpn.Manager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
@@ -26,8 +26,15 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.EnhancedPatternLayout;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.restlet.Server;
-import org.restlet.data.Protocol;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 /**
  *
@@ -44,14 +51,50 @@ public class VPN {
         root.addAppender(new ConsoleAppender(new EnhancedPatternLayout(CONSOLE_LOGPATTERN)));
 
         //?useSSL=true&trustServerCertificate=true
-        cs = new JdbcConnectionSource("jdbc:mariadb://vpn.w-gr.net/ispng", 
-                "neutrinet", "password", new MariaDBType());
-        
+        /*cs = new JdbcConnectionSource("jdbc:mariadb://vpn.w-gr.net/ispng", 
+         "neutrinet", "password", new MariaDBType());
+         */
+        cs = new JdbcConnectionSource("jdbc:sqlite:test.db");
+
         Users.createDummyUser();
 
         Manager.get().start();
-        
-        Server s = new Server(Protocol.HTTP, 8080, API.class);
+
+        Server s = new Server();
+
+        SslContextFactory scf = new SslContextFactory(true);
+        scf.setKeyStorePath("keystore");
+        scf.setKeyStorePassword("password");
+
+        ServerConnector serverConnector = new ServerConnector(s, scf);
+        serverConnector.setName("SSL");
+        serverConnector.setPort(8080);
+        s.addConnector(serverConnector);
+
+        ResourceHandler rh = new ResourceHandler();
+        rh.setDirectoriesListed(true);
+        rh.setWelcomeFiles(new String[]{"index.html"});
+        rh.setResourceBase("web/public_html/");
+
+        ServletContextHandler sch = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        sch.setContextPath("/");
+
+        RestletServlet rs = new RestletServlet();
+        sch.addServlet(new ServletHolder(rs), "/api/*");
+
+        sch.addServlet(FlowServlet.class, "/flow/*");
+
+        AppletServiceServlet ass = new AppletServiceServlet();
+        // Set fields to query from eID cards
+        ServletHolder assh = new ServletHolder(ass);
+        assh.setInitParameter("IncludeAddress", "true");
+        assh.setInitParameter("InludeCertificates", "true");
+        sch.addServlet(assh, "/applet/*");
+
+        HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[]{rh, sch, new DefaultHandler()});
+        s.setHandler(handlers);
+
         s.start();
     }
 }
