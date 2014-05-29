@@ -8,10 +8,10 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,23 +26,23 @@ import org.restlet.resource.Post;
  * @author wannes
  */
 public class UserRegistration extends ResourceBase {
-
+    
     @Get
     public Representation handleGet() {
         setCORSHeaders(getResponseEntity());
         String lastSegment = getReference().getLastSegment();
-
+        
         if (lastSegment != null) {
             UUID id = UUID.fromString(lastSegment);
             if (id == null) {
-                return DEFAULT_ERROR;
+                return error();
             }
             return new JacksonRepresentation(Registration.getActiveRegistrations().get(id));
         }
-
-        return DEFAULT_ERROR;
+        
+        return error();
     }
-
+    
     @Post
     public Representation handlePost(Map<String, String> data) {
         setCORSHeaders(getResponseEntity());
@@ -50,7 +50,7 @@ public class UserRegistration extends ResourceBase {
             if (data.get("id") != null) {
                 return handleFlow(data);
             }
-
+            
             String key = data.get("key");
             List<UnlockKey> keys = UnlockKeys.dao.queryForEq("key", key);
             assert keys.size() <= 1;
@@ -69,11 +69,24 @@ public class UserRegistration extends ResourceBase {
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to validate unlock key", ex);
         }
-
-        return DEFAULT_ERROR;
+        
+        return error();
     }
-
+    
     private JacksonRepresentation handleFlow(Map<String, String> data) {
-        return DEFAULT_ERROR;
+        UUID id = UUID.fromString(data.get("id"));
+        Registration reg = Registration.getActiveRegistrations().get(id);
+        
+        try {
+            if (data.containsKey("password")) {
+                String password = data.get("password");
+                reg.user.setPassword(password);
+                Users.dao.createIfNotExists(reg.user);
+                return new JacksonRepresentation(reg.user);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to handle flow", ex);
+        }
+        return error();
     }
 }
