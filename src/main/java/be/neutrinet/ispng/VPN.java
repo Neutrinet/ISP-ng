@@ -17,11 +17,13 @@
  */
 package be.neutrinet.ispng;
 
+import be.neutrinet.ispng.vpn.Users;
 import be.fedict.eid.applet.service.AppletServiceServlet;
 import be.neutrinet.ispng.vpn.Manager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
-import java.sql.SQLException;
+import java.io.FileInputStream;
+import java.util.Properties;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.EnhancedPatternLayout;
 import org.apache.log4j.Level;
@@ -44,17 +46,28 @@ public class VPN {
 
     public static final String CONSOLE_LOGPATTERN = "%d{HH:mm:ss,SSS} | %-5p | %t | %c{1.} %m%n";
     public static ConnectionSource cs;
+    private static Properties cfg;
 
-    public static void main(String[] args) throws SQLException, Exception {
+    public static void main(String[] args) throws Exception {
         Logger root = Logger.getRootLogger();
         root.setLevel(Level.INFO);
         root.addAppender(new ConsoleAppender(new EnhancedPatternLayout(CONSOLE_LOGPATTERN)));
+
+        cfg = new Properties();
+        cfg.load(new FileInputStream("config.properties"));
 
         //?useSSL=true&trustServerCertificate=true
         /*cs = new JdbcConnectionSource("jdbc:mariadb://vpn.w-gr.net/ispng", 
          "neutrinet", "password", new MariaDBType());
          */
-        cs = new JdbcConnectionSource("jdbc:sqlite:test.db");
+        if (!cfg.containsKey("db.user")) {
+            cs = new JdbcConnectionSource(cfg.getProperty("db.uri"));
+        } else {
+            cs = new JdbcConnectionSource(cfg.getProperty("db.uri"),
+                    cfg.getProperty("db.user"),
+                    cfg.getProperty("db.password")
+            );
+        }
 
         Users.createDummyUser();
 
@@ -63,12 +76,12 @@ public class VPN {
         Server s = new Server();
 
         SslContextFactory scf = new SslContextFactory(true);
-        scf.setKeyStorePath("keystore");
-        scf.setKeyStorePassword("password");
+        scf.setKeyStorePath(cfg.getProperty("jetty.keyStore"));
+        scf.setKeyStorePassword(cfg.getProperty("jetty.keyStorePassword"));
 
         ServerConnector serverConnector = new ServerConnector(s, scf);
         serverConnector.setName("SSL");
-        serverConnector.setPort(8080);
+        serverConnector.setPort(Integer.parseInt(cfg.getProperty("jetty.port")));
         s.addConnector(serverConnector);
 
         ResourceHandler rh = new ResourceHandler();
