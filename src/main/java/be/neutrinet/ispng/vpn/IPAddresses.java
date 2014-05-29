@@ -15,16 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package be.neutrinet.ispng;
+package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.vpn.IPAddress;
-import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.VPN;
+import com.googlecode.ipv6.IPv6Address;
+import com.googlecode.ipv6.IPv6Network;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.table.TableUtils;
+import com.tufar.IPCalculator.IPv4;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -41,7 +43,7 @@ public class IPAddresses {
         try {
             dao = DaoManager.createDao(VPN.cs, cls);
             TableUtils.createTableIfNotExists(VPN.cs, cls);
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(cls).error("Failed to create DAO", ex);
         }
@@ -54,7 +56,7 @@ public class IPAddresses {
             queryBuilder.where().eq("userId", -1);
             queryBuilder.where().eq("ipVersion", ipVersion);
             List<IPAddress> query = dao.query(queryBuilder.prepare());
-            
+
             if (query.isEmpty()) {
                 // Houston, we have a problem
                 Logger.getLogger(IPAddresses.class).error("Ran out of IPv" + ipVersion + " addresses");
@@ -79,5 +81,50 @@ public class IPAddresses {
             Logger.getLogger(IPAddresses.class).error("Failed to find IP address", ex);
         }
         return null;
+    }
+
+    public static List<IPAddress> addv4SubnetToPool(String subnetCIDR) {
+        ArrayList<IPAddress> addrs = new ArrayList<>();
+        IPv4 subnet = new IPv4(subnetCIDR);
+        try {
+            IPAddresses.dao.callBatchTasks(() -> {
+                for (String addr : subnet.getAvailableIPs(subnet.getNumberOfHosts().intValue())) {
+                    IPAddress ipa = new IPAddress();
+                    ipa.address = addr;
+                    ipa.ipVersion = 4;
+                    ipa.userId = -1;
+                    IPAddresses.dao.createIfNotExists(ipa);
+                    addrs.add(ipa);
+                }
+
+                return null;
+            });
+        } catch (Exception ex) {
+            Logger.getLogger(IPAddresses.class).error("Failed to add subnet4 " + subnetCIDR + "to pool", ex);
+        }
+        
+        return addrs;
+    }
+
+    public static List<IPAddress> addv6SubnetToPool(String subnetstr) {
+        ArrayList<IPAddress> addrs = new ArrayList<>();
+        IPv6Network subnet = IPv6Network.fromString(subnetstr);
+        try {
+            IPAddresses.dao.callBatchTasks(() -> {
+                for (IPv6Address addr : subnet) {
+                    IPAddress ipa = new IPAddress();
+                    ipa.address = addr.toString();
+                    ipa.ipVersion = 6;
+                    ipa.userId = -1;
+                    IPAddresses.dao.createIfNotExists(ipa);
+                    addrs.add(ipa);
+                }
+                return null;
+            });
+        } catch (Exception ex) {
+            Logger.getLogger(IPAddresses.class).error("Failed to add subnet6 " + subnetstr + "to pool", ex);
+        }
+        
+        return addrs;
     }
 }
