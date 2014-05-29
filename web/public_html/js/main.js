@@ -37,6 +37,10 @@ function VPN() {
         return false;
     };
 
+    this.confirm = function() {
+
+    };
+
     this.validateKey = function(email, key) {
         app.content.hide();
         app.preloader.show();
@@ -50,12 +54,7 @@ function VPN() {
                     return;
                 vpn.registration = response;
                 app.preloader.hide();
-                app.content.load('csr.html', function() {
-                    app.content.fadeIn();
-                    $('#use-eid').click(function() {
-                        app.useEIDIdentification();
-                    });
-                });
+                app.content.load('csr.html', app.unlocked);
             }});
     };
 }
@@ -126,15 +125,63 @@ function App() {
             contentType: 'application/json',
             dataType: 'json',
             success: function(response, status, xhr) {
+                self.vpn.registration = response;
                 $('#content').load('review.html', function() {
                     $.getScript('js/renderjson.js', function() {
                         app.preloader.hide();
                         $('#ip-address input[type="checkbox"]').bootstrapSwitch();
+                        $('#ip-address input[type="checkbox"]').on('switchChange.bootstrapSwitch', self.requestIP);
+                        $('#ip6-address-request').bootstrapSwitch('state', true);
                         $('#user-details').append(renderjson(response.user));
+                        $('#confirm').click(self.vpn.confirm);
                         app.content.fadeIn();
                     });
                 });
             }});
+    };
+
+
+    this.requestIP = function(event, state) {
+        var version = event.currentTarget.id.charAt(2);
+        $(event.currentTarget).bootstrapSwitch('indeterminate', true);
+        
+        if (state == true)
+            $.ajax(self.vpn.endpoint + 'api/address/lease', {
+                data: JSON.stringify({
+                    user: self.vpn.registration.user.id,
+                    version: parseInt(version, 10)
+                }),
+                type: 'PUT',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response, status, xhr) {
+                    $(event.currentTarget).bootstrapSwitch('indeterminate', false);
+                    $('#ip' + version + '-address').text(response.address);
+                }});
+    };
+
+    this.unlocked = function() {
+        self.content.fadeIn();
+        $('#password').keyup(self.validatePassword);
+        $('#password-verify').keyup(self.validatePassword);
+        $('#password-done').click(function() {
+            $.ajax(self.vpn.endpoint + 'api/reg/enterPassword', {
+                data: JSON.stringify({
+                    id: self.vpn.registration.id,
+                    password: $('#password').val()
+                }),
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response, status, xhr) {
+                    self.vpn.registration['user'] = response;
+                    $('#unlocked').hide();
+                    $('#keypair-select').fadeIn();
+                }});
+        });
+        $('#use-eid').click(function() {
+            self.useEIDIdentification();
+        });
     };
 
     this.parseQueryString = function() {
@@ -149,6 +196,20 @@ function App() {
         self.urlParams = {};
         while (match = search.exec(query))
             self.urlParams[decode(match[1])] = decode(match[2]);
+    };
+
+    this.validatePassword = function() {
+        var pwd = $('#password').val();
+        var verify = $('#password-verify').val();
+
+        console.log('l' + pwd.length + " " + (pwd === verify ? "true" : "false"));
+
+        if (pwd.length < 6 || pwd !== verify) {
+            $('#password-done').attr('disabled', '');
+        } else {
+            $('#password-done').removeAttr('disabled');
+        }
+
     };
 
     this.ajaxError = function(xhr, errorType, exception) {
