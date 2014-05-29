@@ -59,7 +59,6 @@ var BigBang = {
         var coords = BigBang.getRandomPosition(minX, minY, maxX, maxY);
         return new Star(coords.x, coords.y, maxSpeed);
     },
-
     /**
      * Gets a random (x,y) position within a bounding box
      * 
@@ -100,31 +99,31 @@ var StarField = function(containerId) {
  * Updates the properties for every star for the next frame to be rendered
  */
 StarField.prototype._updateStarField = function() {
-    var i, 
-        star, 
-        randomLoc, 
-        increment;
+    var i,
+            star,
+            randomLoc,
+            increment;
 
     for (i = 0; i < this.numStars; i++) {
         star = this.starField[i];
-        
+
         increment = Math.min(star.speed, Math.abs(star.speed / star.slope));
         star.x += (star.x > 0) ? increment : -increment;
         star.y = star.slope * star.x;
-        
+
         star.opacity += star.speed / 100;
-        
+
         // Recycle star obj if it goes out of the frame
-        if ((Math.abs(star.x) > this.width / 2) || 
-            (Math.abs(star.y) > this.height / 2)) {
+        if ((Math.abs(star.x) > this.width / 2) ||
+                (Math.abs(star.y) > this.height / 2)) {
             //randomLoc = BigBang.getRandomPosition(
             //    -this.width / 2, -this.height / 2, 
             //       this.width, this.height
             //);
             randomLoc = BigBang.getRandomPosition(
-                -this.width / 10, -this.height / 10, 
-                   this.width / 5, this.height / 5
-            );
+                    -this.width / 10, -this.height / 10,
+                    this.width / 5, this.height / 5
+                    );
             star.resetPosition(randomLoc.x, randomLoc.y, this.maxStarSpeed);
         }
     }
@@ -137,7 +136,7 @@ StarField.prototype._updateStarField = function() {
  */
 StarField.prototype._renderStarField = function() {
     var i,
-        star;
+            star;
     // Background
     this.canvas.fillStyle = "rgba(0, 0, 0, .5)";
     this.canvas.fillRect(0, 0, this.width, this.height);
@@ -146,9 +145,9 @@ StarField.prototype._renderStarField = function() {
         star = this.starField[i];
         this.canvas.fillStyle = "rgba(255, 255, 255, " + star.opacity + ")";
         this.canvas.fillRect(
-            star.x + this.width / 2, 
-            star.y + this.height / 2, 
-            2, 2);
+                star.x + this.width / 2,
+                star.y + this.height / 2,
+                2, 2);
     }
 };
 
@@ -158,7 +157,7 @@ StarField.prototype._renderStarField = function() {
  */
 StarField.prototype._renderFrame = function(elapsedTime) {
     var timeSinceLastFrame = elapsedTime - (this.prevFrameTime || 0);
-    
+
     window.requestAnimationFrame(this._renderFrame.bind(this));
 
     // Skip frames unless at least 30ms have passed since the last one
@@ -185,8 +184,8 @@ StarField.prototype._adjustCanvasSize = function(width, height) {
  */
 StarField.prototype._watchCanvasSize = function(elapsedTime) {
     var timeSinceLastCheck = elapsedTime - (this.prevCheckTime || 0),
-        width,
-        height;
+            width,
+            height;
 
     window.requestAnimationFrame(this._watchCanvasSize.bind(this));
 
@@ -213,8 +212,8 @@ StarField.prototype._initScene = function(numStars) {
     var i;
     for (i = 0; i < this.numStars; i++) {
         this.starField.push(
-            BigBang.getRandomStar(-this.width / 2, -this.height / 2, this.width, this.height, this.maxStarSpeed)
-        );
+                BigBang.getRandomStar(-this.width / 2, -this.height / 2, this.width, this.height, this.maxStarSpeed)
+                );
     }
 
     // Intervals not stored because I don't plan to detach them later...
@@ -241,22 +240,24 @@ StarField.prototype.render = function(numStars, maxStarSpeed) {
 (function() {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = 
-          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+                window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
- 
+
     if (!window.requestAnimationFrame)
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
-              timeToCall);
+            var id = window.setTimeout(function() {
+                callback(currTime + timeToCall);
+            },
+                    timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
- 
+
     if (!window.cancelAnimationFrame)
         window.cancelAnimationFrame = function(id) {
             clearTimeout(id);

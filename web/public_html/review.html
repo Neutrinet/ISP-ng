@@ -9,11 +9,11 @@
 </p>
 <form>
 <ul class="list-group" id="ip-address">
-    <li class="list-group-item"><span class="ip-address" id="ip4-address">No IPv4 address selected</span>
-        <input type="checkbox" value="ipv4" />
+    <li class="list-group-item"><span class="ip-address" id="ip4-address">No IPv4 address</span>
+        <input type="checkbox" id="ip4-address-request" value="ipv4" />
     </li>
-    <li class="list-group-item"><span class="ip-address" id="ip6-address">2001:913:1000:ffff::/64</span>
-        <input type="checkbox" value="ipv6" checked disabled />
+    <li class="list-group-item"><span class="ip-address" id="ip6-address">No IPv6 address</span>
+        <input type="checkbox" id="ip6-address-request" value="ipv6" disabled />
     </li>
 </ul>
 </form>
@@ -22,7 +22,7 @@
 <div id="user-details"></div>
 <div class="btn-group">
     <input class="btn btn-info" type="button" value="Edit your information (NONFUNCTIONAL ATM)" />
-    <input class="btn btn-primary" type="button" value="Confirm and register" />
+    <input class="btn btn-primary" id="confirm" type="button" value="Confirm and register" />
 </div>
 <style>
     .ip-address {
