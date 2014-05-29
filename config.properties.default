@@ -1,0 +1,14 @@
+
+// DB
+db.uri=jdbc:sqlite:test.db
+db.user=
+db.password=
+
+// OpenVPN
+openvpn.host=
+
+// API endpoint
+jetty.serveStatic=true
+jetty.port=8080
+jetty.keyStore=keystore
+jetty.keyStorePassword=password
