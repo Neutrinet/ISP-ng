@@ -48,7 +48,7 @@ public class User {
     @DatabaseField(canBeNull = false)
     public Date birthDate;
     @DatabaseField(canBeNull = false)
-    public String password;
+    private String password;
     @DatabaseField
     public boolean enabled;
 
@@ -56,4 +56,8 @@ public class User {
         return BCrypt.checkpw(password, this.password);
     }
 
+    public void setPassword(String password) {
+        String salt = BCrypt.gensalt(10);
+        this.password = BCrypt.hashpw(password, salt);
+    }
 }

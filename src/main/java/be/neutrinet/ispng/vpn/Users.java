@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package be.neutrinet.ispng;
+package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.VPN;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.table.TableUtils;
@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import org.apache.log4j.Logger;
-import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
@@ -58,8 +57,7 @@ public class Users {
     public final static void createDummyUser() throws SQLException {
         User dummy = new User();
         dummy.email = "ackbar@neutrinet.be";
-        String salt = BCrypt.gensalt(5);
-        dummy.password = BCrypt.hashpw("it'satrapIV", salt);
+        dummy.setPassword("it'satrapIV");
         dummy.name = "Admiral J.P.";
         dummy.lastName = "Ackbar";
         dummy.enabled = true;
