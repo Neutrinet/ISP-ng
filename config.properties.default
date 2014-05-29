@@ -4,8 +4,9 @@ db.uri=jdbc:sqlite:test.db
 db.user=
 db.password=
 
-// OpenVPN
+// OpenVPN management channel
 openvpn.host=
+openvpn.port=
 
 // API endpoint
 jetty.serveStatic=true

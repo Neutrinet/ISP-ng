@@ -46,7 +46,7 @@ public class VPN {
 
     public static final String CONSOLE_LOGPATTERN = "%d{HH:mm:ss,SSS} | %-5p | %t | %c{1.} %m%n";
     public static ConnectionSource cs;
-    private static Properties cfg;
+    public static Properties cfg;
 
     public static void main(String[] args) throws Exception {
         Logger root = Logger.getRootLogger();

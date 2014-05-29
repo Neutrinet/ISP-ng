@@ -17,6 +17,7 @@
  */
 package be.neutrinet.ispng.openvpn;
 
+import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.Manager;
 import java.io.BufferedReader;
@@ -50,7 +51,8 @@ public class ManagementInterface implements Runnable {
     }
 
     public void connect() throws IOException {
-        sock = new Socket("vpn.w-gr.net", 12345);
+        sock = new Socket(VPN.cfg.getProperty("openvpn.host"),
+                Integer.parseInt(VPN.cfg.getProperty("openvpn.port")));
     }
 
     public void recover() {
