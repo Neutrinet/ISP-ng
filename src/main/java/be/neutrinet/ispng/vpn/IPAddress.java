@@ -20,6 +20,7 @@ package be.neutrinet.ispng.vpn;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import java.util.Date;
 
 /**
  *
@@ -37,4 +38,8 @@ public class IPAddress {
     public int ipVersion;
     @DatabaseField
     public boolean enabled;
+    @DatabaseField
+    public Date leasedAt;
+    @DatabaseField
+    public Date expiry;
 }
