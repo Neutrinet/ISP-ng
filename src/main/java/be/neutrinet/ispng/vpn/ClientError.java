@@ -19,11 +19,19 @@ public class ClientError {
     public String message;
     // Link to URL containing more info. Can be null
     public String url;
+    // Exception, if any
+    public transient Throwable throwable;
 
     public ClientError(String key, String message, String url) {
         this.errorKey = key;
         this.message = message;
         this.url = url;
+    }
+    
+    public ClientError(String key, Throwable throwable) {
+        this.errorKey = key;
+        this.throwable = throwable;
+        this.message = throwable.getMessage();
     }
     
     public ClientError(String key, String message) {

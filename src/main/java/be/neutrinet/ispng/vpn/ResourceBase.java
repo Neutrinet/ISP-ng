@@ -13,6 +13,7 @@ import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.openssl.PEMReader;
 import org.restlet.Message;
+import org.restlet.data.Status;
 import org.restlet.engine.header.Header;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
@@ -35,6 +36,7 @@ public abstract class ResourceBase extends ServerResource {
     private static final String HEADERS_KEY = "org.restlet.http.headers";
 
     protected final static JacksonRepresentation DEFAULT_ERROR = new JacksonRepresentation(new ClientError("UNKNOWN_ERROR"));
+    protected final static JacksonRepresentation DEFAULT_SUCCESS = new JacksonRepresentation("OK");
 
     @Post
     public Representation signCSR(Representation csr) {
@@ -75,6 +77,16 @@ public abstract class ResourceBase extends ServerResource {
             }
         }
         return headers;
+    }
+    
+    protected JacksonRepresentation error() {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return DEFAULT_ERROR;
+    }
+    
+    protected JacksonRepresentation clientError(String key, Status status) {
+        setStatus(status);
+        return new JacksonRepresentation(new ClientError(key));
     }
     
     protected void setCORSHeaders(Representation entity) {
