@@ -5,6 +5,8 @@
  */
 package be.neutrinet.ispng;
 
+import be.neutrinet.ispng.vpn.api.AddressLease;
+import be.neutrinet.ispng.vpn.api.AddressPool;
 import be.neutrinet.ispng.vpn.api.UserRegistration;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -30,8 +32,9 @@ public class RestletServlet extends HttpServlet {
 
         Router router = new Router(this.adapter.getContext());
         router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
-        //router.attachDefault(ResourceBase.class);
         router.attach("/reg/{id}", UserRegistration.class);
+        router.attach("/address/lease", AddressLease.class);
+        router.attach("/address/pool", AddressPool.class);
 
         this.adapter.setNext(router);
     }
