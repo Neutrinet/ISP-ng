@@ -19,6 +19,8 @@ public class Registration {
     private final UUID id;
     public User user;
     public long timeInitiated;
+    public int IPv4Id;
+    public int IPv6Id;
 
     private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
 
