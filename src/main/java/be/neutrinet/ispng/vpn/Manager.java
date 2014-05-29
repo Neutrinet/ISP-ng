@@ -17,9 +17,6 @@
  */
 package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.Connections;
-import be.neutrinet.ispng.IPAddresses;
-import be.neutrinet.ispng.Users;
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
 import be.neutrinet.ispng.openvpn.ServiceListener;

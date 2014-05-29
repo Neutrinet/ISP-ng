@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package be.neutrinet.ispng;
+package be.neutrinet.ispng.vpn;
 
+import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.vpn.Connection;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
