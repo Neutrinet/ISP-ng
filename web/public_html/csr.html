@@ -1,29 +1,46 @@
-<h2>Unlocked!</h2>
-<p>Now we can get started doing the fun stuff: the setup! We will guide you
-through the process of creating a VPN link. There will be *cake* at the end.</p>
-<p>Because we care about end-to-end security, we require you to have a key pair,
-    by which we can validate and secure the link between Neutrinet and you.</p>
-<p>We currently offer two options: </p>
-<ul class="list-group">
-    <li class="list-group-item btn-link" id="use-eid">Identify yourself with your Belgian eID</li>
-    <li class="list-group-item">Upload a certificate signing request (NOT YET AVAILABLE)</li>
-</ul>
-<h2>Qué</h2>
-<p>If you're not familiar with the terms used above, here's a TL;DR summary.
-Security depends on knowing that the person you're connected to is the person you 
-expect to be connected to.</p>
-<p>By having your own keypair, we can trust that when sending data down the VPN link,
-you are the actual receiver of that data.</p>
-<p>The eID allows us to validate your identity because we trust the issuer, the 
-Belgian Government, to issue keypairs correctly (contained within your eID),
-and securely. Though we can never be sure of it, as we have no idea if and when 
-e.g. intelligence services are able to sidestep security and obtain someone's keypair.
-Currently we opt to trust the government.</p>
-<p>The other option is to generate your own keypair, which is guaranteed to be 
-    secure if no one else is able to access it. We then invite you to give us
-    your public key, which we sign to establish a mutual trust. This trust implicates
-    that you trust us to identify you, and we can validate your identity.</p>
-<h2>Usage</h2>
-<p>eID auth is best suited for roadwarrior configs, own keypair best for fixed
-    installations (e.g. on your router)</p>
-
+<div id="unlocked">
+    <h2>Unlocked!</h2>
+    <h3>Password</h3>
+    <form id="password-entry" class="form-group" action="#">
+        <div class="has-error">
+            <label for="password" class="label">Enter password (min 6 char): </label>
+            <input type="password" class="form-control" id="password" />
+        </div>
+        <div class="has-error">
+            <label for="password-verify" class="label">Verify your password:</label>
+            <input type="password" class="form-control" id="password-verify" />
+        </div>
+        <br />
+        <input type="submit" id="password-done" class="form-control btn-primary" value="Next" disabled />
+    </form>
+</div>
+<div id="keypair-select" style="display: none">
+    <h2>Setup</h2>
+    <p>Now we can get started doing the fun stuff: the setup! We will guide you
+        through the process of creating a VPN link. There will be *cake* at the end.</p>
+    <p>Because we care about end-to-end security, we require you to have a key pair,
+        by which we can validate and secure the link between Neutrinet and you.</p>
+    <p>We currently offer two options: </p>
+    <ul class="list-group" id="setup-options">
+        <li class="list-group-item btn-link" id="use-eid">Identify yourself with your Belgian eID</li>
+        <li class="list-group-item">Upload a certificate signing request (NOT YET AVAILABLE)</li>
+    </ul>
+    <h3>Qué</h3>
+    <p>If you're not familiar with the terms used above, here's a TL;DR summary.
+        Security depends on knowing that the person you're connected to is the person you 
+        expect to be connected to.</p>
+    <p>By having your own keypair, we can trust that when sending data down the VPN link,
+        you are the actual receiver of that data.</p>
+    <p>The eID allows us to validate your identity because we trust the issuer, the 
+        Belgian Government, to issue keypairs correctly (contained within your eID),
+        and securely. Though we can never be sure of it, as we have no idea if and when 
+        e.g. intelligence services are able to sidestep security and obtain someone's keypair.
+        Currently we opt to trust the government.</p>
+    <p>The other option is to generate your own keypair, which is guaranteed to be 
+        secure if no one else is able to access it. We then invite you to give us
+        your public key, which we sign to establish a mutual trust. This trust implicates
+        that you trust us to identify you, and we can validate your identity.</p>
+    <h2>Usage</h2>
+    <p>eID auth is best suited for roadwarrior configs, own keypair best for fixed
+        installations (e.g. on your router)</p>
+</div>
