@@ -26,14 +26,14 @@ public class AddressPool extends ResourceBase {
     public Representation addAddressesToPool(Map<String, Object> data) {
         int version = (int) data.get("version");
         String subnet = (String) data.get("subnet");
-        
+
         try {
             switch (version) {
                 case 4:
                     IPAddresses.addv4SubnetToPool(subnet);
                     return DEFAULT_SUCCESS;
                 case 6:
-                    IPAddresses.addv6SubnetToPool(subnet);
+                    IPAddresses.addv6SubnetToPool(subnet, 64);
                     return DEFAULT_SUCCESS;
                 default:
                     return new JacksonRepresentation(new ClientError("ILLEGAL_INPUT"));
@@ -42,7 +42,7 @@ public class AddressPool extends ResourceBase {
             return new JacksonRepresentation(new ClientError("ILLEGAL_INPUT", ex));
         }
     }
-    
+
     @Get
     public Representation getAddressPool() {
         try {
@@ -50,7 +50,7 @@ public class AddressPool extends ResourceBase {
         } catch (SQLException ex) {
             Logger.getLogger(getClass()).error("Failed to get address pool details", ex);
         }
-        
+
         return error();
     }
 }
