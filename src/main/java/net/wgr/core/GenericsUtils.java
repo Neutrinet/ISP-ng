@@ -17,14 +17,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 
+ *
  * @created Jul 3, 2011
  * @author double-u
  */
 public class GenericsUtils {
-     /**
-     * Get the underlying class for a type, or null if the type is a variable type.
-     * @author Ian Robertson, http://www.artima.com/weblogs/viewpost.jsp?thread=208860
+
+    /**
+     * Get the underlying class for a type, or null if the type is a variable
+     * type.
+     *
+     * @author Ian Robertson,
+     * http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      * @param type the type
      * @return the underlying class
      */
@@ -47,15 +51,17 @@ public class GenericsUtils {
     }
 
     /**
-     * Get the actual type arguments a child class has used to extend a generic base class.
+     * Get the actual type arguments a child class has used to extend a generic
+     * base class.
      *
-     * @author Ian Robertson, http://www.artima.com/weblogs/viewpost.jsp?thread=208860
+     * @author Ian Robertson,
+     * http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      * @param baseClass the base class
      * @param childClass the child class
      * @return a list of the raw classes for the actual type arguments.
      */
     public static <T> List<Class<?>> getTypeArguments(
-        Class<T> baseClass, Class<? extends T> childClass) {
+            Class<T> baseClass, Class<? extends T> childClass) {
         Map<Type, Type> resolvedTypes = new HashMap<Type, Type>();
         Type type = childClass;
         // start walking up the inheritance hierarchy until we hit baseClass

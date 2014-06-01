@@ -24,7 +24,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ *
  * @created Jul 8, 2011
  * @author double-u
  */
@@ -56,7 +56,8 @@ public class ReflectionUtils {
     }
 
     /**
-     * Scans all classes accessible from the context class loader which belong to the given package.
+     * Scans all classes accessible from the context class loader which belong
+     * to the given package.
      *
      * @param packageName The base package
      * @return The classes
@@ -112,8 +113,9 @@ public class ReflectionUtils {
      * Recursive method used to find all classes in a given directory.
      *
      * @source http://snippets.dzone.com/posts/show/4831
-     * @param directory   The base directory
-     * @param packageName The package name for classes found inside the base directory
+     * @param directory The base directory
+     * @param packageName The package name for classes found inside the base
+     * directory
      * @return The classes
      * @throws ClassNotFoundException
      */
@@ -148,9 +150,10 @@ public class ReflectionUtils {
 
     /**
      * Returns difference between instances
+     *
      * @param <T> instance type
-     * @param original 
-     * @param changed 
+     * @param original
+     * @param changed
      * @return <fieldName, value>
      */
     public static <T> Map<String, Object> diff(T original, T changed) {
