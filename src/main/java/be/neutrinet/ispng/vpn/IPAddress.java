@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package be.neutrinet.ispng.vpn;
 
 import com.j256.ormlite.field.DatabaseField;
@@ -28,10 +27,13 @@ import java.util.Date;
  */
 @DatabaseTable(tableName = "address_pool")
 public class IPAddress {
+
     @DatabaseField(generatedId = true)
     public int id;
-    @DatabaseField(canBeNull = false, defaultValue = "-1")
-    public int userId;
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
+    public Connection connection;
+    @DatabaseField(defaultValue = "-1", foreign = true, foreignAutoRefresh = true)
+    public User user;
     @DatabaseField(canBeNull = false, unique = true)
     public String address;
     @DatabaseField(defaultValue = "4")
@@ -42,4 +44,6 @@ public class IPAddress {
     public Date leasedAt;
     @DatabaseField
     public Date expiry;
+    @DatabaseField
+    public int netmask;
 }

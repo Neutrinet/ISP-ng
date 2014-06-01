@@ -18,7 +18,10 @@
 package be.neutrinet.ispng.vpn;
 
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -32,10 +35,10 @@ public class Connection {
     public int id;
     @DatabaseField(canBeNull = false)
     public int clientId;
-    @DatabaseField(canBeNull = false)
-    public int userId;
-    @DatabaseField(canBeNull = false)
-    public int addressId;
+    @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
+    public User user;
+    @ForeignCollectionField(foreignFieldName = "connection")
+    public Collection<IPAddress> addresses;
     @DatabaseField(canBeNull = false)
     public Date created;
     @DatabaseField
@@ -46,12 +49,12 @@ public class Connection {
     public Connection() {
     }
 
-    public Connection(int clientId, int userId, int addressId) {
+    public Connection(int clientId, User user) {
         this.clientId = clientId;
-        this.userId = userId;
-        this.addressId = addressId;
+        this.user = user;
         this.active = true;
         this.created = new Date();
+        this.addresses = new ArrayList<>();
     }
 
 }
