@@ -38,7 +38,22 @@ function VPN() {
     };
 
     this.confirm = function() {
-
+        if (vpn.registration != undefined) {
+            app.content.hide();
+            app.preloader.show();
+            $.ajax(vpn.endpoint + 'api/reg/commit', {
+                data: JSON.stringify(vpn.registration),
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response, status, xhr) {
+                    $('#content').load('done.html', function() {
+                        $('#email').text(vpn.registration.user.email);
+                        app.preloader.hide();
+                        app.content.fadeIn();
+                    });
+                }});
+        }
     };
 
     this.validateKey = function(email, key) {
@@ -92,8 +107,8 @@ function App() {
         self.parseQueryString();
 
         if (self.urlParams["flow"] != undefined) {
-            self.handleFlow();
-            return;
+            if (self.handleFlow())
+                return;
         }
 
         $('#content').load('start.html', function() {
@@ -109,14 +124,16 @@ function App() {
         self.vpn.registration.id = self.urlParams["id"];
 
         if (self.vpn.registration.id == undefined)
-            return;
+            return false;
 
         if (self[self.urlParams["flow"]] == undefined) {
             self.ajaxError(null, null, "Illegal flow");
         } else {
             // execute flow handler
-            self[self.urlParams["flow"]]();
+            return self[self.urlParams["flow"]]();
         }
+        
+        return false;
     };
 
     this.eIdDone = function() {
@@ -144,7 +161,7 @@ function App() {
     this.requestIP = function(event, state) {
         var version = event.currentTarget.id.charAt(2);
         $(event.currentTarget).bootstrapSwitch('indeterminate', true);
-        
+
         if (state == true)
             $.ajax(self.vpn.endpoint + 'api/address/lease', {
                 data: JSON.stringify({
@@ -155,8 +172,10 @@ function App() {
                 contentType: 'application/json',
                 dataType: 'json',
                 success: function(response, status, xhr) {
+                    $(event.currentTarget).bootstrapSwitch('state', true);
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
                     $('#ip' + version + '-address').text(response.address);
+                    self.vpn.registration["ipv" + version + "Id"] = response.id;
                 }});
     };
 
