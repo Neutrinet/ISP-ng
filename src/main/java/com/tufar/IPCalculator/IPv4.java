@@ -455,7 +455,7 @@ public class IPv4 {
      * @param args
      */
     public static void main(String[] args) {
-		// ipv4.setIP("10.20.30.5", "255.255.255.200");
+        // ipv4.setIP("10.20.30.5", "255.255.255.200");
         // System.out.println(ipv4.getIP());
         // System.out.println(ipv4.getNetmask());
         // System.out.println(ipv4.getCIDR());
@@ -474,7 +474,7 @@ public class IPv4 {
          */
         IPv4 ipv4 = new IPv4("12.12.12.0/16");
         IPv4 ipv4Child = new IPv4("12.12.12.0/17");
-		// IPv4 ipv4 = new IPv4("192.168.20.0/16");
+        // IPv4 ipv4 = new IPv4("192.168.20.0/16");
         // System.out.println(ipv4.getIP());
         // System.out.println(ipv4.getNetmask());
         // System.out.println(ipv4.getCIDR());
@@ -491,7 +491,7 @@ public class IPv4 {
         System.out.println(ipv4Child.getBinary(ipv4Child.netmaskNumeric));
         System.out.println("==============output================");
         System.out.println(ipv4.contains(ipv4Child));
-		// ipv4.contains("192.168.50.11");
+        // ipv4.contains("192.168.50.11");
         // System.out.println("======= DOES NOT MATCH =======");
         // ipv4.contains("10.2.3.4");
         // System.out.println(ipv4.validateIPAddress());
