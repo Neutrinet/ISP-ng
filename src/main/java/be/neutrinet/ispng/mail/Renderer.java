@@ -32,7 +32,7 @@ public class Renderer {
         ct.putAll(content);
         ct.put("body", rseg);
         
-        fillInDefaults(content);
+        fillInDefaults(ct);
         
         return render(BASE_TEMPLATE, ct);
     }
