@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package be.neutrinet.ispng.vpn.admin;
 
 import be.neutrinet.ispng.VPN;
@@ -16,12 +17,11 @@ import org.apache.log4j.Logger;
  *
  * @author wannes
  */
-public class UnlockKeys {
-
-    public static Dao<UnlockKey, String> dao;
+public class Registrations {
+        public static Dao<Registration, String> dao;
 
     static {
-        Class cls = UnlockKey.class;
+        Class cls = Registration.class;
         try {
             dao = DaoManager.createDao(VPN.cs, cls);
             TableUtils.createTableIfNotExists(VPN.cs, cls);
