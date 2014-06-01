@@ -96,7 +96,7 @@ function App() {
         var mq = window.matchMedia('only screen and (min-device-width: 800px)');
         if (mq.matches) {
             $.getScript('js/starz.js', function() {
-                new StarField('starz').render(50, 1);
+                //new StarField('starz').render(50, 1);
             });
         }
 
@@ -111,11 +111,13 @@ function App() {
                 return;
         }
 
-        $('#content').load('start.html', function() {
-            self.preloader.fadeOut('slow');
-            self.content.fadeIn();
-            $('form .btn-primary').click(function(event) {
-                self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
+        $(document).ready(function() {
+            $('#content').load('start.html', function() {
+                self.preloader.fadeOut('slow');
+                self.content.fadeIn();
+                $('form .btn-primary').click(function(event) {
+                    self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
+                });
             });
         });
     };
@@ -132,7 +134,7 @@ function App() {
             // execute flow handler
             return self[self.urlParams["flow"]]();
         }
-        
+
         return false;
     };
 

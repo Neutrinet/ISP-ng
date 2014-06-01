@@ -39,6 +39,7 @@ html, body {
     text-align: justify;
     z-index: 10;
     background-color: rgba(50, 50, 50, 0.9);
+    padding-bottom: 80px;
 }
 
 #content {
@@ -50,6 +51,7 @@ html, body {
 
 #paint-it-black {
     text-shadow: 0 0 10px #FFF;
+    font-size: 9pt;
     font-weight: bold;
     color: #222;
     margin-left: auto;
@@ -67,15 +69,18 @@ header {
 
 header div {
     position: absolute;
-    top: 40px;
+    top: 24px;
     right: 30px;
+    text-align: right;
 }
 
 footer {
-    text-align: center;
-    height: 50px;
+    padding-top: 15px;
+    height: 65px;
     width: 100%;
-    margin-top: 10px;
+    position: fixed;
+    bottom:0;
+    background-image: linear-gradient(rgba(50,50,50,0.1) 0%, rgba(50, 50, 50, 0.99) 30%);
 }
 
 h2 {
@@ -95,6 +100,18 @@ p a {
 }
 
 .bootstrap-switch {
+    float: right;
+}
+
+footer .left {
+    float: left;
+    text-align: left;
+    padding-left: 30px;
+}
+
+footer .right {
+    padding-right: 30px;
+    text-align: right;
     float: right;
 }
 
@@ -132,6 +149,6 @@ p a {
     }
 
     footer {
-        width: 760px;
+        width: 796px;
     }
 }
