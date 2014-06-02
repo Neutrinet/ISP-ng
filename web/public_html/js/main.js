@@ -4,7 +4,7 @@
 
 function VPN() {
     var vpn = this;
-    this.endpoint = 'https://localhost:8080/';
+    this.endpoint = 'https://vpn.neutrinet.be:8443/';
     this.registration = {};
     //this.endpoint = '/';
 
@@ -76,7 +76,6 @@ function VPN() {
 
 function App() {
     var self = this;
-
     this.preloader = $('#preloader');
     this.content = $('#content');
     this.token = "";

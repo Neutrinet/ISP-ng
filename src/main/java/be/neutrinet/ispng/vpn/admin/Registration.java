@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.log4j.Logger;
@@ -27,11 +26,11 @@ import org.apache.log4j.Logger;
  *
  * @author wannes
  */
-@DatabaseTable(tableName = "pending_registrations")
+@DatabaseTable(tableName = "registrations")
 public class Registration {
 
     @DatabaseField(id = true, canBeNull = false)
-    private final UUID id;
+    private UUID id;
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public User user;
     @DatabaseField(canBeNull = false)
@@ -40,8 +39,8 @@ public class Registration {
     public int ipv4Id;
     @DatabaseField
     public int ipv6Id;
-    @DatabaseField
-    public String unlockKey;
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    public UnlockKey unlockKey;
     @DatabaseField
     public Date completed;
 
@@ -49,6 +48,10 @@ public class Registration {
 
     public static Map<UUID, Registration> getActiveRegistrations() {
         return activeRegistrations;
+    }
+
+    private Registration() {
+
     }
 
     public Registration(UUID id) {
@@ -73,13 +76,15 @@ public class Registration {
                     ip4.user = this.user;
                     IPAddresses.dao.update(ip4);
                 }
-                
-                List<UnlockKey> keys = UnlockKeys.dao.queryForEq("key", this.unlockKey);
-                assert keys.get(0).usedAt == null;
-                keys.get(0).usedAt = this.timeInitiated;
-                UnlockKeys.dao.update(keys.get(0));
 
-                Users.dao.update(user);
+                assert unlockKey.usedAt == null;
+                unlockKey.usedAt = this.timeInitiated;
+                UnlockKeys.dao.update(unlockKey);
+
+                this.completed = new Date();
+                this.user.enabled = true;
+                
+                Users.dao.create(user);
                 Registrations.dao.update(this);
                 VPN.generator.sendRegistrationConfirmation(this);
                 return true;

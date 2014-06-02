@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package be.neutrinet.ispng.vpn;
 
 /**
@@ -23,6 +22,7 @@ package be.neutrinet.ispng.vpn;
  * @author double-u
  */
 public class TLSCertificate {
+
     public String serial;
     public String issuer;
     public String digest;

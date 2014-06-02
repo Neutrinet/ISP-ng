@@ -22,7 +22,6 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.table.TableUtils;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -52,18 +51,6 @@ public class Users {
         }
 
         return null;
-    }
-
-    public final static void createDummyUser() throws SQLException {
-        User dummy = new User();
-        dummy.email = "ackbar@neutrinet.be";
-        dummy.setPassword("it'satrapIV");
-        dummy.name = "Admiral J.P.";
-        dummy.lastName = "Ackbar";
-        dummy.enabled = true;
-        dummy.birthDate = new Date();
-        dummy.birthPlace = "Space";
-        dao.createIfNotExists(dummy);
     }
 
     static {

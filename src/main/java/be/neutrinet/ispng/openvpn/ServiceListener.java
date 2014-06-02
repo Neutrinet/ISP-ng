@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package be.neutrinet.ispng.openvpn;
 
 import be.neutrinet.ispng.vpn.Client;
@@ -27,6 +26,8 @@ import be.neutrinet.ispng.vpn.Client;
 public interface ServiceListener {
 
     public void clientConnect(Client client);
+
     public void connectionEstablished(Client client);
+
     public void clientDisconnect(Client client);
 }

@@ -78,17 +78,17 @@ public abstract class ResourceBase extends ServerResource {
         }
         return headers;
     }
-    
+
     protected JacksonRepresentation error() {
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return DEFAULT_ERROR;
     }
-    
+
     protected JacksonRepresentation clientError(String key, Status status) {
         setStatus(status);
         return new JacksonRepresentation(new ClientError(key));
     }
-    
+
     protected void setCORSHeaders(Representation entity) {
         getMessageHeaders(getResponse()).add("Access-Control-Allow-Origin", "*");
         getMessageHeaders(getResponse()).add("Access-Control-Allow-Methods", "POST,OPTIONS");

@@ -45,9 +45,11 @@ public class ObjectMarshall {
                     key = key.replaceAll("(\\p{Ll})(\\p{Lu})", "$1_$2").toLowerCase();
                     value = input.get(key);
                 }
-                
+
                 // if value still is null, bug out
-                if (value == null) continue;
+                if (value == null) {
+                    continue;
+                }
 
                 try {
                     switch (f.getType().getCanonicalName()) {

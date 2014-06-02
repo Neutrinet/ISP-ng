@@ -1,4 +1,4 @@
-    /*
+/*
  * Manager.java
  * Copyright (C) Apr 5, 2014 Wannes De Smet
  * 
@@ -17,11 +17,15 @@
  */
 package be.neutrinet.ispng.vpn;
 
+import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
 import be.neutrinet.ispng.openvpn.ServiceListener;
+import com.googlecode.ipv6.IPv6Address;
+import com.googlecode.ipv6.IPv6Network;
 import com.j256.ormlite.misc.TransactionManager;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -51,18 +55,34 @@ public final class Manager {
                     if (user != null) {
                         TransactionManager.callInTransaction(VPN.cs, () -> {
                             IPAddress ipv4 = assign(user, client, 4);
-                            Connection c = new Connection(client.id, user.id, ipv4.id);
                             IPAddress ipv6 = assign(user, client, 6);
+
+                            if (ipv4 == null && ipv6 == null) {
+                                vpn.denyClient(client.id, client.kid, "No IP address available");
+                                return null;
+                            }
+
+                            Connection c = new Connection(client.id, user);
+                            if (ipv4 != null) {
+                                c.addresses.add(ipv4);
+                            }
+                            if (ipv6 != null) {
+                                c.addresses.add(ipv6);
+                            }
 
                             pendingConnections.put(client.id, c);
                             log.info(String.format("Authorized %s (%s,%s)", client.username, client.id, client.kid));
 
                             LinkedHashMap<String, String> options = new LinkedHashMap<>();
                             options.put("push-reset", null);
-                            options.put("ifconfig-push", ipv4.address + " 255.255.255.0");
-                            //options.put("push route", "192.168.2.0 255.255.255.0");
+                            if (ipv4 != null) {
+                                options.put("ifconfig-push", ipv4.address + " 255.255.255.0");
+                            }
+                            //options.put("push routHomee", "192.168.2.0 255.255.255.0");
                             //options.put("push route-gateway", "192.168.2.1");
-                            options.put("ifconfig-ipv6-push", ipv6.address + "/64 fdef:2f5:d792:de63::1");
+                            if (ipv6 != null) {
+                                options.put("ifconfig-ipv6-push", ipv6.address + "/ fdef:abcd:ef::1");
+                            }
                             //options.put("push route-ipv6", "fdef:2f5:d792:de63::/64");
 
                             vpn.authorizeClient(client.id, client.kid, options);
@@ -92,6 +112,10 @@ public final class Manager {
 
                     Connections.dao.update(c);
 
+                    for (IPAddress ip : c.addresses) {
+                        ip.connection = null;
+                        IPAddresses.dao.update(ip);
+                    }
                 } catch (SQLException ex) {
                     log.error("Failed to insert client", ex);
                 }
@@ -102,6 +126,10 @@ public final class Manager {
                 try {
                     Connection c = pendingConnections.remove(client.id);
                     Connections.dao.create(c);
+                    for (IPAddress ip : c.addresses) {
+                        ip.connection = c;
+                        IPAddresses.dao.update(ip);
+                    }
                 } catch (SQLException ex) {
                     log.error("Failed to insert connection", ex);
                 }
@@ -117,13 +145,29 @@ public final class Manager {
 
             if (unused == null) {
                 log.info(String.format("Could not allocate IPv%s address for user %s (%s,%s)", version, client.username, client.id, client.kid));
-                vpn.denyClient(client.id, client.kid, "No IPv" + version + " address available");
                 return null;
             }
 
-            unused.userId = user.id;
+            unused.user = user;
+            unused.leasedAt = new Date();
+            unused.expiry = DateUtil.convert(LocalDate.now().plusDays(1L));
             IPAddresses.dao.update(unused);
             addrs.add(unused);
+
+            if (version == 6) {
+                // We've assigned a subnet, now assign an address out of the subnet
+                IPv6Network subnet = IPv6Network.fromString(unused.address + "/" + unused.netmask);
+                // TODO
+                IPv6Address first = subnet.getFirst();
+                IPAddress v6 = new IPAddress();
+                v6.address = first.toString().substring(0, first.toString().length() - 3);
+                v6.netmask = 128;
+                v6.enabled = true;
+                v6.leasedAt = new Date();
+                v6.user = user;
+
+                IPAddresses.dao.createOrUpdate(v6);
+            }
         }
 
         return addrs.get(0);

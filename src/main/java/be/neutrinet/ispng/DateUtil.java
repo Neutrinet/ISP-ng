@@ -12,16 +12,15 @@ import java.time.ZoneId;
 import java.util.Date;
 
 /**
- * Converts between
- * LocalDateTime -> Date
- * LocalDate -> Date
- * Date -> LocalDateTime
- * 
+ * Converts between LocalDateTime -> Date LocalDate -> Date Date ->
+ * LocalDateTime
+ *
  * Does not convert between Date -> LocalDate, risk at loss of precision
+ *
  * @author wannes
  */
 public class DateUtil {
-    
+
     public static Date convert(LocalDate ld) {
         Instant instant = ld.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);

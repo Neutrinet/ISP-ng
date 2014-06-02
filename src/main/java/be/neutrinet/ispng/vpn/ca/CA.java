@@ -20,7 +20,7 @@ import org.bouncycastle.operator.jcajce.*;
 import org.bouncycastle.util.encoders.Base64;
 
 public class CA {
-    
+
     public final static String SIGNING_ALGO = "SHA512withRSA";
     public final static int KEY_SIZE = 4096;
 
@@ -55,7 +55,7 @@ public class CA {
         BigInteger serial = new BigInteger(32, new SecureRandom());
         Date from = new Date();
         Date to = new Date(System.currentTimeMillis() + (validity * 86400000L));
-        
+
         X509v3CertificateBuilder certgen = new X509v3CertificateBuilder(issuer, serial, from, to, csr.getSubject(), csr.getSubjectPublicKeyInfo());
         certgen.addExtension(X509Extension.basicConstraints, false, new BasicConstraints(false));
         certgen.addExtension(X509Extension.subjectKeyIdentifier, false, new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo()));

@@ -29,7 +29,7 @@ import org.mindrot.jbcrypt.BCrypt;
 @DatabaseTable(tableName = "users")
 public class User {
 
-    @DatabaseField(id = true)
+    @DatabaseField(generatedId = true)
     public int id;
     @DatabaseField(canBeNull = false, index = true, unique = true)
     public String email;

@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.i18n.I18N;
@@ -13,6 +12,7 @@ import be.neutrinet.ispng.i18n.I18N;
  * @author double-u
  */
 public class ClientError {
+
     // Message identifier. Can never be null
     public String errorKey;
     // Message clearly explaining the problem. Can never be null
@@ -27,13 +27,13 @@ public class ClientError {
         this.message = message;
         this.url = url;
     }
-    
+
     public ClientError(String key, Throwable throwable) {
         this.errorKey = key;
         this.throwable = throwable;
         this.message = throwable.getMessage();
     }
-    
+
     public ClientError(String key, String message) {
         this.errorKey = key;
         this.message = message;
