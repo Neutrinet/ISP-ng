@@ -19,6 +19,8 @@ target/**
 /web/nbproject/
 keystore
 *.db
+nb-configuration.xml
+nbactions.xml
 
 # setting files
 config.properties
