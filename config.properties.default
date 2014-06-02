@@ -8,8 +8,16 @@ db.password=
 openvpn.host=
 openvpn.port=
 
-// API endpoint
-jetty.serveStatic=true
-jetty.port=8080
+// Service endpoint
+jetty.port=8443
 jetty.keyStore=keystore
 jetty.keyStorePassword=password
+
+// Mail
+smtp.server=
+smtp.user=
+smtp.password=
+
+// Mailing settings
+mail.headerImageURL = 
+mail.headerImageAlt = 

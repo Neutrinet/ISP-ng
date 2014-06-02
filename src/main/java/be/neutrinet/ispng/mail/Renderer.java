@@ -41,6 +41,8 @@ public class Renderer {
         if (!content.containsKey("header-img-src")) {
             content.put("header-img-src", VPN.cfg.getProperty("mail.headerImageURL"));
             content.put("header-img-alt", VPN.cfg.getProperty("mail.headerImageAlt"));
+            content.put("base-url", "https://" + VPN.cfg.getProperty("jetty.hostname") 
+                    + ":" + VPN.cfg.getProperty("jetty.port"));
         }
     }
 
