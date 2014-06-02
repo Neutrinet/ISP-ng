@@ -9,6 +9,7 @@ openvpn.host=
 openvpn.port=
 
 // Service endpoint
+jetty.hostname=
 jetty.port=8443
 jetty.keyStore=keystore
 jetty.keyStorePassword=password
