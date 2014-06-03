@@ -26,13 +26,13 @@ public class Renderer {
     }
 
     public String renderInTemplate(String segmentName, Map<String, String> content) {
+        fillInDefaults(content);
+        
         String rseg = render(segmentName, content);
         HashMap<String, String> ct = new HashMap<>();
         content.remove("body");
         ct.putAll(content);
         ct.put("body", rseg);
-        
-        fillInDefaults(ct);
         
         return render(BASE_TEMPLATE, ct);
     }
