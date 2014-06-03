@@ -9,15 +9,19 @@ import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.vpn.IPAddress;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.ResourceBase;
+import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
 /**
@@ -26,6 +30,23 @@ import org.restlet.resource.Put;
  */
 public class AddressLease extends ResourceBase {
 
+    @Get
+    public Representation getAssignedLeases() {
+        try {
+            HashMap<User, List<IPAddress>> map = new HashMap<>();
+            List<User> users = Users.dao.queryForAll();
+            for (User u : users) {
+                map.put(u, IPAddresses.dao.queryForEq("user_id", u));
+            }
+            
+            return new JacksonRepresentation(map);
+        } catch (SQLException ex) {
+            Logger.getLogger(getClass()).error("Failed to get assigned leases", ex);
+        }
+        
+        return DEFAULT_ERROR;
+    }
+    
     @Put
     public Representation create(Map<String, Object> data) {
         int userId = (int) data.get("user");
