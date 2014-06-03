@@ -8,7 +8,6 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.User;
-import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
@@ -102,6 +101,7 @@ public class UserRegistration extends ResourceBase {
                 reg.ipv4Id = (int) data.get("ipv4Id");
                 reg.ipv6Id = (int) data.get("ipv6Id");
                 reg.commit();
+                Registration.getActiveRegistrations().remove(reg.getId());
                 return new JacksonRepresentation("OK");
             } else if (data.containsKey("password")) {
                 String password = (String) data.get("password");
