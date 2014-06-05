@@ -51,6 +51,8 @@ public class User {
     private String password;
     @DatabaseField
     public boolean enabled;
+    @DatabaseField
+    public String certId;
 
     public boolean validatePassword(String password) {
         return BCrypt.checkpw(password, this.password);
