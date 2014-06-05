@@ -5,17 +5,27 @@
  */
 package be.neutrinet.ispng;
 
+import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.api.AddressLease;
 import be.neutrinet.ispng.vpn.api.AddressPool;
 import be.neutrinet.ispng.vpn.api.UserRegistration;
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.restlet.Request;
+import org.restlet.Response;
+import org.restlet.data.ChallengeScheme;
+import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletAdapter;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
+import org.restlet.security.ChallengeAuthenticator;
+import org.restlet.security.MapVerifier;
+import org.restlet.security.SecretVerifier;
 
 /**
  *
@@ -24,6 +34,7 @@ import org.restlet.routing.Template;
 public class RestletServlet extends HttpServlet {
 
     private ServletAdapter adapter;
+    private List<String> publicAccess;
 
     @Override
     public void init() throws ServletException {
@@ -36,7 +47,35 @@ public class RestletServlet extends HttpServlet {
         router.attach("/address/lease", AddressLease.class);
         router.attach("/address/pool", AddressPool.class);
 
-        this.adapter.setNext(router);
+        ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
+
+            @Override
+            protected int beforeHandle(Request request, Response response) {
+                if (!request.getResourceRef().getPath().startsWith("/api/reg/")) {
+                    return super.beforeHandle(request, response);
+                }
+
+                response.setStatus(Status.SUCCESS_OK);
+                return CONTINUE;
+            }
+
+        };
+
+        auth.setVerifier(new SecretVerifier() {
+
+            @Override
+            public int verify(String identifier, char[] secret) {
+                User user = Users.authenticate(identifier, new String(secret));
+                if (user == null) {
+                    return RESULT_VALID;
+                } else {
+                    return RESULT_INVALID;
+                }
+            }
+        });
+        auth.setNext(router);
+
+        this.adapter.setNext(auth);
     }
 
     @Override
