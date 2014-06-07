@@ -70,7 +70,6 @@ public class Registration {
             TransactionManager.callInTransaction(VPN.cs, () -> {
                 if (ipv4Id != 0) {
                     IPAddress ip4 = IPAddresses.dao.queryForId("" + this.ipv4Id);
-                    ip4.enabled = true;
                     ip4.expiry = DateUtil.convert(LocalDate.now().plusDays(365L));
                     ip4.leasedAt = new Date();
                     ip4.user = this.user;
