@@ -7,12 +7,14 @@ package be.neutrinet.ispng;
 
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
+import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.api.AddressLease;
 import be.neutrinet.ispng.vpn.api.AddressPool;
 import be.neutrinet.ispng.vpn.api.UserConfig;
 import be.neutrinet.ispng.vpn.api.UserRegistration;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -51,12 +53,21 @@ public class RestletServlet extends HttpServlet {
 
             @Override
             protected int beforeHandle(Request request, Response response) {
-                if (!request.getResourceRef().getPath().startsWith("/api/reg/")) {
-                    return super.beforeHandle(request, response);
+
+                if (request.getResourceRef().getPath().startsWith("/api/reg/")) {
+                    response.setStatus(Status.SUCCESS_OK);
+                    return CONTINUE;
                 }
 
-                response.setStatus(Status.SUCCESS_OK);
-                return CONTINUE;
+                if (request.getCookies().getFirst("Registration-ID") != null) {
+                    UUID id = UUID.fromString(request.getCookies().getFirstValue("Registration-ID"));
+                    if (Registration.getActiveRegistrations().containsKey(id)) {
+                        response.setStatus(Status.SUCCESS_OK);
+                        return CONTINUE;
+                    }
+                }
+
+                return super.beforeHandle(request, response);
             }
 
         };

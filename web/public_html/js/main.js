@@ -4,7 +4,7 @@
 
 function VPN() {
     var vpn = this;
-    this.endpoint = 'https://vpn.neutrinet.be:8443/';
+    this.endpoint = 'https://localhost:8443/';
     this.registration = {};
     //this.endpoint = '/';
 
@@ -48,6 +48,13 @@ function VPN() {
                 dataType: 'json',
                 success: function(response, status, xhr) {
                     $('#content').load('done.html', function() {
+                        //activate starz
+                        var mq = window.matchMedia('only screen and (min-device-width: 800px)');
+                        if (mq.matches) {
+                            $.getScript('js/starz.js', function() {
+                                new StarField('starz').render(50, 1);
+                            });
+                        }
                         $('#email').text(vpn.registration.user.email);
                         app.preloader.hide();
                         app.content.fadeIn();
@@ -91,26 +98,18 @@ function App() {
 
         window.onpopstate = self.parseQueryString;
 
-        //activate starz
-        var mq = window.matchMedia('only screen and (min-device-width: 800px)');
-        if (mq.matches) {
-            $.getScript('js/starz.js', function() {
-                //new StarField('starz').render(50, 1);
-            });
-        }
-
         //load content
         self.content.hide();
 
         //check for re-entry
         self.parseQueryString();
 
-        if (self.urlParams["flow"] != undefined) {
-            if (self.handleFlow())
-                return;
-        }
-
         $(document).ready(function() {
+            if (self.urlParams["flow"] != undefined) {
+                if (self.handleFlow())
+                    return;
+            }
+
             $('#content').load('start.html', function() {
                 self.preloader.fadeOut('slow');
                 self.content.fadeIn();
@@ -131,11 +130,62 @@ function App() {
             self.ajaxError(null, null, "Illegal flow");
         } else {
             // execute flow handler
+            document.cookie = 'Registration-ID=' + self.vpn.registration.id;
             return self[self.urlParams["flow"]]();
         }
 
         return false;
     };
+
+    this.setupVPN = function() {
+        $('#content').load('config.html', function() {
+            self.preloader.hide();
+            self.content.fadeIn();
+            var platform = "";
+            if (navigator.appVersion.indexOf("Win") != -1)
+                platform = "windows";
+            if (navigator.appVersion.indexOf("Mac") != -1)
+                platform = "osx";
+            if (navigator.appVersion.indexOf("X11") != -1)
+                platform = "unix";
+            if (navigator.appVersion.indexOf("Linux") != -1)
+                platform = "linux";
+
+            $('div.platform-details').each(function(e) {
+                $(this).hide();
+            });
+
+            $('div#' + platform).show();
+
+            $('div#' + platform + ' .download-button').click(function() {
+                // sadly, jQuery have their nickers in a twist when it comes
+                // to XHR2 support (which allows for Blob return content types) in $.ajax
+                // Ugh.
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', self.vpn.endpoint + 'api/config', true);
+                xhr.responseType = 'blob';
+                xhr.onload = function(e) {
+                    if (this.status == 200) {
+                        $.getScript('js/FileSaver.js', function() {
+                            var blob = new Blob([xhr.response], {type: 'application/zip; charset=utf-8'});
+                            if (platform == "osx")
+                                saveAs(blob, "neutrinet.tblk.zip");
+                            else
+                                saveAs(blob, "neutrinet.zip");
+                        });
+                    }
+                };
+                xhr.onerror = app.ajaxError;
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(JSON.stringify({regId: self.vpn.registration.id, platform: platform}));
+            });
+        });
+
+        return true;
+    };
+
+    this.emailDone = this.setupVPN;
 
     this.eIdDone = function() {
         $.ajax(self.vpn.endpoint + 'api/reg/' + self.vpn.registration.id, {
@@ -265,7 +315,7 @@ function App() {
                     height: 300
                 };
                 var parameters = {
-                    TargetPage: app.vpn.endpoint + 'flow?id=' + self.vpn.registration.id,
+                    TargetPage: app.vpn.endpoint + 'flow/attach-eid/' + self.vpn.registration.id,
                     AppletService: app.vpn.endpoint + 'applet',
                     BackgroundColor: '#ffffff',
                     codebase_lookup: 'false',
