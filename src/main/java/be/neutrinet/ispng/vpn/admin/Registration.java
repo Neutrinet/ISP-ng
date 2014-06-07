@@ -83,7 +83,7 @@ public class Registration {
                 this.completed = new Date();
                 this.user.enabled = true;
                 
-                Users.dao.create(user);
+                Users.dao.update(user);
                 Registrations.dao.update(this);
                 VPN.generator.sendRegistrationConfirmation(this);
                 return true;

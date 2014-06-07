@@ -5,7 +5,6 @@
  */
 package be.neutrinet.ispng.mail;
 
-import be.neutrinet.ispng.vpn.IPAddress;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import java.sql.SQLException;

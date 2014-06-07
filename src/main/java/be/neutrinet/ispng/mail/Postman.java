@@ -71,7 +71,7 @@ public class Postman {
 
     public void sendMessage(final MimeMessage msg) throws MessagingException {
         // -- Set the FROM and TO fields --
-        msg.setFrom(new InternetAddress(user));
+        msg.setFrom(new InternetAddress("Neutrinet <" + user + '>'));
         msg.setSentDate(new Date());
 
         SMTPTransport t = (SMTPTransport) session.getTransport("smtps");
