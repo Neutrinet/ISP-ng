@@ -4,9 +4,9 @@
 
 function VPN() {
     var vpn = this;
-    this.endpoint = 'https://localhost:8443/';
+
     this.registration = {};
-    //this.endpoint = '/';
+    this.endpoint = '/';
 
     this.createUser = function(username) {
 
@@ -90,6 +90,11 @@ function App() {
     this.urlParams = {};
 
     this.run = function() {
+
+        if (!window.location.origin)
+            window.location.origin = window.location.protocol + "//" + window.location.host;
+
+        self.vpn.endpoint = window.location.origin + '/';
 
         //setup
         $.ajaxSetup({
