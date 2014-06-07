@@ -9,6 +9,7 @@ import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.api.AddressLease;
 import be.neutrinet.ispng.vpn.api.AddressPool;
+import be.neutrinet.ispng.vpn.api.UserConfig;
 import be.neutrinet.ispng.vpn.api.UserRegistration;
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +25,6 @@ import org.restlet.ext.servlet.ServletAdapter;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
-import org.restlet.security.MapVerifier;
 import org.restlet.security.SecretVerifier;
 
 /**
@@ -34,7 +34,6 @@ import org.restlet.security.SecretVerifier;
 public class RestletServlet extends HttpServlet {
 
     private ServletAdapter adapter;
-    private List<String> publicAccess;
 
     @Override
     public void init() throws ServletException {
@@ -46,6 +45,7 @@ public class RestletServlet extends HttpServlet {
         router.attach("/reg/{id}", UserRegistration.class);
         router.attach("/address/lease", AddressLease.class);
         router.attach("/address/pool", AddressPool.class);
+        router.attach("/config", UserConfig.class);
 
         ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
 
@@ -66,7 +66,7 @@ public class RestletServlet extends HttpServlet {
             @Override
             public int verify(String identifier, char[] secret) {
                 User user = Users.authenticate(identifier, new String(secret));
-                if (user == null) {
+                if (user != null) {
                     return RESULT_VALID;
                 } else {
                     return RESULT_INVALID;
