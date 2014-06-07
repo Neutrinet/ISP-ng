@@ -1,0 +1,60 @@
+<h2>Download your OpenVPN configuration file archive</h2>
+<p><b>Prerequisites:</b></p>
+<ul>
+    <li>Supported platform and version (see below)</li>
+    <li>UDP port 1194 must be open on your firewall</li>
+    <li>Some preliminary debugging skills in case something goes wrong</li>
+    <li><a href="http://eid.belgium.be/en/using_your_eid/installing_the_eid_software/" title="eID middleware site">Latest eID middleware</a></li>
+</ul>
+<div class="info-dialog">Note that the eID middleware is required on all platforms where PKCS11 auth (eID)
+    is used. We might be able to simply ship the PKCS11 library in the future, but ATM 
+    please <a href="http://eid.belgium.be/en/using_your_eid/installing_the_eid_software/" title="eID middleware site">download</a>
+    and install the eID middleware.</div>
+<div class="platform-details" id="linux">
+    <h3>Linux platform</h3>
+    <div class="download-button">Download OpenVPN config archive</div>
+    <p>The file you are about to download contains everything you need. Open a terminal, and run</p>
+    <code>sudo aptitude install openvpn <br />
+        cd [download location] <br />
+        unzip neutrinet.zip <br />
+        sudo openvpn neutrinet.ovpn # root needed for tap adapter</code>
+    <p>And you're connected!</p>
+    <h3>Supported configurations</h3>
+    <p>Currently, we support:</p>
+    <ul>
+        <li>Debian Wheezy (7.5) with OpenVPN 2.3+ (wheezy-backports)</li>
+        <li>Ubuntu "Trusty Tahr" 14.04 LTS</li>
+    </ul>
+    <p>Is your configuration not supported but are you willing to extensively test your setup?
+        <a href="http://neutrinet.be" title="contact">Get in touch</a>, and we'll
+        contact you if we are able to start validating your distro/version.</p>
+    <h3>A note about Network Manager</h3>
+    <p>Due to oversight and/or neglect, the network-manager-openvpn does not allow
+        to configure for PKCS11 modules, used when authenticating with your eID. Multiple bugs reports
+        have been posted to solve this by allowing for an additional config file, without any result thus far.</p>
+    <p>One might detect a slight hint of irony, as the most open platform of all
+        does not have a decent GUI client who supports this, while OS X and Windows do. <br /><br />
+        sad-cat.jpg</p>
+</div>
+<div class="platform-details" id="osx">
+    <h3>OS X platform</h3>
+    <div class="download-button">Download Tunnelblick config</div>
+    <p>We advise you to use the <a href="https://code.google.com/p/tunnelblick/" title="Tunnelblick">Tunnelblick OpenVPN GUI</a> on OSX, which has great support
+        for OpenVPN, ships with recent versions of OpenVPN and integrates well with OSX.<br /></p>
+    <p>Simply <a href="https://code.google.com/p/tunnelblick/wiki/DownloadsEntry#Tunnelblick_Stable_Release" title="Download Tunnelblick">download</a> 
+        and install Tunnelblick, then open the Tunnelblick config 
+        you downloaded, enter your eID PIN and, presto, you're connected!</p>
+    <h3>Supported configurations</h3>
+    <p>Neutrinet supports OSX 10.6 (Snow Leopard) and up when using Tunnelblick.</p>
+</div>
+<div class="platform-details" id="windows">
+    <h3>Windows platforms</h3>
+    <div class="download-button">Download OpenVPN config archive</div>
+    <p>Should you wish to continue using Windows, <a href="https://openvpn.net/index.php/open-source/downloads.html" title="OpenVPN download">download</a> 
+    the official OpenVPN distribution client (use the Windows Installer) . 
+    Unzip the config file archive, right click on the .ovpn file (with the OpenVPN logo)
+    and select 'Start OpenVPN connection'. Done!</p>
+    <h3>Supported configurations</h3>
+    <p>Windows 8.1 Professional/Enterprise with OpenVPN version 2.3.4.</p>
+    <p>Others might work as well, but do so at your own risk.</p>
+</div>
