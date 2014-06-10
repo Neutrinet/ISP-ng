@@ -1,16 +1,16 @@
 @font-face {
     font-family: "Open Sans";
-    url: "fonts/OpenSans-Regular.ttf";
+    src: url('fonts/OpenSans-Regular.ttf');
 }
 
 @font-face {
     font-family: "Open Sans";
     font-weight: bold;
-    url: "fonts/OpenSans-Bold.ttf";
+    src: url('fonts/OpenSans-Bold.ttf');
 }
 
 html, body {
-    color: #EEE;
+    color: #DDD;
     height: 100%;
     width: 100%;
     font-family: "Open Sans";
@@ -97,6 +97,40 @@ p a {
 
 .list-group-item {
     background-color: #333;
+}
+
+div.info-dialog {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 60px;
+    padding-right: 15px;
+    border-radius: 5px;
+    border: solid 1px #666;
+    margin-bottom: 10px;
+}
+
+div.download-button {
+    min-width: 100px;
+    min-height: 20px;
+    padding: 10px;
+    border: solid 1px #555;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+div.download-button:hover {
+    background-color: #444;
+}
+
+code {
+    display: block;
+    border: solid 1px #666;
+    padding: 10px;
+    background-color: rgba(0,0,0,0);
+    color: #1acc32;
+    margin-bottom: 10px;
 }
 
 .bootstrap-switch {
