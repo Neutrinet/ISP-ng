@@ -9,9 +9,12 @@ import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
 /**
@@ -24,6 +27,17 @@ public class UnlockKey extends ResourceBase {
 
     public String generateUnlockKey() {
         return new BigInteger(130, random).toString(32);
+    }
+
+    @Get
+    public Representation getKeys() {
+        try {
+            List<be.neutrinet.ispng.vpn.admin.UnlockKey> keys = UnlockKeys.dao.queryForAll();
+            return new JacksonRepresentation<>(keys);
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to get unlock keys", ex);
+            return DEFAULT_ERROR;
+        }
     }
 
     @Put
