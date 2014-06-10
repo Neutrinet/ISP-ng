@@ -7,6 +7,8 @@ db.password=
 // OpenVPN management channel
 openvpn.host=
 openvpn.port=
+openvpn.publicaddress=
+openvpn.publicport=1194
 
 // Service endpoint
 jetty.hostname=
@@ -22,3 +24,7 @@ smtp.password=
 // Mailing settings
 mail.headerImageURL = 
 mail.headerImageAlt = 
+
+// Security
+// Location of the OpenVPN CA certificate:
+ca.crt = 
