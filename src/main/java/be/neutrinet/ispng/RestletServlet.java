@@ -10,6 +10,7 @@ import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.api.AddressLease;
 import be.neutrinet.ispng.vpn.api.AddressPool;
+import be.neutrinet.ispng.vpn.api.UnlockKey;
 import be.neutrinet.ispng.vpn.api.UserConfig;
 import be.neutrinet.ispng.vpn.api.UserRegistration;
 import java.io.IOException;
@@ -48,6 +49,7 @@ public class RestletServlet extends HttpServlet {
         router.attach("/address/lease", AddressLease.class);
         router.attach("/address/pool", AddressPool.class);
         router.attach("/config", UserConfig.class);
+        router.attach("/unlock-key", UnlockKey.class);
 
         ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
 
