@@ -205,6 +205,7 @@ function App() {
                         $('#ip-address input[type="checkbox"]').bootstrapSwitch();
                         $('#ip-address input[type="checkbox"]').on('switchChange.bootstrapSwitch', self.requestIP);
                         $('#ip6-address-request').bootstrapSwitch('state', true);
+                        $('#ip6-address-request').bootstrapSwitch('readonly', true);
                         $('#user-details').append(renderjson(response.user));
                         $('#confirm').click(self.vpn.confirm);
                         app.content.fadeIn();
@@ -230,7 +231,7 @@ function App() {
                 success: function(response, status, xhr) {
                     $(event.currentTarget).bootstrapSwitch('state', true);
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
-                    $('#ip' + version + '-address').text(response.address);
+                    $('#ip' + version + '-address').text(response.address + "/" + response.netmask);
                     self.vpn.registration["ipv" + version + "Id"] = response.id;
                 }});
     };
