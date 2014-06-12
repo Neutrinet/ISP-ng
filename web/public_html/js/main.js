@@ -229,8 +229,9 @@ function App() {
                 contentType: 'application/json',
                 dataType: 'json',
                 success: function(response, status, xhr) {
-                    $(event.currentTarget).bootstrapSwitch('state', true);
+                    self.vpn.handleIfError(response);
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
+                    $(event.currentTarget).bootstrapSwitch('state', true);
                     $('#ip' + version + '-address').text(response.address + "/" + response.netmask);
                     self.vpn.registration["ipv" + version + "Id"] = response.id;
                 }});

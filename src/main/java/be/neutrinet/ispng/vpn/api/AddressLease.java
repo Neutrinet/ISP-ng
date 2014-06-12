@@ -6,6 +6,7 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.DateUtil;
+import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.IPAddress;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.ResourceBase;
@@ -55,6 +56,13 @@ public class AddressLease extends ResourceBase {
         assert version == 4 || version == 6;
 
         try {
+            List<IPAddress> ownedAddr = IPAddresses.dao.queryForEq("user", userId);
+            for (IPAddress ad : ownedAddr) {
+                if (ad.ipVersion == version) {
+                    return new JacksonRepresentation(new ClientError("MAX_IP_ADDRESSES_EXCEEDED"));
+                }
+            }
+            
             IPAddress addr = IPAddresses.findUnused(version);
             if (addr == null) {
                 return clientError("OUT_OF_ADDRESSES", Status.SERVER_ERROR_INTERNAL);
