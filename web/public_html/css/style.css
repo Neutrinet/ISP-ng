@@ -14,6 +14,7 @@ html, body {
     height: 100%;
     width: 100%;
     font-family: "Open Sans";
+    font-size: 14px;
     background-color: #000;
 }
 
@@ -38,7 +39,7 @@ html, body {
     min-height: 100%;
     text-align: justify;
     z-index: 10;
-    background-color: rgba(50, 50, 50, 0.9);
+    background-image: linear-gradient(10deg, #222 0%, #333 100%);
     padding-bottom: 80px;
 }
 
@@ -62,9 +63,10 @@ header {
     padding-top: 5px;
     padding-bottom: 20px;
     font-weight: bold;
-    color: #CCC;
-    text-shadow: 0 0 5px #666;
+    color: #DDD;
+    text-shadow: 0 0 5px #444;
     position: relative;
+    border-bottom: solid 2px #333;
 }
 
 header div {
@@ -84,15 +86,39 @@ footer {
 }
 
 h2 {
-    font-size: 22px;
+    font-size: 20px;
 }
 
 h3 {
-    font-size: 18px;
+    font-size: 16px;
+}
+
+p {
+    margin-top: 5px;
+    margin-bottom: 15px;
 }
 
 p a {
     font-weight: bold;
+}
+
+.label {
+    width: 30%;
+    float: left;
+    font-size: 10pt;
+    text-align: left;
+    line-height: 25px;
+    font-weight: normal;
+    border-left: solid 1px #333;
+    border-top: solid 1px #333;
+    border-bottom: solid 1px #333;
+    border-radius: 5px;
+}
+
+.form-control[type=text] {
+    width: 69%;
+    background-image: linear-gradient(#DDD 0%, #FFF 100%);
+    border: solid 1px #000;
 }
 
 .list-group-item {
