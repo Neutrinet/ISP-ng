@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 public class Users {
 
     public static Dao<User, String> dao;
+    public static User NOBODY;
 
     public final static User authenticate(String email, String password) {
         try {
@@ -61,5 +62,8 @@ public class Users {
         } catch (SQLException ex) {
             org.apache.log4j.Logger.getLogger(cls).error("Failed to create DAO", ex);
         }
+        
+        NOBODY = new User();
+        NOBODY.id = -1;
     }
 }
