@@ -234,6 +234,11 @@ function App() {
                     $(event.currentTarget).bootstrapSwitch('state', true);
                     $('#ip' + version + '-address').text(response.address + "/" + response.netmask);
                     self.vpn.registration["ipv" + version + "Id"] = response.id;
+                },
+                error: function(response, status, xhr) {
+                    $(event.currentTarget).bootstrapSwitch('indeterminate', false);
+                    $(event.currentTarget).bootstrapSwitch('state', false);
+                    $('#ip' + version + '-address').text("No IPv" + version + " available");
                 }});
     };
 
@@ -318,7 +323,7 @@ function App() {
                     alt: 'eID applet',
                     code: 'be.fedict.eid.applet.Applet.class',
                     archive: 'objects/eid-applet-package-1.2.0-SNAPSHOT.jar',
-                    width: 600,
+                    width: 700,
                     height: 300
                 };
                 var parameters = {
