@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
@@ -39,15 +40,15 @@ public class AddressLease extends ResourceBase {
             for (User u : users) {
                 map.put(u, IPAddresses.dao.queryForEq("user_id", u));
             }
-            
+
             return new JacksonRepresentation(map);
         } catch (SQLException ex) {
             Logger.getLogger(getClass()).error("Failed to get assigned leases", ex);
         }
-        
+
         return DEFAULT_ERROR;
     }
-    
+
     @Put
     public Representation create(Map<String, Object> data) {
         int userId = (int) data.get("user");
@@ -56,13 +57,13 @@ public class AddressLease extends ResourceBase {
         assert version == 4 || version == 6;
 
         try {
-            List<IPAddress> ownedAddr = IPAddresses.dao.queryForEq("user", userId);
+            List<IPAddress> ownedAddr = IPAddresses.dao.queryForEq("user_id", userId);
             for (IPAddress ad : ownedAddr) {
                 if (ad.ipVersion == version) {
                     return new JacksonRepresentation(new ClientError("MAX_IP_ADDRESSES_EXCEEDED"));
                 }
             }
-            
+
             IPAddress addr = IPAddresses.findUnused(version);
             if (addr == null) {
                 return clientError("OUT_OF_ADDRESSES", Status.SERVER_ERROR_INTERNAL);
@@ -75,6 +76,25 @@ public class AddressLease extends ResourceBase {
             return new JacksonRepresentation(addr);
         } catch (SQLException ex) {
             Logger.getLogger(getClass()).error("Failed to create address lease", ex);
+        }
+
+        return error();
+    }
+
+    @Delete
+    public Representation deleteLease(Map<String, String> data) {
+        int ipVersion = Integer.parseInt(data.get("version"));
+
+        try {
+            if (data.containsKey("user")) {
+                List<IPAddress> forUser = IPAddresses.forUser(Users.dao.queryForId(data.get("user")), ipVersion);
+                for (IPAddress addr : forUser) {
+                    addr.user = Users.NOBODY;
+                    IPAddresses.dao.update(addr);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(getClass()).error("Failed to modify address lease", ex);
         }
 
         return error();
