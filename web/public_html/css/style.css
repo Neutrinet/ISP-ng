@@ -82,7 +82,7 @@ footer {
     width: 100%;
     position: fixed;
     bottom:0;
-    background-image: linear-gradient(rgba(50,50,50,0.1) 0%, rgba(50, 50, 50, 0.99) 30%);
+    background-image: linear-gradient(rgba(30,30,30,0.1) 0%, rgba(30, 30, 30, 0.99) 30%);
 }
 
 h2 {
