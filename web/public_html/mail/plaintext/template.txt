@@ -1,0 +1,9 @@
+## Neutrinet - [% title %] ##
+
+[% body %]
+
+------------------------
+Neutrinet ASBL
+@neutrinet
+freenode.net #neutrinet
+contact@neutrinet.be
