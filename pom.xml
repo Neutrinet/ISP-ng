@@ -77,31 +77,31 @@
             <artifactId>jetty-http</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.1.5.v20140505</version>
+            <version>9.2.1.v20140609</version>
         </dependency>
         <dependency>
             <artifactId>jetty-io</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.1.5.v20140505</version>
+            <version>9.2.1.v20140609</version>
         </dependency>
         <dependency>
             <artifactId>jetty-server</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.1.5.v20140505</version>
+            <version>9.2.1.v20140609</version>
         </dependency>
         <dependency>
             <artifactId>jetty-util</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.1.5.v20140505</version>
+            <version>9.2.1.v20140609</version>
         </dependency>
         <dependency>
             <artifactId>jetty-servlet</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.1.5.v20140505</version>
+            <version>9.2.1.v20140609</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.java-ipv6</groupId>
@@ -111,12 +111,12 @@
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
-            <version>1.4.7</version>
+            <version>1.5.0-b01</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.4</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>commons-daemon</groupId>
