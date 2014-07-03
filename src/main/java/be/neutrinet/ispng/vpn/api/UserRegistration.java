@@ -8,11 +8,13 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,8 @@ import org.restlet.resource.Post;
  * @author wannes
  */
 public class UserRegistration extends ResourceBase {
+    
+    public static SimpleDateFormat BELGIAN_DATE_FORMAT = new SimpleDateFormat("dd-mm-yyyy");
     
     @Get
     public Representation handleGet() {
@@ -107,6 +111,17 @@ public class UserRegistration extends ResourceBase {
                 String password = (String) data.get("password");
                 reg.user.setPassword(password);
                 return new JacksonRepresentation(reg.user);
+            } else if (data.containsKey("name")) {
+                reg.user.name = (String) data.get("name");
+                reg.user.lastName = (String) data.get("last-name");
+                reg.user.birthDate = BELGIAN_DATE_FORMAT.parse((String) data.get("birthdate"));
+                reg.user.street = (String) data.get("address");
+                reg.user.municipality = (String) data.get("town");
+                reg.user.postalCode = Integer.parseInt((String) data.get("postal-code"));
+                reg.user.birthPlace = (String) data.get("place-of-birth");
+                reg.user.country = (String) data.get("country");
+                
+                if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to handle flow", ex);
