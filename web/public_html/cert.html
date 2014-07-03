@@ -1,0 +1,37 @@
+<h2>Certificate generation</h2>
+<h3>Guide</h3>
+<p>We'll guide you through the creation of your own keypair, for use with OpenVPN. </p>
+<p>Please make sure you understand the following: <br />
+    <b>Under no circumstance, you are to copy or move your private key off the system it has been generated on.
+        You are also required to make sure the private is kept safely and securely, is only accessible by you and cannot be read
+        or altered without your knowledge. Neutrinet cannot be held liable for VPN clients, so please take care.</b></p>
+<p>When you think your key has been compromised or you need a key for another OpenVPN instance, you can always go to your account page and easily rekey.
+   You can choose to retract a public key at any time, we will take care of the rest.</p>
+<p>With that said, let's go ahead and create your keypair and CSR:</p>
+<code>
+    # navigate to directory in which you want your keys<br />
+    # remember, this should be a private directory<br />
+    # preferably in your home folder and not shared via Dropbox etc.<br />
+    cd [directory that will hold your keys] <br /><br />
+    # generate your keypair and the certificate signing request <br />
+    openssl req -out CSR.csr -new -newkey rsa:4096 -nodes -keyout private.key <br />
+    <br />
+    cat CSR.csr # paste the contents below
+</code>
+<h3>Certificate Signing Request</h3>
+<p>Open the .csr file and paste your entire certificate signing request in the following text box (including the header and trailer)</p>
+<form class="form-group">
+    <div id="feedback" style="background-color: #500; padding: 5px; margin-top: 15px; margin-bottom: 15px; display: none;"></div>
+    <textarea class="form-control" id="csr">
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----</textarea>
+    <input class="form-control" type="button" value="Sign certificate" id="get-cert" disabled />
+</form>
+<h3>Neutrinet CA handling</h3>
+<p>Neutrinet's CA is secured as good as possible, but due to bugs in the control stack, OpenVPN or humans,
+we may require you to rekey whenever a problem occurs. We will prompt you via email and communicate across
+all our public channels, should you not react we will
+try other means of communication, with clear and simple instructions on how to rekey (which will mostly involve
+download a script and/or program which executes the OpenSSL commands for you and automatically rekeys with our 
+management service).</p>
+<p>Do not modify your keypair at the request of third parties.</p>

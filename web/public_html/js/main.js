@@ -202,7 +202,8 @@ function App() {
                 app.content.hide();
                 app.preloader.fadeIn();
                 $('#content').load('keypair.html', self.keypairSelect);
-            }});
+            }
+        });
     };
 
     this.keypairSelect = function() {
@@ -223,22 +224,55 @@ function App() {
     };
 
     this.useCSR = function() {
-        app.preloader.hide();
-        app.content.fadeIn();
+        var scripts = ['js/asn1js/asn1.js', 'js/asn1js/base64.js', 'js/asn1js/oids.js'];
+        var numloaded = 0;
 
-        $('#get-cert').click(function() {
-            $.ajax(self.vpn.endpoint + 'api/user/cert/' + self.vpn.registration.user.id, {
-                data: $('#csr').text(),
-                type: 'PUT',
-                contentType: 'application/json',
-                dataType: 'json',
-                success: function(response, status, xhr) {
-                    self.vpn.registration = response;
-                    app.content.hide();
-                    app.preloader.fadeIn();
-                    $('#content').load('keypair.html', self.keypairSelect);
-                }});
-        });
+        // super awesome dependency loader
+        for (var i = 0; i < scripts.length; i++) {
+            $.getScript(scripts[i], function() {
+                numloaded++;
+
+                if (numloaded === scripts.length) {
+                    app.preloader.hide();
+                    app.content.fadeIn();
+                    
+                    var reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
+                    var feedback = $('#feedback');
+
+                    $('#csr').on('input', function(e) {
+                        feedback.hide();
+                        feedback.removeClass();
+                        var pem = $('#csr').val();
+
+                        try {
+                            var der = reHex.test(pem) ? Hex.decode(pem) : Base64.unarmor(pem);
+                            var asn1 = ASN1.decode(der);
+                            $('#get-cert').addClass('btn-primary')
+                            $('#get-cert').prop("disabled", false);
+                        } catch (e) {
+                            feedback.text("The CSR you entered is invalid. Please make sure you've\n\
+                                correctly followed the instructions above and pasted the whole CSR. The parser\n\
+                                expects a Base64-armored PKCS10 instance.");
+                            feedback.fadeIn();
+                        }
+                    });
+
+                    $('#get-cert').click(function() {
+                        $.ajax(self.vpn.endpoint + 'api/user/cert/' + self.vpn.registration.user.id, {
+                            data: $('#csr').val(),
+                            type: 'PUT',
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            success: function(response, status, xhr) {
+                                self.vpn.registration = response;
+                                app.content.hide();
+                                app.preloader.fadeIn();
+                                $('#content').load('keypair.html', self.keypairSelect);
+                            }});
+                    });
+                }
+            });
+        }
     };
 
     this.review = function() {

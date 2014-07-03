@@ -1,20 +1,4 @@
-<div id="unlocked">
-    <h2>Unlocked!</h2>
-    <h3>Password</h3>
-    <form id="password-entry" class="form-group" action="#">
-        <div class="has-error">
-            <label for="password" class="label">Enter password (min 6 char): </label>
-            <input type="password" class="form-control" id="password" />
-        </div>
-        <div class="has-error">
-            <label for="password-verify" class="label">Verify your password:</label>
-            <input type="password" class="form-control" id="password-verify" />
-        </div>
-        <br />
-        <input type="submit" id="password-done" class="form-control btn-primary" value="Next" disabled />
-    </form>
-</div>
-<div id="keypair-select" style="display: none">
+<div id="keypair-select">
     <h2>Setup</h2>
     <p>Now we can get started doing the fun stuff: the setup! We will guide you
         through the process of creating a VPN link. There will be *cake* at the end.</p>
@@ -22,8 +6,8 @@
         by which we can validate and secure the link between Neutrinet and you.</p>
     <p>We currently offer two options: </p>
     <ul class="list-group" id="setup-options">
-        <li class="list-group-item btn-link" id="use-eid">Identify yourself with your Belgian eID</li>
-        <li class="list-group-item">Upload a certificate signing request (NOT YET AVAILABLE)</li>
+        <li class="list-group-item btn-link" id="use-eid">Use the built-in keypair from your Belgian eID</li>
+        <li class="list-group-item btn-link" id="use-csr">Generate your own keypair and upload a certificate signing request</li>
     </ul>
     <h3>Qué</h3>
     <p>If you're not familiar with the terms used above, here's a TL;DR summary.
