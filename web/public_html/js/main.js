@@ -76,7 +76,7 @@ function VPN() {
                     return;
                 vpn.registration = response;
                 app.preloader.hide();
-                app.content.load('csr.html', app.unlocked);
+                app.content.load('password.html', app.unlocked);
             }});
     };
 }
@@ -199,21 +199,60 @@ function App() {
             dataType: 'json',
             success: function(response, status, xhr) {
                 self.vpn.registration = response;
-                $('#content').load('review.html', function() {
-                    $.getScript('js/renderjson.js', function() {
-                        app.preloader.hide();
-                        $('#ip-address input[type="checkbox"]').bootstrapSwitch();
-                        $('#ip-address input[type="checkbox"]').on('switchChange.bootstrapSwitch', self.requestIP);
-                        $('#ip6-address-request').bootstrapSwitch('state', true);
-                        $('#ip6-address-request').bootstrapSwitch('readonly', true);
-                        $('#user-details').append(renderjson(response.user));
-                        $('#confirm').click(self.vpn.confirm);
-                        app.content.fadeIn();
-                    });
-                });
+                app.content.hide();
+                app.preloader.fadeIn();
+                $('#content').load('keypair.html', self.keypairSelect);
             }});
     };
 
+    this.keypairSelect = function() {
+        app.preloader.hide();
+        app.content.fadeIn();
+
+        $('#use-eid').click(function() {
+            app.content.hide();
+            app.preloader.fadeIn();
+            app.content.load('review.html', self.review);
+        });
+
+        $('#use-csr').click(function() {
+            app.content.hide();
+            app.preloader.fadeIn();
+            app.content.load('cert.html', self.useCSR);
+        });
+    };
+
+    this.useCSR = function() {
+        app.preloader.hide();
+        app.content.fadeIn();
+
+        $('#get-cert').click(function() {
+            $.ajax(self.vpn.endpoint + 'api/user/cert/' + self.vpn.registration.user.id, {
+                data: $('#csr').text(),
+                type: 'PUT',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response, status, xhr) {
+                    self.vpn.registration = response;
+                    app.content.hide();
+                    app.preloader.fadeIn();
+                    $('#content').load('keypair.html', self.keypairSelect);
+                }});
+        });
+    };
+
+    this.review = function() {
+        $.getScript('js/renderjson.js', function() {
+            app.preloader.hide();
+            $('#ip-address input[type="checkbox"]').bootstrapSwitch();
+            $('#ip-address input[type="checkbox"]').on('switchChange.bootstrapSwitch', self.requestIP);
+            $('#ip6-address-request').bootstrapSwitch('state', true);
+            $('#ip6-address-request').bootstrapSwitch('readonly', true);
+            $('#user-details').append(renderjson(response.user));
+            $('#confirm').click(self.vpn.confirm);
+            app.content.fadeIn();
+        });
+    };
 
     this.requestIP = function(event, state) {
         var version = event.currentTarget.id.charAt(2);
@@ -243,7 +282,9 @@ function App() {
     };
 
     this.unlocked = function() {
-        self.content.fadeIn();
+        app.preloader.hide();
+        app.content.fadeIn();
+
         $('#password').keyup(self.validatePassword);
         $('#password-verify').keyup(self.validatePassword);
         $('#password-done').click(function() {
@@ -257,12 +298,10 @@ function App() {
                 dataType: 'json',
                 success: function(response, status, xhr) {
                     self.vpn.registration['user'] = response;
-                    $('#unlocked').hide();
-                    $('#keypair-select').fadeIn();
+                    app.content.hide();
+                    app.preloader.fadeIn();
+                    $('#content').load('eid.html', self.useEIDIdentification);
                 }});
-        });
-        $('#use-eid').click(function() {
-            self.useEIDIdentification();
         });
     };
 
