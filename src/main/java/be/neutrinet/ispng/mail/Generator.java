@@ -52,7 +52,7 @@ public class Generator {
                 content.put("ipv6", "No IPv6 subnet");
             }
 
-            String body = renderer.renderInTemplate("vpn-confirmation", content);
+            String body = renderer.renderInTemplate("vpn-confirmation", content, true);
             msg.setContent(body, "text/html; charset=utf-8");
             msg.setSentDate(new Date());
             postman.sendMessage(msg);
