@@ -25,16 +25,16 @@ public class Renderer {
 
     }
 
-    public String renderInTemplate(String segmentName, Map<String, String> content) {
+    public String renderInTemplate(String segmentName, Map<String, String> content, boolean plaintext) {
         fillInDefaults(content);
         
-        String rseg = render(segmentName, content);
+        String rseg = render(segmentName, content, plaintext);
         HashMap<String, String> ct = new HashMap<>();
         content.remove("body");
         ct.putAll(content);
         ct.put("body", rseg);
         
-        return render(BASE_TEMPLATE, ct);
+        return render(BASE_TEMPLATE, ct, plaintext);
     }
     
     protected void fillInDefaults(Map<String, String> content) {
@@ -46,9 +46,10 @@ public class Renderer {
         }
     }
 
-    public String render(String segmentName, Map<String, String> content) {
+    public String render(String segmentName, Map<String, String> content, boolean plaintext) {
         try {
-            String segment = IOUtils.toString(new FileReader("web/public_html/mail/" + segmentName + ".html"));
+            String segment = IOUtils.toString(new FileReader("web/public_html/mail/" + 
+                    (plaintext ? "plaintext" : "html") + '/' + segmentName + (plaintext ? ".txt" : ".html")));
             int idx = segment.indexOf("[%");
 
             String rendered;
