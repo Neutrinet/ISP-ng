@@ -7,8 +7,8 @@ Your account details:
     IPv4: [% ipv4 %]
     IPv6: [% ipv6 %]
 
-Click the following link to activate your account: <[% base-url %]/flow/confirm-email/[% reg-id %]>
+Click the following link to activate your account: [% base-url %]/flow/confirm-email/[% reg-id %]
 
 You'll be redirected to our setup page, where you can download your config files for OpenVPN and documentation on how to get started.
 
-If you need any further assistance, do not hesitate to <http://neutrinet.be/Contact us>, we're happy to help!
+If you need any further assistance, do not hesitate to http://neutrinet.be/Contact us, we're happy to help!
