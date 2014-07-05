@@ -49,8 +49,8 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpg-jdk16</artifactId>
-            <version>1.46</version>
+            <artifactId>bcpg-jdk15on</artifactId>
+            <version>1.50</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -70,6 +70,14 @@
                 <exclusion>
                     <artifactId>servlet-api</artifactId>
                     <groupId>javax.servlet</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>bcprov-jdk16</artifactId>
+                    <groupId>org.bouncycastle</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>bcmail-jdk16</artifactId>
+                    <groupId>org.bouncycastle</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -122,6 +130,28 @@
             <groupId>commons-daemon</groupId>
             <artifactId>commons-daemon</artifactId>
             <version>1.0.15</version>
+        </dependency>
+        <dependency>
+            <artifactId>bctsp-jdk16</artifactId>
+            <groupId>org.bouncycastle</groupId>
+            <type>jar</type>
+            <version>1.46</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>bcprov-jdk16</artifactId>
+                    <groupId>org.bouncycastle</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>bcmail-jdk16</artifactId>
+                    <groupId>org.bouncycastle</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>bcmail-jdk15on</artifactId>
+            <groupId>org.bouncycastle</groupId>
+            <type>jar</type>
+            <version>1.50</version>
         </dependency>
     </dependencies>
     <repositories>
