@@ -9,10 +9,12 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Created by double-u on 04/07/14.
@@ -59,6 +61,21 @@ public class Certificate {
             if (crt.exists()) {
                 PEMParser pp = new PEMParser(new FileReader(crt));
                 return (X509Certificate) pp.readObject();
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to load certificate", ex);
+        }
+
+        return null;
+    }
+    
+    public byte[] getRaw() {
+        String crtPath = VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + serial + ".crt";
+        File crt = new File(crtPath);
+
+        try {
+            if (crt.exists()) {
+                return IOUtils.toByteArray(new FileInputStream(crt));
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to load certificate", ex);
