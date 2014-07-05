@@ -147,13 +147,13 @@ function App() {
             self.preloader.hide();
             self.content.fadeIn();
             var platform = "";
-            if (navigator.appVersion.indexOf("Win") != -1)
+            if (navigator.userAgent.indexOf("Win") != -1)
                 platform = "windows";
-            if (navigator.appVersion.indexOf("Mac") != -1)
+            if (navigator.userAgent.indexOf("Mac") != -1)
                 platform = "osx";
-            if (navigator.appVersion.indexOf("X11") != -1)
+            if (navigator.userAgent.indexOf("X11") != -1)
                 platform = "unix";
-            if (navigator.appVersion.indexOf("Linux") != -1)
+            if (navigator.userAgent.indexOf("Linux") != -1)
                 platform = "linux";
 
             $('div.platform-details').each(function(e) {
@@ -198,6 +198,10 @@ function App() {
             contentType: 'application/json',
             dataType: 'json',
             success: function(response, status, xhr) {
+                if (response == undefined) {
+                    window.location =  window.location.origin;
+                    return;
+                }
                 self.vpn.registration = response;
                 app.content.hide();
                 app.preloader.fadeIn();
@@ -254,6 +258,8 @@ function App() {
                                 correctly followed the instructions above and pasted the whole CSR. The parser\n\
                                 expects a Base64-armored PKCS10 instance.");
                             feedback.fadeIn();
+                            $('#get-cert').removeClass('btn-primary')
+                            $('#get-cert').prop("disabled", true);
                         }
                     });
 
@@ -264,10 +270,9 @@ function App() {
                             contentType: 'application/json',
                             dataType: 'json',
                             success: function(response, status, xhr) {
-                                self.vpn.registration = response;
                                 app.content.hide();
                                 app.preloader.fadeIn();
-                                $('#content').load('keypair.html', self.keypairSelect);
+                                $('#content').load('review.html', self.review);
                             }});
                     });
                 }
@@ -282,7 +287,7 @@ function App() {
             $('#ip-address input[type="checkbox"]').on('switchChange.bootstrapSwitch', self.requestIP);
             $('#ip6-address-request').bootstrapSwitch('state', true);
             $('#ip6-address-request').bootstrapSwitch('readonly', true);
-            $('#user-details').append(renderjson(response.user));
+            $('#user-details').append(renderjson(self.vpn.registration.user));
             $('#confirm').click(self.vpn.confirm);
             app.content.fadeIn();
         });
