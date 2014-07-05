@@ -27,12 +27,13 @@ import java.util.Date;
 public class CA {
 
     public final static String SIGNING_ALGORITHM = "SHA512withRSA";
+    private static CA instance;
 
     private KeyStore keyStore;
     private PrivateKey caKey;
     private X509Certificate caCert;
 
-    public CA() {
+    private CA() {
         try {
             keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(new FileInputStream(VPN.cfg.getProperty("ca.keyStore")),
@@ -42,6 +43,11 @@ public class CA {
         } catch (Exception ex) {
             Logger.getLogger(UserCertificate.class).error("Failed to load ca key", ex);
         }
+    }
+    
+    public static CA get() {
+        if (instance == null) instance = new CA();
+        return instance;
     }
 
     // loosely based on http://stackoverflow.com/questions/7230330/sign-csr-using-bouncy-castle
