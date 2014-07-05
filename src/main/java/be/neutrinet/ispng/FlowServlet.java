@@ -61,6 +61,7 @@ public class FlowServlet extends HttpServlet {
                         reg.user.certId = identity.chipNumber;
 
                         Users.dao.create(reg.user);
+                        Registrations.dao.update(reg);
                         resp.sendRedirect("/?id=" + id + "&flow=eIdDone");
                     }
                 } catch (SQLException ex) {
