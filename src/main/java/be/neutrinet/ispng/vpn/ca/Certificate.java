@@ -22,7 +22,7 @@ import org.apache.commons.io.IOUtils;
 @DatabaseTable(tableName = "certificates")
 public class Certificate {
 
-    @DatabaseField(allowGeneratedIdInsert = true)
+    @DatabaseField(generatedId = true)
     public int id;
 
     @DatabaseField(foreign = true, canBeNull = false)
