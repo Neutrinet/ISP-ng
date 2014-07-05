@@ -4,7 +4,7 @@ ISP-ng
 ##Toolstack for next-gen ISPs
 
 Currently, this daemon aims to ease OpenVPN management (through OpenVPN's management channel), handling user registration, authentication
-and the assigment of IP addresses from a pool (be it fixed or dynamic). It exposes an REST API, which allows you to add 
+and the assigment of IP addresses from a pool (be it fixed or dynamic). It exposes a REST API, which allows you to add 
 IP address pools, manage active connections etc.
 
 **Build instructions**
