@@ -33,3 +33,5 @@ ca.keyStorePassword =
 ca.keyPassword = 
 ca.storeDir = ca
 
+// Logging
+log.file = /var/log/ispng/vpn.log
