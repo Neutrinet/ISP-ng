@@ -23,7 +23,7 @@ import org.restlet.resource.Put;
  */
 public class UnlockKey extends ResourceBase {
 
-    private SecureRandom random = new SecureRandom();
+    private final SecureRandom random = new SecureRandom();
 
     public String generateUnlockKey() {
         return new BigInteger(130, random).toString(32);

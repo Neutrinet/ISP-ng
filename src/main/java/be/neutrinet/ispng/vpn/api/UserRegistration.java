@@ -31,7 +31,7 @@ import org.restlet.resource.Post;
  */
 public class UserRegistration extends ResourceBase {
     
-    public static SimpleDateFormat BELGIAN_DATE_FORMAT = new SimpleDateFormat("dd-mm-yyyy");
+    public static SimpleDateFormat EUROPEAN_DATE_FORMAT = new SimpleDateFormat("dd-mm-yyyy");
     
     @Get
     public Representation handleGet() {
@@ -114,7 +114,7 @@ public class UserRegistration extends ResourceBase {
             } else if (data.containsKey("name")) {
                 reg.user.name = (String) data.get("name");
                 reg.user.lastName = (String) data.get("last-name");
-                reg.user.birthDate = BELGIAN_DATE_FORMAT.parse((String) data.get("birthdate"));
+                reg.user.birthDate = EUROPEAN_DATE_FORMAT.parse((String) data.get("birthdate"));
                 reg.user.street = (String) data.get("address");
                 reg.user.municipality = (String) data.get("town");
                 reg.user.postalCode = Integer.parseInt((String) data.get("postal-code"));
