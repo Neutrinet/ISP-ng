@@ -16,6 +16,7 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -52,7 +53,7 @@ public class CA {
 
     // loosely based on http://stackoverflow.com/questions/7230330/sign-csr-using-bouncy-castle
     // returns signed certificate in DER format
-    protected byte[] signCSR(PKCS10CertificationRequest csr, int daysValid) throws Exception {
+    public BigInteger signCSR(PKCS10CertificationRequest csr, int daysValid) throws Exception {
         try {
             // Certificate serials should be random (hash)
             //http://crypto.stackexchange.com/questions/257/unpredictability-of-x-509-serial-numbers
@@ -96,8 +97,12 @@ public class CA {
             ContentSigner signer = new BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(PrivateKeyFactory.createKey(caKey.getEncoded()));
             X509CertificateHolder holder = certgen.build(signer);
             byte[] certencoded = holder.toASN1Structure().getEncoded();
-
-            return certencoded;
+            
+            FileOutputStream fos = new FileOutputStream(VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + bigserial.toString() + ".crt");
+            fos.write(certencoded);
+            fos.close();
+            
+            return bigserial;
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to validate CSR and sign CSR", ex);
         }
