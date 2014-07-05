@@ -28,3 +28,8 @@ mail.headerImageAlt =
 // Security
 // Location of the OpenVPN CA certificate:
 ca.crt = 
+ca.keyStore = 
+ca.keyStorePassword = 
+ca.keyPassword = 
+ca.storeDir = ca
+
