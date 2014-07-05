@@ -11,12 +11,15 @@ import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
+import be.neutrinet.ispng.vpn.ca.Certificate;
+import be.neutrinet.ispng.vpn.ca.Certificates;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -63,23 +66,27 @@ public class UserConfig extends ResourceBase {
 
             ArrayList<String> config = new ArrayList<>();
             config.addAll(Arrays.asList(DEFAULTS));
-            switch (data.get("platform").toLowerCase()) {
-                case "linux":
-                    config.add("pkcs11-providers /usr/lib/libbeidpkcs11.so");
-                    config.add("pkcs11-id \"Belgium Government/Belgium eID/" + user.certId.substring(16) + "/BELPIC/0200000000000000\"");
-                    break;
-                case "osx":
-                    config.add("pkcs11-providers /usr/local/lib/beid-pkcs11.bundle/Contents/MacOS/libbeidpkcs11.dylib");
-                    config.add("pkcs11-id \"Belgium Government/Belgium eID/" + user.certId.substring(16) + "/BELPIC/0200000000000000\"");
-                    break;
-                case "windows":
-                    config.add("pkcs11-providers C:\\\\WINDOWS\\\\system32\\\\beidpkcs11.dll");
-                    config.add("pkcs11-id \"Belgium Government/Belgium eID/" + user.certId.substring(16) + "/BELPIC/02000000\"");
-                    break;
-                default:
-                    return new JacksonRepresentation(new ClientError("ILLEGAL_PLATFORM_TYPE"));
+            
+            // create zip
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ZipOutputStream zip = new ZipOutputStream(baos);
+            
+            List<Certificate> userCert = Certificates.dao.queryForEq("user_id", user.id);
+            if (!userCert.isEmpty()) {
+                byte[] raw = userCert.get(0).getRaw();
+                zip.putNextEntry(new ZipEntry("client.crt"));
+                zip.write(raw);
+                zip.putNextEntry(new ZipEntry("README"));
+                zip.write(("!! You are using your own keypair. Please make sure to adjust the "
+                        + "path to your private key in the config file or move the private key"
+                        + " here and name it client.key").getBytes());
+                config.add("cert client.crt");
+                config.add("key client.key");
+            } else {
+                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, user);
+                if (res != null) return res;
             }
-
+            
             String file = "";
             for (String s : config) {
                 file += s + '\n';
@@ -88,10 +95,6 @@ public class UserConfig extends ResourceBase {
             if (caCert == null) {
                 caCert = IOUtils.toByteArray(new FileInputStream(VPN.cfg.getProperty("ca.crt")));
             }
-
-            // create zip
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ZipOutputStream zip = new ZipOutputStream(baos);
 
             ZipEntry configFile = new ZipEntry("neutrinet.ovpn");
             configFile.setCreationTime(FileTime.from(Instant.now()));
@@ -112,5 +115,26 @@ public class UserConfig extends ResourceBase {
         }
 
         return DEFAULT_ERROR;
+    }
+    
+    protected Representation addPKCS11config (String platform, List<String> config, User user) {
+        switch (platform) {
+            case "linux":
+                config.add("pkcs11-providers /usr/lib/libbeidpkcs11.so");
+                config.add("pkcs11-id \"Belgium Government/Belgium eID/" + user.certId.substring(16) + "/BELPIC/0200000000000000\"");
+                break;
+            case "osx":
+                config.add("pkcs11-providers /usr/local/lib/beid-pkcs11.bundle/Contents/MacOS/libbeidpkcs11.dylib");
+                config.add("pkcs11-id \"Belgium Government/Belgium eID/" + user.certId.substring(16) + "/BELPIC/0200000000000000\"");
+                break;
+            case "windows":
+                config.add("pkcs11-providers C:\\\\WINDOWS\\\\system32\\\\beidpkcs11.dll");
+                config.add("pkcs11-id \"Belgium Government/Belgium eID/" + user.certId.substring(16) + "/BELPIC/02000000\"");
+                break;
+            default:
+                return new JacksonRepresentation(new ClientError("ILLEGAL_PLATFORM_TYPE"));
+        }
+
+        return null;
     }
 }
