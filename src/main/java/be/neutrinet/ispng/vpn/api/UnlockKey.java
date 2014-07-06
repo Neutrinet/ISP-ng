@@ -12,8 +12,10 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
@@ -50,11 +52,29 @@ public class UnlockKey extends ResourceBase {
             key.email = data.get("email");
             key.key = generateUnlockKey();
             UnlockKeys.dao.createIfNotExists(key);
+
+            return new JacksonRepresentation(key);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to add unlock key", ex);
             return DEFAULT_ERROR;
         }
-        return DEFAULT_SUCCESS;
     }
 
+    @Delete
+    public Representation deleteKey(Map<String, String> data) {
+        if (!data.containsKey("email")) {
+            return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+
+        try {
+            List<be.neutrinet.ispng.vpn.admin.UnlockKey> keys = UnlockKeys.dao.queryForEq("email", data.get("email"));
+
+            UnlockKeys.dao.delete(keys);
+            
+            return DEFAULT_SUCCESS;
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to delete unlock key", ex);
+            return DEFAULT_ERROR;
+        }
+    }
 }
