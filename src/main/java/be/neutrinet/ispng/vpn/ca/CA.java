@@ -68,11 +68,10 @@ public class CA {
             AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find(SIGNING_ALGORITHM);
             AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
 
+            X500Name issuer = new X500Name(caCert.getIssuerX500Principal().getName());
+
             X509v3CertificateBuilder certgen = new X509v3CertificateBuilder(
-                    new X500Name("C=BE, ST=Brussels Capital Region, L=Brussels, "
-                            + "O=Neutrinet, OU=CA, CN=ca.neutrinet.be/"
-                            + "name=Neutrinet User Certificate Authority/"
-                            + "emailAddress=contact@neutrinet.be"),
+                    issuer,
                     bigserial,
                     new Date(),
                     DateUtil.convert(expirationDate),
@@ -89,7 +88,7 @@ public class CA {
             // Identifiers
             SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo());
             AuthorityKeyIdentifier authorityKeyIdentifier = new AuthorityKeyIdentifier(new GeneralNames
-                    (new GeneralName(new X500Name(caCert.getSubjectX500Principal().getName()))), caCert.getSerialNumber());
+                    (new GeneralName(issuer)), caCert.getSerialNumber());
 
             certgen.addExtension(X509Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
             certgen.addExtension(X509Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
