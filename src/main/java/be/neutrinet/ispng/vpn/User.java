@@ -19,8 +19,10 @@ package be.neutrinet.ispng.vpn;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import java.util.Date;
 import org.mindrot.jbcrypt.BCrypt;
+
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
@@ -29,6 +31,8 @@ import org.mindrot.jbcrypt.BCrypt;
 @DatabaseTable(tableName = "users")
 public class User {
 
+    // Currently allowed countries = benelux
+    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBURG"};
     @DatabaseField(generatedId = true)
     public int id;
     @DatabaseField(canBeNull = false, index = true, unique = true)
@@ -47,12 +51,14 @@ public class User {
     public String birthPlace;
     @DatabaseField(canBeNull = false)
     public Date birthDate;
-    @DatabaseField(canBeNull = false)
-    private String password;
     @DatabaseField
     public boolean enabled;
     @DatabaseField
     public String certId;
+    @DatabaseField
+    public String country;
+    @DatabaseField(canBeNull = false)
+    private String password;
 
     public boolean validatePassword(String password) {
         return BCrypt.checkpw(password, this.password);
@@ -61,5 +67,31 @@ public class User {
     public void setPassword(String password) {
         String salt = BCrypt.gensalt(10);
         this.password = BCrypt.hashpw(password, salt);
+    }
+
+    public boolean validate() throws IllegalArgumentException {
+        boolean validCountry = false;
+        for (String c : ALLOWED_COUNTRIES)
+            if (country.equals(c)) {
+                validCountry = true;
+                break;
+            }
+        if (!validCountry) throw new IllegalArgumentException("Invalid country " + country);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(birthDate);
+        int birthYear = cal.get(Calendar.YEAR);
+        cal.setTime(new Date());
+        int delta = cal.get(Calendar.YEAR) - birthYear;
+
+        if (delta > 100) {
+            throw new IllegalArgumentException("You are more than a hundred years old? "
+                    + "Impressive! Please contact us to complete your registration.");
+        } else if (delta < 10) {
+            throw new IllegalArgumentException("Younger than 12? You're well ahead of your time.");
+        }
+
+
+        return false;
     }
 }

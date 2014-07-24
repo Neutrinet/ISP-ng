@@ -199,7 +199,7 @@ function App() {
             dataType: 'json',
             success: function(response, status, xhr) {
                 if (response == undefined) {
-                    window.location =  window.location.origin;
+                    window.location = window.location.origin;
                     return;
                 }
                 self.vpn.registration = response;
@@ -239,7 +239,7 @@ function App() {
                 if (numloaded === scripts.length) {
                     app.preloader.hide();
                     app.content.fadeIn();
-                    
+
                     var reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
                     var feedback = $('#feedback');
 
@@ -264,7 +264,7 @@ function App() {
                     });
 
                     $('#get-cert').click(function() {
-                        $.ajax(self.vpn.endpoint + 'api/user/cert/' + self.vpn.registration.user.id, {
+                        $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert', {
                             data: $('#csr').val(),
                             type: 'PUT',
                             contentType: 'application/json',
@@ -372,6 +372,31 @@ function App() {
 
     };
 
+    this.manualReg = function () {
+        app.preloader.hide();
+        app.content.fadeIn();
+
+        $('#reg').click(function () {
+            var data = {};
+
+            $('#reg-form').children().each(function (e) {
+                data[e.id] = $(e).val();
+            });
+
+            $.ajax(self.vpn.endpoint + 'api/reg/manual', {
+                data: JSON.stringify(data),
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (response, status, xhr) {
+                    app.content.hide();
+                    app.preloader.fadeIn();
+                    $('#content').load('keypair.html', self.keypairSelect);
+                }
+            });
+        });
+    };
+
     this.ajaxError = function(xhr, errorType, exception) {
         var errorMessage = exception || xhr.statusText;
 
@@ -381,15 +406,16 @@ function App() {
     };
 
     this.useEIDIdentification = function() {
-        app.content.hide();
-        app.preloader.show();
-        app.content.load('eid.html', function() {
-            $.getScript('js/deployJava.js', function() {
+        app.preloader.hide();
+        app.content.fadeIn();
+
+        $('#applet-container').click(function () {
+            $.getScript('js/deployJava.js', function () {
                 // ugly hack to allow vanilla deployJava.js version
                 // http://stackoverflow.com/questions/13517790/using-deployjava-runapplet-to-target-specific-element
                 function docWriteWrapper(jq, func) {
                     var oldwrite = document.write, content = '';
-                    document.write = function(text) {
+                    document.write = function (text) {
                         content += text;
                     };
                     func();
@@ -416,7 +442,7 @@ function App() {
                 // fix for Mac OS X 64 bit
                 var javaArgs = '';
                 if (navigator.userAgent.indexOf('Mac OS X 10_6') !== -1
-                        || navigator.userAgent.indexOf('Mac OS X 10.6') !== -1) {
+                    || navigator.userAgent.indexOf('Mac OS X 10.6') !== -1) {
                     javaArgs += '-d32';
                 }
                 parameters.java_arguments = javaArgs;
@@ -426,12 +452,19 @@ function App() {
                     version = '1.6.0_27';
                 }
 
-                docWriteWrapper($('#applet-container'), function() {
-                    deployJava.runApplet(attributes, parameters, version);
-                });
                 app.preloader.hide();
                 app.content.fadeIn();
+
+                docWriteWrapper($('#applet-container'), function () {
+                    deployJava.runApplet(attributes, parameters, version);
+                });
             });
+        });
+
+        $('#manual-reg').click(function () {
+            app.content.hide();
+            app.preloader.show();
+            app.content.load('reg-form.html', self.manualReg);
         });
     };
 }

@@ -13,17 +13,18 @@ import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
+import org.apache.log4j.Logger;
+import org.restlet.ext.jackson.JacksonRepresentation;
+import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
+import org.restlet.resource.Post;
+
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.log4j.Logger;
-import org.restlet.ext.jackson.JacksonRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
-import org.restlet.resource.Post;
 
 /**
  *
@@ -118,10 +119,11 @@ public class UserRegistration extends ResourceBase {
                 reg.user.street = (String) data.get("address");
                 reg.user.municipality = (String) data.get("town");
                 reg.user.postalCode = Integer.parseInt((String) data.get("postal-code"));
-                reg.user.birthPlace = (String) data.get("place-of-birth");
+                reg.user.birthPlace = (String) data.get("birthplace");
                 reg.user.country = (String) data.get("country");
                 
                 if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
+                Registrations.dao.update(reg);
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to handle flow", ex);
