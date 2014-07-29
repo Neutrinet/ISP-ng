@@ -116,14 +116,16 @@ public class UserRegistration extends ResourceBase {
                 reg.user.name = (String) data.get("name");
                 reg.user.lastName = (String) data.get("last-name");
                 reg.user.birthDate = EUROPEAN_DATE_FORMAT.parse((String) data.get("birthdate"));
-                reg.user.street = (String) data.get("address");
-                reg.user.municipality = (String) data.get("town");
-                reg.user.postalCode = Integer.parseInt((String) data.get("postal-code"));
+                reg.user.street = (String) data.get("street");
+                reg.user.municipality = (String) data.get("municipality");
+                reg.user.postalCode = (String) data.get("postal-code");
                 reg.user.birthPlace = (String) data.get("birthplace");
                 reg.user.country = (String) data.get("country");
                 
                 if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
                 Registrations.dao.update(reg);
+                
+                return new JacksonRepresentation(reg);
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to handle flow", ex);
