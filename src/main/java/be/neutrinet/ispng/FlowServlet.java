@@ -56,7 +56,7 @@ public class FlowServlet extends HttpServlet {
                         reg.user.birthPlace = identity.getPlaceOfBirth();
                         reg.user.birthDate = identity.getDateOfBirth().getTime();
                         reg.user.street = address.getStreetAndNumber();
-                        reg.user.postalCode = Integer.parseInt(address.getZip());
+                        reg.user.postalCode = address.getZip();
                         reg.user.municipality = address.getMunicipality();
                         reg.user.certId = identity.chipNumber;
 

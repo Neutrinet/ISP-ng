@@ -44,7 +44,7 @@ public class User {
     @DatabaseField
     public String street;
     @DatabaseField
-    public int postalCode;
+    public String postalCode;
     @DatabaseField
     public String municipality;
     @DatabaseField(canBeNull = false)
@@ -91,7 +91,6 @@ public class User {
             throw new IllegalArgumentException("Younger than 12? You're well ahead of your time.");
         }
 
-
-        return false;
+        return true;
     }
 }
