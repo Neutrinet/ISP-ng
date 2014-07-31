@@ -14,12 +14,6 @@ import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.ca.CA;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
-import java.io.File;
-import java.io.FileWriter;
-import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
@@ -36,11 +30,39 @@ import org.restlet.representation.StreamRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+
 /**
  *
  * @author wannes
  */
 public class UserCertificate extends ResourceBase {
+
+    public static X509Certificate sign(Certificate cert) {
+        try {
+            // One year certificate validity
+            LocalDateTime expirationDate = LocalDateTime.now().plusDays(365);
+            Date expiration = DateUtil.convert(expirationDate);
+
+            cert.signedDate = new Date();
+            cert.revocationDate = expiration;
+
+            cert.serial = CA.get().signCSR(cert.loadRequest(), expiration);
+
+            Certificates.dao.update(cert);
+
+            return cert.get();
+        } catch (Exception ex) {
+            Logger.getLogger(UserCertificate.class).error("Failed to sign certificate", ex);
+        }
+
+        return null;
+    }
 
     @Get
     public Representation getCertificate() {
@@ -80,26 +102,6 @@ public class UserCertificate extends ResourceBase {
         }
 
         return DEFAULT_ERROR;
-    }
-
-    public static X509Certificate sign(Certificate cert) {
-        try {
-            // One year certificate validity
-            LocalDateTime expirationDate = LocalDateTime.now().plusDays(365);
-            Date expiration = DateUtil.convert(expirationDate);
-
-            cert.signedDate = new Date();
-            cert.revocationDate = expiration;
-            Certificates.dao.update(cert);
-
-            CA.get().signCSR(cert.loadRequest(), expiration);
-
-            return cert.get();
-        } catch (Exception ex) {
-            Logger.getLogger(UserCertificate.class).error("Failed to sign certificate", ex);
-        }
-
-        return null;
     }
 
     @Put
