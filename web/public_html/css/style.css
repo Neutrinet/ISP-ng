@@ -149,6 +149,7 @@ textarea {
     border: solid 1px #444;
     border-radius: 5px;
     margin-bottom: 10px;
+    background-color: #202020;
 }
 
 div.info-dialog {
