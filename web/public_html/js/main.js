@@ -314,7 +314,7 @@ function App() {
         $(event.currentTarget).bootstrapSwitch('indeterminate', true);
 
         if (state == true)
-            $.ajax(self.vpn.endpoint + 'api/address/lease', {
+            $.ajax(self.vpn.endpoint + 'api/address/lease/0', {
                 data: JSON.stringify({
                     user: self.vpn.registration.user.id,
                     version: parseInt(version, 10)
