@@ -277,7 +277,7 @@ function App() {
                     });
 
                     $('#get-cert').click(function() {
-                        $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert', {
+                        $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert/0', {
                             data: $('#csr').val(),
                             type: 'PUT',
                             contentType: 'application/json',
