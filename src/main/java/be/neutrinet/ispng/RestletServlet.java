@@ -8,19 +8,7 @@ package be.neutrinet.ispng;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
-import be.neutrinet.ispng.vpn.api.AddressLease;
-import be.neutrinet.ispng.vpn.api.AddressPool;
-import be.neutrinet.ispng.vpn.api.UnlockKey;
-import be.neutrinet.ispng.vpn.api.UserCertificate;
-import be.neutrinet.ispng.vpn.api.UserConfig;
-import be.neutrinet.ispng.vpn.api.UserManagement;
-import be.neutrinet.ispng.vpn.api.UserRegistration;
-import java.io.IOException;
-import java.util.UUID;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import be.neutrinet.ispng.vpn.api.*;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
@@ -30,6 +18,13 @@ import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
 import org.restlet.security.SecretVerifier;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.UUID;
 
 /**
  *
@@ -47,12 +42,13 @@ public class RestletServlet extends HttpServlet {
         Router router = new Router(this.adapter.getContext());
         router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
         router.attach("/reg/{id}", UserRegistration.class);
-        router.attach("/address/lease", AddressLease.class);
-        router.attach("/address/pool", AddressPool.class);
-        router.attach("/config", UserConfig.class);
-        router.attach("/unlock-key", UnlockKey.class);
-        router.attach("/user/cert/{user}", UserCertificate.class);
-        router.attach("/user/manage/{user}/{operation}", UserManagement.class);
+        router.attach("/address/pool/{id}", AddressPool.class);
+        router.attach("/address/lease/{id}", AddressLease.class);
+        router.attach("/unlock-key/{key}", UnlockKey.class);
+        router.attach("/user/{user}/config", UserConfig.class);
+        router.attach("/user/{user}/cert/{cert}", UserCertificate.class);
+        router.attach("/user/{user}/manage/{operation}", UserManagement.class);
+        router.attach("/user/login", UserLogin.class);
 
         ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
 
