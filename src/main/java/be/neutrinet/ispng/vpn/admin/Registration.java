@@ -11,16 +11,17 @@ import be.neutrinet.ispng.vpn.IPAddress;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
+import be.neutrinet.ispng.vpn.api.UserCertificate;
+import be.neutrinet.ispng.vpn.ca.Certificate;
+import be.neutrinet.ispng.vpn.ca.Certificates;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.table.DatabaseTable;
+import org.apache.log4j.Logger;
+
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import org.apache.log4j.Logger;
+import java.util.*;
 
 /**
  *
@@ -29,8 +30,7 @@ import org.apache.log4j.Logger;
 @DatabaseTable(tableName = "registrations")
 public class Registration {
 
-    @DatabaseField(id = true, canBeNull = false)
-    private UUID id;
+    private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public User user;
     @DatabaseField(canBeNull = false)
@@ -43,12 +43,8 @@ public class Registration {
     public UnlockKey unlockKey;
     @DatabaseField
     public Date completed;
-
-    private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
-
-    public static Map<UUID, Registration> getActiveRegistrations() {
-        return activeRegistrations;
-    }
+    @DatabaseField(id = true, canBeNull = false)
+    private UUID id;
 
     private Registration() {
 
@@ -56,6 +52,10 @@ public class Registration {
 
     public Registration(UUID id) {
         this.id = id;
+    }
+
+    public static Map<UUID, Registration> getActiveRegistrations() {
+        return activeRegistrations;
     }
 
     public UUID getId() {
@@ -82,8 +82,14 @@ public class Registration {
 
                 this.completed = new Date();
                 this.user.enabled = true;
-                
                 Users.dao.update(user);
+
+                // Check if user has certificates that need to be signed
+                List<Certificate> certs = Certificates.dao.queryForEq("user_id", user.id);
+                for (Certificate cert : certs) {
+                    UserCertificate.sign(cert);
+                }
+                
                 Registrations.dao.update(this);
                 VPN.generator.sendRegistrationConfirmation(this);
                 return true;
