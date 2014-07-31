@@ -144,13 +144,21 @@ function App() {
         if (self.vpn.registration.id == undefined)
             return false;
 
-        if (self[self.urlParams["flow"]] == undefined) {
-            self.ajaxError(null, null, "Illegal flow");
-        } else {
-            // execute flow handler
-            document.cookie = 'Registration-ID=' + self.vpn.registration.id;
-            return self[self.urlParams["flow"]]();
-        }
+        $.ajax(self.vpn.endpoint + 'api/reg/' + self.vpn.registration.id, {
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (response, status, xhr) {
+                self.vpn.registration = response;
+                if (self[self.urlParams["flow"]] == undefined) {
+                    self.ajaxError(null, null, "Illegal flow");
+                } else {
+                    // execute flow handler
+                    document.cookie = 'Registration-ID=' + self.vpn.registration.id;
+                    return self[self.urlParams["flow"]]();
+                }
+            }
+        });
 
         return false;
     };
