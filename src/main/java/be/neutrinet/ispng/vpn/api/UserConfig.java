@@ -13,17 +13,6 @@ import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.nio.file.attribute.FileTime;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.restlet.data.CharacterSet;
@@ -33,6 +22,14 @@ import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Post;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  *
@@ -58,10 +55,22 @@ public class UserConfig extends ResourceBase {
     @Post
     public Representation getConfig(Map<String, String> data) {
         try {
-            Registration r = Registrations.dao.queryForEq("id", UUID.fromString(data.get("regId"))).get(0);
+            Registration r = null;
+            if (data.containsKey("regId")) {
+                // First try by reg id
+                r = Registrations.dao.queryForEq("id", UUID.fromString(data.get("regId"))).get(0);
+            }
+
             if (r == null) {
+                // second try via user id
+                r = Registrations.dao.queryForEq("user_id", getRequestAttributes().get("user").toString()).get(0);
+            }
+
+            if (r == null) {
+                // bail
                 return new JacksonRepresentation(new ClientError("INVALID_REG_ID"));
             }
+
             User user = r.user;
 
             ArrayList<String> config = new ArrayList<>();
@@ -83,6 +92,9 @@ public class UserConfig extends ResourceBase {
                 config.add("cert client.crt");
                 config.add("key client.key");
             } else {
+                if (user.certId == null || user.certId.isEmpty()) {
+                    return new JacksonRepresentation(new ClientError("NO_KEYPAIR"));
+                }
                 Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, user);
                 if (res != null) return res;
             }
