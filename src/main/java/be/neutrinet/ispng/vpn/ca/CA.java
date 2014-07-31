@@ -1,6 +1,5 @@
 package be.neutrinet.ispng.vpn.ca;
 
-import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.vpn.api.UserCertificate;
 import org.apache.log4j.Logger;
@@ -22,7 +21,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 public class CA {
@@ -45,7 +43,7 @@ public class CA {
             Logger.getLogger(UserCertificate.class).error("Failed to load ca key", ex);
         }
     }
-    
+
     public static CA get() {
         if (instance == null) instance = new CA();
         return instance;
@@ -53,7 +51,7 @@ public class CA {
 
     // loosely based on http://stackoverflow.com/questions/7230330/sign-csr-using-bouncy-castle
     // returns signed certificate in DER format
-    public BigInteger signCSR(PKCS10CertificationRequest csr, int daysValid) throws Exception {
+    public BigInteger signCSR(PKCS10CertificationRequest csr, Date expiration) throws Exception {
         try {
             // Certificate serials should be random (hash)
             //http://crypto.stackexchange.com/questions/257/unpredictability-of-x-509-serial-numbers
@@ -61,9 +59,6 @@ public class CA {
             byte[] serial = new byte[16];
             random.nextBytes(serial);
             BigInteger bigserial = new BigInteger(serial);
-
-            // One year certificate validity
-            LocalDateTime expirationDate = LocalDateTime.now().plusDays(daysValid);
 
             AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find(SIGNING_ALGORITHM);
             AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
@@ -74,7 +69,7 @@ public class CA {
                     issuer,
                     bigserial,
                     new Date(),
-                    DateUtil.convert(expirationDate),
+                    expiration,
                     X500Name.getInstance(csr.getSubject()),
                     csr.getSubjectPublicKeyInfo());
 
@@ -86,7 +81,7 @@ public class CA {
             certgen.addExtension(X509Extension.extendedKeyUsage, false, eku);
 
             // Identifiers
-            SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo());
+            SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo().getEncoded());
             AuthorityKeyIdentifier authorityKeyIdentifier = new AuthorityKeyIdentifier(new GeneralNames
                     (new GeneralName(issuer)), caCert.getSerialNumber());
 
@@ -96,11 +91,11 @@ public class CA {
             ContentSigner signer = new BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(PrivateKeyFactory.createKey(caKey.getEncoded()));
             X509CertificateHolder holder = certgen.build(signer);
             byte[] certencoded = holder.toASN1Structure().getEncoded();
-            
+
             FileOutputStream fos = new FileOutputStream(VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + bigserial.toString() + ".crt");
             fos.write(certencoded);
             fos.close();
-            
+
             return bigserial;
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to validate CSR and sign CSR", ex);
