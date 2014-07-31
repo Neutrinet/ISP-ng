@@ -25,6 +25,7 @@ keystore
 *.db
 nb-configuration.xml
 nbactions.xml
+junk/**
 
 # setting files
 config.properties

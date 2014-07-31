@@ -7,6 +7,8 @@ function VPN() {
 
     this.registration = {};
     this.endpoint = '/';
+    // temporary, for primitive backoffice
+    this.user = {};
 
     this.createUser = function(username) {
 
@@ -116,8 +118,19 @@ function App() {
             }
 
             $('#content').load('start.html', function() {
-                self.preloader.fadeOut('slow');
+
+                $('#login-link').click(function(e){
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+
+                    app.content.fadeOut();
+                    app.preloader.fadeIn();
+                    $('#content').load('login.html', self.login);
+                });
+
+                self.preloader.fadeOut();
                 self.content.fadeIn();
+
                 $('form .btn-primary').click(function(event) {
                     self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
                 });
@@ -168,7 +181,7 @@ function App() {
                 // Ugh.
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', self.vpn.endpoint + 'api/config', true);
+                xhr.open('POST', self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/config', true);
                 xhr.responseType = 'blob';
                 xhr.onload = function(e) {
                     if (this.status == 200) {
@@ -372,16 +385,58 @@ function App() {
 
     };
 
+    this.login = function() {
+        self.preloader.fadeOut();
+        self.content.fadeIn();
+
+        $('#login').click(self.handleLogin);
+    };
+
+    this.handleLogin = function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        var user = $('#username').val();
+        var password = $('#password').val();
+
+        $.ajax(self.vpn.endpoint + 'api/user/login', {
+            data: JSON.stringify({user: user, password: password}),
+            type: 'POST',
+            contentType: 'application/json',
+            username: user,
+            password: password,
+            dataType: 'json',
+            success: function (response, status, xhr) {
+                app.content.hide();
+                app.preloader.show();
+                self.vpn.user = response;
+                $('#content').load('user.html', self.userMgmt);
+            }
+        })
+    };
+
+    this.userMgmt = function() {
+
+    };
+
     this.manualReg = function () {
         app.preloader.hide();
-        app.content.fadeIn();
+        app.content.show();
 
         $('#reg').click(function () {
             var data = {};
 
-            $('#reg-form').children().each(function (e) {
-                data[e.id] = $(e).val();
-            });
+            var fields = $('#reg-form').children('input[type=text]');
+            for (var i in fields) {
+                var field = fields[i];
+                
+                if (typeof field !== 'object') continue;
+                
+                data[field.id] = $(field).val();
+            }
+            
+            data['country'] = $('#country').val();
+            data['id'] = self.vpn.registration.id;
 
             $.ajax(self.vpn.endpoint + 'api/reg/manual', {
                 data: JSON.stringify(data),
@@ -389,6 +444,7 @@ function App() {
                 contentType: 'application/json',
                 dataType: 'json',
                 success: function (response, status, xhr) {
+                    self.vpn.registration = response;
                     app.content.hide();
                     app.preloader.fadeIn();
                     $('#content').load('keypair.html', self.keypairSelect);
