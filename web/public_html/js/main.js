@@ -277,6 +277,9 @@ function App() {
                     });
 
                     $('#get-cert').click(function() {
+                        // set cookie to avoid auth dialog
+                        document.cookie = 'Registration-ID=' + self.vpn.registration.id;
+
                         $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert/0', {
                             data: $('#csr').val(),
                             type: 'PUT',
