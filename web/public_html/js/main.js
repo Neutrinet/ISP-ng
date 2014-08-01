@@ -26,10 +26,12 @@ function VPN() {
         }
 
         if (response.errorKey !== undefined) {
-            app.content.empty();
-            app.content.append($('<h2>').text('An error ocurred'));
-            app.content.append($('<p>').text(response.message));
-            app.content.append($('<p>').text(response.errorKey));
+            //app.content.empty();
+            app.content.prepend($('<br>'));
+            app.content.prepend($('<p>').text(response.errorKey));
+            app.content.prepend($('<p>').text(response.message));
+            app.content.prepend($('<h2>').text('An error ocurred'));
+
             app.preloader.hide();
             app.content.fadeIn();
 
