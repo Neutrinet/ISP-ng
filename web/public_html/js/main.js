@@ -335,13 +335,13 @@ function App() {
                 success: function(response, status, xhr) {
                     self.vpn.handleIfError(response);
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
-                    $(event.currentTarget).bootstrapSwitch('state', true);
+                    $(event.currentTarget).bootstrapSwitch('state', true, true);
                     $('#ip' + version + '-address').text(response.address + "/" + response.netmask);
                     self.vpn.registration["ipv" + version + "Id"] = response.id;
                 },
                 error: function(response, status, xhr) {
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
-                    $(event.currentTarget).bootstrapSwitch('state', false);
+                    $(event.currentTarget).bootstrapSwitch('state', false, true);
                     $('#ip' + version + '-address').text("No IPv" + version + " available");
                 }});
     };
