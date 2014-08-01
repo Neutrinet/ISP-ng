@@ -59,6 +59,7 @@ public class CA {
             byte[] serial = new byte[16];
             random.nextBytes(serial);
             BigInteger bigserial = new BigInteger(serial);
+            bigserial = bigserial.abs();
 
             AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find(SIGNING_ALGORITHM);
             AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
