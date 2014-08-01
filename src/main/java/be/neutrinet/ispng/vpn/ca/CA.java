@@ -7,6 +7,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -64,7 +65,8 @@ public class CA {
             AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find(SIGNING_ALGORITHM);
             AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
 
-            X500Name issuer = new X500Name(caCert.getIssuerX500Principal().getName());
+            // http://stackoverflow.com/questions/7567837/attributes-reversed-in-certificate-subject-and-issuer
+            X500Name issuer = new JcaX509CertificateHolder((X509Certificate) caCert).getSubject();
 
             X509v3CertificateBuilder certgen = new X509v3CertificateBuilder(
                     issuer,
