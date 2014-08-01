@@ -75,13 +75,15 @@ public class CA {
 
             // Constraints and usage
             BasicConstraints basicConstraints = new BasicConstraints(false);
+            KeyUsage keyUsage = new KeyUsage(KeyUsage.digitalSignature);
             ExtendedKeyUsage eku = new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth);
 
             certgen.addExtension(X509Extension.basicConstraints, false, basicConstraints);
+            certgen.addExtension(X509Extensions.KeyUsage, false, keyUsage);
             certgen.addExtension(X509Extension.extendedKeyUsage, false, eku);
 
             // Identifiers
-            SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo().getEncoded());
+            SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo());
             AuthorityKeyIdentifier authorityKeyIdentifier = new AuthorityKeyIdentifier(new GeneralNames
                     (new GeneralName(issuer)), caCert.getSerialNumber());
 
