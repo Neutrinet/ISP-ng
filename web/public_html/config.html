@@ -4,7 +4,9 @@
     <li>Supported platform and version (see below)</li>
     <li>UDP port 1194 must be open on your firewall</li>
     <li>Some preliminary debugging skills in case something goes wrong</li>
-    <li><a href="http://eid.belgium.be/en/using_your_eid/installing_the_eid_software/" title="eID middleware site">Latest eID middleware</a></li>
+    <li><a href="http://eid.belgium.be/en/using_your_eid/installing_the_eid_software/" title="eID middleware site">Latest
+        eID middleware</a> (only when using the keypair from your eID)
+    </li>
 </ul>
 <div class="info-dialog">Note that the eID middleware is required on all platforms where PKCS11 auth (eID)
     is used. We might be able to simply ship the PKCS11 library in the future, but ATM 
@@ -17,7 +19,7 @@
     <code>sudo aptitude install openvpn <br />
         cd [download location] <br />
         unzip neutrinet.zip <br />
-        sudo openvpn neutrinet.ovpn # root needed for tap adapter</code>
+        sudo openvpn neutrinet.ovpn # root needed for tun adapter</code>
     <p>And you're connected!</p>
     <h3>Supported configurations</h3>
     <p>Currently, we support:</p>
