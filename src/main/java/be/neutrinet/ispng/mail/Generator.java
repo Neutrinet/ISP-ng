@@ -7,13 +7,14 @@ package be.neutrinet.ispng.mail;
 
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.admin.Registration;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
+import org.apache.log4j.Logger;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import org.apache.log4j.Logger;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  *
@@ -52,8 +53,14 @@ public class Generator {
                 content.put("ipv6", "No IPv6 subnet");
             }
 
-            String body = renderer.renderInTemplate("vpn-confirmation", content, true);
-            msg.setContent(body, "text/html; charset=utf-8");
+            boolean plaintext = true;
+            String body = renderer.renderInTemplate("vpn-confirmation", content, plaintext);
+
+            if (plaintext)
+                msg.setContent(body, "text/plain; charset=utf-8");
+            else
+                msg.setContent(body, "text/html; charset=utf-8");
+
             msg.setSentDate(new Date());
             postman.sendMessage(msg);
         } catch (SQLException | MessagingException ex) {
