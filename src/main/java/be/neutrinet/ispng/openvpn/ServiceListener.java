@@ -30,4 +30,6 @@ public interface ServiceListener {
     public void connectionEstablished(Client client);
 
     public void clientDisconnect(Client client);
+
+    public void addressInUse(Client client, String address, boolean primary);
 }

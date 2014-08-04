@@ -177,6 +177,11 @@ public class ManagementInterface implements Runnable {
                                 client = buildClient(args);
                                 listener.clientDisconnect(client);
                                 break;
+                            case "CLIENT:ADDRESS":
+                                client = new Client();
+                                client.id = Integer.parseInt(args[0]);
+                                listener.addressInUse(client, args[1], args[2].equals("1"));
+                                break;
                             case "INFO":
                                 Logger.getLogger(getClass()).info("OpenVPN: " + line);
                                 break;

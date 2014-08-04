@@ -24,16 +24,16 @@ import be.neutrinet.ispng.openvpn.ServiceListener;
 import com.googlecode.ipv6.IPv6Address;
 import com.googlecode.ipv6.IPv6Network;
 import com.j256.ormlite.misc.TransactionManager;
+import org.apache.log4j.Logger;
+
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import org.apache.log4j.Logger;
 
 /**
- *
  * @author double-u
  */
 public final class Manager {
@@ -123,6 +123,11 @@ public final class Manager {
 
             @Override
             public void connectionEstablished(Client client) {
+                Logger.getLogger(getClass()).debug("Connection established " + client.id);
+            }
+
+            @Override
+            public void addressInUse(Client client, String address, boolean primary) {
                 try {
                     Connection c = pendingConnections.remove(client.id);
                     Connections.dao.create(c);
