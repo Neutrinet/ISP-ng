@@ -76,9 +76,11 @@ public final class Manager {
                             LinkedHashMap<String, String> options = new LinkedHashMap<>();
                             options.put("push-reset", null);
                             if (ipv4 != null) {
-                                options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.publicaddress"));
+                                options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.subnet"));
+                                // route the OpenVPN server over the default gateway, not over the VPN itself
+                                options.put("push route", VPN.cfg.getProperty("openvpn.publicaddress") + " 255.255.255.255 net_gateway");
                             }
-                            //options.put("push route", "192.168.2.0 255.255.255.0");
+
                             //options.put("push route-gateway", "192.168.2.1");
                             if (ipv6 != null) {
                                 options.put("ifconfig-ipv6-push", ipv6.address + "/ fdef:abcd:ef::1");
