@@ -80,8 +80,12 @@ public final class Manager {
                             if (ipv4 != null) {
                                 options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.subnet"));
                                 // route the OpenVPN server over the default gateway, not over the VPN itself
-                                InetAddress addr = Inet4Address.getByName(VPN.cfg.getProperty("openvpn.publicaddress"));
-                                options.put("push route", addr.getHostAddress() + " 255.255.255.255 net_gateway");
+                                InetAddress[] addr = InetAddress.getAllByName(VPN.cfg.getProperty("openvpn.publicaddress"));
+                                for (InetAddress address : addr) {
+                                    if (address.getAddress().length == 4) {
+                                        options.put("push route", address.getHostAddress() + " 255.255.255.255 net_gateway");
+                                    }
+                                }
                             }
 
                             //options.put("push route-gateway", "192.168.2.1");
