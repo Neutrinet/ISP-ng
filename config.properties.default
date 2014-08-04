@@ -8,6 +8,7 @@ db.password=
 openvpn.host=
 openvpn.port=
 openvpn.publicaddress=
+openvpn.subnet=
 openvpn.publicport=1194
 
 // Service endpoint
