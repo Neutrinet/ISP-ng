@@ -26,6 +26,8 @@ import com.googlecode.ipv6.IPv6Network;
 import com.j256.ormlite.misc.TransactionManager;
 import org.apache.log4j.Logger;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
@@ -78,7 +80,8 @@ public final class Manager {
                             if (ipv4 != null) {
                                 options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.subnet"));
                                 // route the OpenVPN server over the default gateway, not over the VPN itself
-                                options.put("push route", VPN.cfg.getProperty("openvpn.publicaddress") + " 255.255.255.255 net_gateway");
+                                InetAddress addr = Inet4Address.getByName(VPN.cfg.getProperty("openvpn.publicaddress"));
+                                options.put("push route", addr.getHostAddress() + " 255.255.255.255 net_gateway");
                             }
 
                             //options.put("push route-gateway", "192.168.2.1");
