@@ -143,7 +143,14 @@ public final class Manager {
             public void addressInUse(Client client, String address, boolean primary) {
                 try {
                     Connection c = pendingConnections.remove(client.id);
+
+                    if (c == null) {
+                        // connection is being re-established
+                        return;
+                    }
+
                     Connections.dao.create(c);
+
                     for (IPAddress ip : c.addresses) {
                         ip.connection = c;
                         IPAddresses.dao.update(ip);
