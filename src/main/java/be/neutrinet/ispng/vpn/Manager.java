@@ -78,7 +78,9 @@ public final class Manager {
                             LinkedHashMap<String, String> options = new LinkedHashMap<>();
                             options.put("push-reset", null);
                             if (ipv4 != null) {
-                                options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.subnet"));
+                                options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.localip.4"));
+                                options.put("push route", VPN.cfg.getProperty("openvpn.network.4") + " " +
+                                        VPN.cfg.getProperty("openvpn.netmask.4") + " " + VPN.cfg.getProperty("openvpn.localip.4"));
                                 // route the OpenVPN server over the default gateway, not over the VPN itself
                                 InetAddress[] addr = InetAddress.getAllByName(VPN.cfg.getProperty("openvpn.publicaddress"));
                                 for (InetAddress address : addr) {
@@ -90,9 +92,11 @@ public final class Manager {
 
                             //options.put("push route-gateway", "192.168.2.1");
                             if (ipv6 != null) {
-                                options.put("ifconfig-ipv6-push", ipv6.address + "/ fdef:abcd:ef::1");
+                                IPAddress v6alloc = allocateIPv6FromSubnet(ipv6, user);
+                                options.put("push tun-ipv6", "");
+                                options.put("ifconfig-ipv6-push", v6alloc.address + "/64 " + VPN.cfg.getProperty("openvpn.localip.6"));
+                                options.put("push route-ipv6", VPN.cfg.getProperty("openvpn.network.6") + "/" + VPN.cfg.getProperty("openvpn.netmask.6"));
                             }
-                            //options.put("push route-ipv6", "fdef:2f5:d792:de63::/64");
 
                             vpn.authorizeClient(client.id, client.kid, options);
                             return null;
@@ -169,22 +173,33 @@ public final class Manager {
             addrs.add(unused);
 
             if (version == 6) {
-                // We've assigned a subnet, now assign an address out of the subnet
-                IPv6Network subnet = IPv6Network.fromString(unused.address + "/" + unused.netmask);
-                // TODO
-                IPv6Address first = subnet.getFirst();
-                IPAddress v6 = new IPAddress();
-                v6.address = first.toString().substring(0, first.toString().length() - 3);
-                v6.netmask = 128;
-                v6.enabled = true;
-                v6.leasedAt = new Date();
-                v6.user = user;
-
-                IPAddresses.dao.createOrUpdate(v6);
+               return allocateIPv6FromSubnet(unused, user);
             }
         }
 
         return addrs.get(0);
+    }
+
+    protected IPAddress allocateIPv6FromSubnet(IPAddress v6subnet, User user) throws SQLException {
+        IPv6Network subnet = IPv6Network.fromString(v6subnet.address + "/" + v6subnet.netmask);
+        // TODO
+        IPv6Address first = subnet.getFirst().add(1);
+        String addr = first.toString();
+
+        List<IPAddress> addresses = IPAddresses.dao.queryForEq("address", addr);
+        if (addresses.size() > 0) {
+            return addresses.get(0);
+        }
+
+        IPAddress v6 = new IPAddress();
+        v6.address = addr;
+        v6.netmask = 128;
+        v6.enabled = true;
+        v6.leasedAt = new Date();
+        v6.user = user;
+
+        IPAddresses.dao.createOrUpdate(v6);
+        return v6;
     }
 
     public void start() {
