@@ -88,8 +88,12 @@ public final class Manager {
                                     }
                                 }
 
-                                if (user.settings().get("routeAllTrafficOverVPN", true).equals(true)) {
+                                if (user.settings().get("routeIPv4TrafficOverVPN", true).equals(true)) {
                                     options.put("push redirect-gateway", "def1");
+                                }
+
+                                if (user.settings().get("routeIPv6TrafficOverVPN", true).equals(true)) {
+                                    options.put("push redirect-gateway-ipv6", "def1");
                                 }
 
                             }
