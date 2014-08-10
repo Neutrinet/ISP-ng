@@ -35,7 +35,7 @@ import java.util.zip.ZipOutputStream;
  *
  * @author wannes
  */
-public class UserConfig extends ResourceBase {
+public class UserVPNClientConfig extends ResourceBase {
 
     public final static String[] DEFAULTS = new String[]{
         "client",
