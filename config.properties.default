@@ -4,6 +4,9 @@ db.uri=jdbc:sqlite:test.db
 db.user=
 db.password=
 
+// Settings store
+settings.dir=usercfg
+
 // OpenVPN management channel
 openvpn.host=
 openvpn.port=
