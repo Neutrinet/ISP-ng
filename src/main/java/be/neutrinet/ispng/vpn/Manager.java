@@ -26,7 +26,6 @@ import com.googlecode.ipv6.IPv6Network;
 import com.j256.ormlite.misc.TransactionManager;
 import org.apache.log4j.Logger;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -41,9 +40,9 @@ import java.util.List;
 public final class Manager {
 
     private static Manager instance;
+    private final Logger log = Logger.getLogger(getClass());
     protected ManagementInterface vpn;
     protected HashMap<Integer, Connection> pendingConnections;
-    private final Logger log = Logger.getLogger(getClass());
 
     private Manager() {
         pendingConnections = new HashMap<>();
@@ -88,6 +87,11 @@ public final class Manager {
                                         options.put("push route", address.getHostAddress() + " 255.255.255.255 net_gateway");
                                     }
                                 }
+
+                                if (user.settings().get("routeAllTrafficOverVPN", true).equals(true)) {
+                                    options.put("push redirect-gateway", "def1");
+                                }
+
                             }
 
                             //options.put("push route-gateway", "192.168.2.1");
@@ -163,6 +167,13 @@ public final class Manager {
 
     }
 
+    public static Manager get() {
+        if (instance == null) {
+            instance = new Manager();
+        }
+        return instance;
+    }
+
     protected IPAddress assign(User user, Client client, int version) throws SQLException {
         List<IPAddress> addrs = IPAddresses.forUser(user, version);
         if (addrs.isEmpty()) {
@@ -180,7 +191,7 @@ public final class Manager {
             addrs.add(unused);
 
             if (version == 6) {
-               return allocateIPv6FromSubnet(unused, user);
+                return allocateIPv6FromSubnet(unused, user);
             }
         }
 
@@ -210,7 +221,7 @@ public final class Manager {
     }
 
     public void start() {
-        vpn.recover();
+        vpn.getWatchdog().start();
     }
 
     /**
@@ -220,12 +231,5 @@ public final class Manager {
      */
     public void shutItDown(String reason) {
 
-    }
-
-    public static Manager get() {
-        if (instance == null) {
-            instance = new Manager();
-        }
-        return instance;
     }
 }
