@@ -32,7 +32,7 @@ import java.util.Date;
 public class User {
 
     // Currently allowed countries = benelux
-    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBURG"};
+    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
     @DatabaseField(generatedId = true)
     public int id;
     @DatabaseField(canBeNull = false, index = true, unique = true)
@@ -59,6 +59,7 @@ public class User {
     public String country;
     @DatabaseField(canBeNull = false)
     private String password;
+    private transient UserSettings settings;
 
     public boolean validatePassword(String password) {
         return BCrypt.checkpw(password, this.password);
@@ -92,5 +93,14 @@ public class User {
         }
 
         return true;
+    }
+
+    public UserSettings settings() {
+        if (settings == null) {
+            settings = new UserSettings("" + id);
+            settings.load();
+        }
+
+        return settings;
     }
 }
