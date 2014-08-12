@@ -178,6 +178,8 @@ function App() {
                 platform = "unix";
             if (navigator.userAgent.indexOf("Linux") != -1)
                 platform = "linux";
+            if (navigator.userAgent.indexOf("BSD") != -1)
+                platform = "linux";
 
             $('div.platform-details').each(function(e) {
                 $(this).hide();
