@@ -51,7 +51,12 @@ public final class Manager {
             @Override
             public void clientConnect(Client client) {
                 try {
-                    Client.dao.create(client);
+                    Client.dao.createOrUpdate(client);
+                } catch (SQLException ex) {
+                    log.error("Failed to insert client", ex);
+                }
+
+                try {
                     User user = Users.authenticate(client.username, client.password);
                     if (user != null) {
                         TransactionManager.callInTransaction(VPN.cs, () -> {
@@ -115,7 +120,7 @@ public final class Manager {
                         vpn.denyClient(client.id, client.kid, "Invalid user/password combination");
                     }
                 } catch (SQLException ex) {
-                    log.error("Failed to insert client", ex);
+                    log.error("Failed to set client configuration", ex);
                 }
             }
 
