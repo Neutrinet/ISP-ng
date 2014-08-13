@@ -392,7 +392,7 @@ function App() {
 
         console.log('l' + pwd.length + " " + (pwd === verify ? "true" : "false"));
 
-        if (pwd.length < 6 || pwd !== verify) {
+        if (pwd.length <= 6 || pwd !== verify) {
             $('#password-done').attr('disabled', '');
         } else {
             $('#password-done').removeAttr('disabled');
