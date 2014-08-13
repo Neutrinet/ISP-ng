@@ -4,7 +4,9 @@ import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.vpn.User;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 
@@ -12,9 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.math.BigInteger;
-import java.security.cert.X509Certificate;
 import java.util.Date;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Created by double-u on 04/07/14.
@@ -53,14 +53,14 @@ public class Certificate {
         return null;
     }
 
-    public X509Certificate get() {
+    public X509CertificateHolder get() {
         String crtPath = VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + serial + ".crt";
         File crt = new File(crtPath);
 
         try {
             if (crt.exists()) {
                 PEMParser pp = new PEMParser(new FileReader(crt));
-                return (X509Certificate) pp.readObject();
+                return (X509CertificateHolder) pp.readObject();
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to load certificate", ex);

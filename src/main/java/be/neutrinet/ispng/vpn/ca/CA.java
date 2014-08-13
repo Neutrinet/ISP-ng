@@ -9,14 +9,17 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.io.pem.PemObject;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -97,9 +100,11 @@ public class CA {
             X509CertificateHolder holder = certgen.build(signer);
             byte[] certencoded = holder.toASN1Structure().getEncoded();
 
+            PemObject po = new PemObject("CERTIFICATE", certencoded);
             FileOutputStream fos = new FileOutputStream(VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + bigserial.toString() + ".crt");
-            fos.write(certencoded);
-            fos.close();
+            PEMWriter pw = new PEMWriter(new OutputStreamWriter(fos));
+            pw.writeObject(po);
+            pw.close();
 
             return bigserial;
         } catch (Exception ex) {

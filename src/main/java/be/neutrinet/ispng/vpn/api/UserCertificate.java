@@ -16,12 +16,13 @@ import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.eclipse.jetty.util.ByteArrayISO8859Writer;
+import org.bouncycastle.util.io.pem.PemObject;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -30,9 +31,10 @@ import org.restlet.representation.StreamRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
-import java.security.cert.X509Certificate;
+import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +45,7 @@ import java.util.List;
  */
 public class UserCertificate extends ResourceBase {
 
-    public static X509Certificate sign(Certificate cert) {
+    public static X509CertificateHolder sign(Certificate cert) {
         try {
             // One year certificate validity
             LocalDateTime expirationDate = LocalDateTime.now().plusDays(365);
@@ -83,17 +85,20 @@ public class UserCertificate extends ResourceBase {
                         .iterator()
                         .next();
 
-                X509Certificate c = null;
+                X509CertificateHolder c = null;
                 if (cert.signedDate == null) {
                     c = sign(cert);
                 } else {
                     c = cert.get();
                 }
 
-                ByteArrayISO8859Writer baw = new ByteArrayISO8859Writer();
-                PEMWriter pw = new PEMWriter(baw);
-                pw.writeObject(c);
-                return new ByteArrayRepresentation(baw.getByteArray());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                OutputStreamWriter osw = new OutputStreamWriter(baos);
+                PemObject po = new PemObject("CERTIFICATE", c.getEncoded());
+                PEMWriter pw = new PEMWriter(osw);
+                pw.writeObject(po);
+                pw.close();
+                return new ByteArrayRepresentation(baos.toByteArray());
             } else {
                 return new JacksonRepresentation(certs);
             }
