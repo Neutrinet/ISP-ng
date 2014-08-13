@@ -91,11 +91,6 @@ public final class Manager {
                                 if (user.settings().get("routeIPv4TrafficOverVPN", true).equals(true)) {
                                     options.put("push redirect-gateway", "def1");
                                 }
-
-                                if (user.settings().get("routeIPv6TrafficOverVPN", true).equals(true)) {
-                                    options.put("push redirect-gateway-ipv6", "def1");
-                                }
-
                             }
 
                             //options.put("push route-gateway", "192.168.2.1");
@@ -104,6 +99,11 @@ public final class Manager {
                                 options.put("push tun-ipv6", "");
                                 options.put("ifconfig-ipv6-push", v6alloc.address + "/64 " + VPN.cfg.getProperty("openvpn.localip.6"));
                                 options.put("push route-ipv6", VPN.cfg.getProperty("openvpn.network.6") + "/" + VPN.cfg.getProperty("openvpn.netmask.6"));
+
+                                if (user.settings().get("routeIPv6TrafficOverVPN", true).equals(true)) {
+                                    //options.put("push redirect-gateway-ipv6", "def1");
+                                    options.put("push route-ipv6", "2000::/3");
+                                }
                             }
 
                             vpn.authorizeClient(client.id, client.kid, options);
