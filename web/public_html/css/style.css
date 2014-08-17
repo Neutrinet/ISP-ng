@@ -124,7 +124,7 @@ textarea {
     border-radius: 5px;
 }
 
-.form-control[type=text], .form-control[type=password] {
+.form-control[type=text], .form-control[type=password], select.form-control {
     width: 69%;
     background-image: linear-gradient(#DDD 0%, #FFF 100%);
     border: solid 1px #000;
