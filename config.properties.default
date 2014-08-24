@@ -17,6 +17,9 @@ openvpn.localip.4=
 openvpn.network.6=
 openvpn.netmask.6=64
 openvpn.localip.6=
+// Client connectivity checks
+openvpn.ping=10
+openvpn.pingRestart=60
 // Use DNS name
 openvpn.publicaddress=
 openvpn.publicport=1194
