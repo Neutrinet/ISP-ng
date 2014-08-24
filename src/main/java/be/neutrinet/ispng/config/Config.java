@@ -20,12 +20,20 @@ import java.util.function.Consumer;
  */
 public class Config {
     private final static Config instance = new Config();
-    private CuratorFramework cf;
     private final static Charset CHARSET = Charset.forName("UTF-8");
     private final static String PREFIX = "/ispng/";
+    private CuratorFramework cf;
 
     private Config() {
 
+    }
+
+    public static Config get() {
+        return instance;
+    }
+
+    public static Optional<String> get(String key) {
+        return instance.getValue(key);
     }
 
     public final void boot() {
@@ -38,14 +46,6 @@ public class Config {
         }
     }
 
-    public static Config get() {
-        return instance;
-    }
-
-    public static Optional<String> get(String key) {
-        return instance.getValue(key);
-    }
-
     public Optional<String> getValue(String key) {
         try {
             byte[] value = cf.getData().forPath(PREFIX + key);
@@ -54,7 +54,7 @@ public class Config {
             Logger.getLogger(getClass()).error("Failed to read config from ZeeKeeper", ex);
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public void write(String key, String value) {
