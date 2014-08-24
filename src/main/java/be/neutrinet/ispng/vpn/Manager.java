@@ -113,6 +113,15 @@ public final class Manager {
                                 }
                             }
 
+                            if (VPN.cfg.containsKey("openvpn.ping")) {
+                                options.put("push ping", VPN.cfg.get("openvpn.ping").toString());
+                                if (VPN.cfg.containsKey("openvpn.pingRestart")) {
+                                    options.put("push ping-restart", VPN.cfg.get("openvpn.pingRestart").toString());
+                                }
+                            } else {
+                                log.warn("No ping and set, will cause spurious connection resets");
+                            }
+
                             vpn.authorizeClient(client.id, client.kid, options);
                             return null;
                         });
