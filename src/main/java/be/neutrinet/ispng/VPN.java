@@ -18,12 +18,15 @@
 package be.neutrinet.ispng;
 
 import be.fedict.eid.applet.service.AppletServiceServlet;
+import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.mail.Generator;
 import be.neutrinet.ispng.vpn.Manager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import java.io.FileInputStream;
+import java.util.Optional;
 import java.util.Properties;
+
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
@@ -72,6 +75,7 @@ public class VPN implements Daemon {
 
         cfg = new Properties();
         cfg.load(new FileInputStream("config.properties"));
+        Config.get().boot();
 
         root.addAppender(new DailyRollingFileAppender(LAYOUT, cfg.getProperty("log.file", "ispng.log"), "'.'yyyy-MM-dd"));
 
