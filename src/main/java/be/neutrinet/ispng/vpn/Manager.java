@@ -104,6 +104,8 @@ public final class Manager {
                                 options.put("push tun-ipv6", "");
                                 options.put("ifconfig-ipv6-push", v6alloc.address + "/64 " + VPN.cfg.getProperty("openvpn.localip.6"));
                                 options.put("push route-ipv6", VPN.cfg.getProperty("openvpn.network.6") + "/" + VPN.cfg.getProperty("openvpn.netmask.6"));
+                                // route assigned IPv6 subnet through client
+                                options.put("iroute-ipv6", ipv6.address + "/64");
 
                                 if (user.settings().get("routeIPv6TrafficOverVPN", true).equals(true)) {
                                     //options.put("push redirect-gateway-ipv6", "def1");
