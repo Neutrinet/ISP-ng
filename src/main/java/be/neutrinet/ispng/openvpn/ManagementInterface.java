@@ -18,6 +18,7 @@
 package be.neutrinet.ispng.openvpn;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.Manager;
 import java.io.BufferedReader;
@@ -29,6 +30,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.log4j.Logger;
 
 /**
@@ -39,11 +42,13 @@ public class ManagementInterface implements Runnable {
 
     private Socket sock;
     private final Thread thread;
+    private final Watchdog watchdog = new Watchdog();
     private BufferedReader br;
     private BufferedWriter bw;
     private String line;
     private boolean run;
     private final ServiceListener listener;
+    protected boolean echoOpenVPNCommands = false;
 
     public ManagementInterface(ServiceListener listener) {
         thread = new Thread(this, "ManagementClient");
@@ -53,19 +58,63 @@ public class ManagementInterface implements Runnable {
     public void connect() throws IOException {
         sock = new Socket(VPN.cfg.getProperty("openvpn.host"),
                 Integer.parseInt(VPN.cfg.getProperty("openvpn.port")));
+
+        Config.get().watch("debug/OpenVPN/echoCommands", (String value) -> echoOpenVPNCommands = value.equals("true"));
     }
 
-    public void recover() {
-        try {
-            run = false;
-            if (sock == null || !sock.isConnected()) {
-                connect();
-                thread.start();
+    public final class Watchdog extends Thread {
+
+        private final CircularFifoBuffer deltas = new CircularFifoBuffer(5);
+        private long timeLastRecover;
+
+        @Override
+        public void run() {
+            try {
+                run = false;
+
+                while (true) {
+
+                    if (sock == null || !sock.isConnected()) {
+                        connect();
+                        thread.start();
+                        thread.join();
+                    }
+
+                    if (run) {
+                        Logger.getLogger(getClass()).warn("Recovering from management interface failure");
+                        long delta = System.currentTimeMillis() - timeLastRecover;
+                        deltas.add((Long) delta);
+
+                        /*
+                        Calculate average of time deltas of last 5 recoveries
+                        If they are within 10 minutes, something is wrong
+                         */
+                        long sum = 0;
+                        for (Object o : deltas) {
+                            sum += (Long) o;
+                        }
+                        sum /= 5;
+
+                        // if average of recovery time deltas is smaller than 10 minutes
+                        if (sum < 600000L) {
+                            // Abort
+                            break;
+                        }
+
+                        timeLastRecover = System.currentTimeMillis();
+                        // wait ten seconds 'til recover attempt
+                        Thread.sleep(10000);
+                    }
+                }
+            } catch (IOException | InterruptedException ex) {
+                Logger.getLogger(getClass()).error("Recovery failure", ex);
+                Manager.get().shutItDown("Could not recover from mgmt client failure");
             }
-        } catch (IOException ex) {
-            Logger.getLogger(getClass()).error("Recovery failure", ex);
-            Manager.get().shutItDown("Could not recover from mgmt client failure");
         }
+    }
+
+    public Watchdog getWatchdog() {
+        return watchdog;
     }
 
     public void authorizeClient(int id, int kid) {
@@ -152,6 +201,9 @@ public class ManagementInterface implements Runnable {
 
                 while (run && line != null) {
                     if (line.startsWith(">")) {
+                        if (echoOpenVPNCommands)
+                            Logger.getLogger(getClass()).debug("OpenVPN command: " + line);
+
                         int cmdSep = line.indexOf(',');
                         String cmd;
                         String[] args;
@@ -192,17 +244,17 @@ public class ManagementInterface implements Runnable {
                     }
 
                     line = br.readLine();
+
+                    if (line == null) {
+                        // Abort and recover
+                        break;
+                    }
                 }
 
             } catch (Exception ex) {
                 Logger.getLogger(getClass()).error("Management client failure", ex);
                 break;
             }
-        }
-
-        if (run) {
-            // Something bad happened, we should still be running
-            recover();
         }
     }
 }
