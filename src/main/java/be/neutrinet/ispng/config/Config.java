@@ -79,6 +79,25 @@ public class Config {
         }
     }
 
+    public void getAndWatch(String key, String defaultValue, Consumer<String> listener) {
+        try {
+            CuratorWatcher cw = (WatchedEvent watchedEvent) -> {
+                if (watchedEvent.getType() == Watcher.Event.EventType.NodeDataChanged) {
+                    byte[] value = cf.getData().forPath(watchedEvent.getPath());
+                    listener.accept(new String(value, CHARSET));
+                }
+            };
+
+            Stat stat = cf.checkExists().forPath(PREFIX + key);
+            if (stat == null)
+                cf.create().creatingParentsIfNeeded().forPath(PREFIX + key, defaultValue.getBytes(CHARSET));
+            cf.getData().usingWatcher(cw).forPath(PREFIX + key);
+            listener.accept(get(key, defaultValue));
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to add config watcher", ex);
+        }
+    }
+
     public void watch(String key, Consumer<String> listener) {
         try {
             CuratorWatcher cw = (WatchedEvent watchedEvent) -> {
