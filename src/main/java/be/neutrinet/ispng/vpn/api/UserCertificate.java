@@ -15,6 +15,10 @@ import be.neutrinet.ispng.vpn.ca.CA;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
@@ -131,6 +135,18 @@ public class UserCertificate extends ResourceBase {
             if (!(rsa.getModulus().bitLength() > 2048)) {
                 ClientError err = new ClientError("ILLEGAL_KEY_SIZE");
                 return new JacksonRepresentation(err);
+            }
+
+
+            X500Name subject = X500Name.getInstance(csr.getSubject());
+            RDN[] rdns = subject.getRDNs(BCStyle.CN);
+            if (rdns == null || rdns.length == 0) {
+                return clientError("NO_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+
+            String CN = IETFUtils.valueToString(rdns[0].getFirst().getValue());
+            if (CN == null || CN.isEmpty()) {
+                return clientError("INVALID_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
             }
 
             String caStorePath = VPN.cfg.getProperty("ca.storeDir", "ca");
