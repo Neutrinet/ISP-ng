@@ -19,6 +19,7 @@ package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
 import be.neutrinet.ispng.openvpn.ServiceListener;
 import com.googlecode.ipv6.IPv6Address;
@@ -43,13 +44,24 @@ public final class Manager {
     private final Logger log = Logger.getLogger(getClass());
     protected ManagementInterface vpn;
     protected HashMap<Integer, Connection> pendingConnections;
+    protected boolean acceptNewConnections, acceptConnections;
+    public final static String YES = "yes";
 
     private Manager() {
         pendingConnections = new HashMap<>();
+
+        Config.get().getAndWatch("OpenVPN/connections/accept", YES, value -> acceptConnections = YES.equals(value));
+        Config.get().getAndWatch("OpenVPN/connections/acceptNew", YES, value -> acceptNewConnections = YES.equals(value));
+
         vpn = new ManagementInterface(new ServiceListener() {
 
             @Override
             public void clientConnect(Client client) {
+                if (!acceptConnections || !acceptNewConnections) {
+                    vpn.denyClient(client.id, client.kid, "Connection denied");
+                    return;
+                }
+
                 try {
                     Client.dao.createOrUpdate(client);
                 } catch (SQLException ex) {
@@ -156,6 +168,26 @@ public final class Manager {
                 } catch (SQLException ex) {
                     log.error("Failed to insert client", ex);
                 }
+            }
+
+            @Override
+            public void clientReAuth(Client client) {
+                if (!acceptConnections) {
+                    vpn.denyClient(client.id, client.kid, "Reconnection denied");
+                }
+
+                try {
+                    // FIX THIS
+                    List<Connection> connections = Connections.dao.queryForEq("clientId", client.id);
+                    if (connections.stream().filter(c -> c.active).count() > 0) {
+                        vpn.authorizeClient(client.id, client.kid);
+                        return;
+                    };
+                } catch (Exception ex) {
+                    Logger.getLogger(getClass()).error("Failed to reauth connection " + client.id);
+                }
+
+                vpn.denyClient(client.id, client.kid, "Reconnection failed");
             }
 
             @Override
