@@ -68,21 +68,24 @@ public class VPN implements Daemon {
     }
 
     @Override
-    public void init(DaemonContext dc) throws DaemonInitException, Exception {
+    public void init(DaemonContext dc) throws Exception {
         Logger root = Logger.getRootLogger();
         root.setLevel(Level.INFO);
         root.addAppender(new ConsoleAppender(LAYOUT));
 
         cfg = new Properties();
         cfg.load(new FileInputStream("config.properties"));
-        Config.get().boot();
 
         root.addAppender(new DailyRollingFileAppender(LAYOUT, cfg.getProperty("log.file", "ispng.log"), "'.'yyyy-MM-dd"));
 
+        Config.get().boot();
         generator = new Generator();
 
-        if (!cfg.containsKey("db.user")) {
-            cs = new JdbcConnectionSource(cfg.getProperty("db.uri"));
+        Config.get().getAndWatch("log/level", "INFO", level -> root.setLevel(Level.toLevel(level)));
+
+        Optional<String> dbUser = Config.get("db/user");
+        if (!dbUser.isPresent()) {
+            cs = new JdbcConnectionSource(Config.get("db/uri").get());
         } else {
             if (cfg.get("db.uri").toString().contains("mariadb")) {
                 cs = new JdbcConnectionSource(cfg.getProperty("db.uri"),
