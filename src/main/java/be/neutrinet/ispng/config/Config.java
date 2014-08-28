@@ -36,6 +36,12 @@ public class Config {
         return instance.getValue(key);
     }
 
+    public static String get(String key, String defaultValue) {
+        Optional<String> val = get(key);
+        if (val.isPresent()) return val.get();
+        else return defaultValue;
+    }
+
     public final void boot() {
         ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
         cf = CuratorFrameworkFactory.newClient(VPN.cfg.getProperty("zookeeper.connectionString").toString(), retryPolicy);
