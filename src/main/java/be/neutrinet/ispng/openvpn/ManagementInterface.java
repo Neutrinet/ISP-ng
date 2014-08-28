@@ -59,7 +59,7 @@ public class ManagementInterface implements Runnable {
         sock = new Socket(VPN.cfg.getProperty("openvpn.host"),
                 Integer.parseInt(VPN.cfg.getProperty("openvpn.port")));
 
-        Config.get().watch("debug/OpenVPN/echoCommands", (String value) -> echoOpenVPNCommands = value.equals("true"));
+        Config.get().getAndWatch("debug/OpenVPN/echoCommands", "false", (String value) -> echoOpenVPNCommands = value.equals("true"));
     }
 
     public final class Watchdog extends Thread {
@@ -199,7 +199,7 @@ public class ManagementInterface implements Runnable {
                 this.bw = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
                 line = br.readLine();
 
-                while (run && line != null) {
+                while (run) {
                     if (line.startsWith(">")) {
                         if (echoOpenVPNCommands)
                             Logger.getLogger(getClass()).debug("OpenVPN command: " + line);
@@ -234,6 +234,10 @@ public class ManagementInterface implements Runnable {
                                 client.id = Integer.parseInt(args[0]);
                                 listener.addressInUse(client, args[1], args[2].equals("1"));
                                 break;
+                            case "CLIENT:REAUTH":
+                                client = buildClient(args);
+                                listener.clientReAuth(client);
+                                break;
                             case "INFO":
                                 Logger.getLogger(getClass()).info("OpenVPN: " + line);
                                 break;
@@ -245,7 +249,7 @@ public class ManagementInterface implements Runnable {
 
                     line = br.readLine();
 
-                    if (line == null) {
+                    if (line == null && !sock.isConnected()) {
                         // Abort and recover
                         break;
                     }

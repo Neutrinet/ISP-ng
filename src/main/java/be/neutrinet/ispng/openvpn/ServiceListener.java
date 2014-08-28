@@ -31,5 +31,7 @@ public interface ServiceListener {
 
     public void clientDisconnect(Client client);
 
+    public void clientReAuth(Client client);
+
     public void addressInUse(Client client, String address, boolean primary);
 }
