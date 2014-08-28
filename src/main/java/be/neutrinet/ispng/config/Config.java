@@ -54,7 +54,10 @@ public class Config {
 
     public Optional<String> getValue(String key) {
         try {
+            Stat stat = cf.checkExists().forPath(PREFIX + key);
+            if (stat == null) return Optional.empty();
             byte[] value = cf.getData().forPath(PREFIX + key);
+            if (value == null) return Optional.empty();
             return Optional.ofNullable(new String(value, CHARSET));
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to read config from ZeeKeeper", ex);
