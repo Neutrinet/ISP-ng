@@ -3,6 +3,7 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
+import net.wgr.core.StringUtils;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
@@ -22,7 +23,12 @@ public class UserSettings extends ResourceBase {
         String userId = getRequestAttributes().get("user").toString();
 
         try {
-            User user = Users.dao.queryForId(userId);
+            User user = null;
+            if (!StringUtils.isNumeric(userId))
+                user = Users.dao.queryForEq("email", userId).get(0);
+            else
+                user = Users.dao.queryForId(userId);
+
             return user;
         } catch (SQLException e) {
             Logger.getLogger(getClass()).error("Unknown user", e);
