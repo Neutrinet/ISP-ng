@@ -219,6 +219,14 @@ public final class Manager {
 
     }
 
+    public void dropConnection(Connection connection) {
+        if (pendingConnections.containsKey(connection.id)) {
+            pendingConnections.remove(connection.id);
+        }
+
+        vpn.killClient(connection.clientId);
+    }
+
     public static Manager get() {
         if (instance == null) {
             instance = new Manager();
