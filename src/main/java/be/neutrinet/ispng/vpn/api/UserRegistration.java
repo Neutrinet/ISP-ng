@@ -27,24 +27,23 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- *
  * @author wannes
  */
 public class UserRegistration extends ResourceBase {
-    
+
     public static SimpleDateFormat EUROPEAN_DATE_FORMAT = new SimpleDateFormat("dd-mm-yyyy");
-    
+
     @Get
     public Representation handleGet() {
         setCORSHeaders(getResponseEntity());
         String lastSegment = getReference().getLastSegment();
-        
+
         if (lastSegment != null) {
             UUID id = UUID.fromString(lastSegment);
             if (id == null) {
                 return error();
             }
-            
+
             Registration reg = Registration.getActiveRegistrations().get(id);
             if (reg == null) {
                 try {
@@ -59,10 +58,10 @@ public class UserRegistration extends ResourceBase {
             }
             return new JacksonRepresentation(reg);
         }
-        
+
         return error();
     }
-    
+
     @Post
     public Representation handlePost(Map<String, Object> data) {
         setCORSHeaders(getResponseEntity());
@@ -70,7 +69,7 @@ public class UserRegistration extends ResourceBase {
             if (data.get("id") != null) {
                 return handleFlow(data);
             }
-            
+
             String key = (String) data.get("key");
             List<UnlockKey> keys = UnlockKeys.dao.queryForEq("key", key);
             assert keys.size() <= 1;
@@ -84,7 +83,7 @@ public class UserRegistration extends ResourceBase {
                 reg.user = new User();
                 reg.user.email = (String) data.get("email");
                 reg.unlockKey = keys.get(0);
-                
+
                 Registration.getActiveRegistrations().put(reg.getId(), reg);
                 Registrations.dao.create(reg);
                 return new JacksonRepresentation<>(reg);
@@ -92,19 +91,25 @@ public class UserRegistration extends ResourceBase {
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to validate unlock key", ex);
         }
-        
+
         return error();
     }
-    
+
     private Representation handleFlow(Map<String, Object> data) {
+        if (!data.containsKey("id")) {
+            return error();
+        }
+
         UUID id = UUID.fromString((String) data.get("id"));
         Registration reg = Registration.getActiveRegistrations().get(id);
-        
+
         try {
             if (data.containsKey("user")) {
                 // finalize registration
-                reg.ipv4Id = (int) data.get("ipv4Id");
-                reg.ipv6Id = (int) data.get("ipv6Id");
+                if (data.containsKey("ipv4Id"))
+                    reg.ipv4Id = (int) data.get("ipv4Id");
+                if (data.containsKey("ipv6Id"))
+                    reg.ipv6Id = (int) data.get("ipv6Id");
                 reg.commit();
                 Registration.getActiveRegistrations().remove(reg.getId());
                 return new JacksonRepresentation("OK");
@@ -121,10 +126,10 @@ public class UserRegistration extends ResourceBase {
                 reg.user.postalCode = (String) data.get("postal-code");
                 reg.user.birthPlace = (String) data.get("birthplace");
                 reg.user.country = (String) data.get("country");
-                
+
                 if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
                 Registrations.dao.update(reg);
-                
+
                 return new JacksonRepresentation(reg);
             }
         } catch (Exception ex) {
