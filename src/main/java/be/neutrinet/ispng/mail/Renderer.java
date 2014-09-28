@@ -6,12 +6,13 @@
 package be.neutrinet.ispng.mail;
 
 import be.neutrinet.ispng.VPN;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 
 /**
  *
@@ -41,8 +42,8 @@ public class Renderer {
         if (!content.containsKey("header-img-src")) {
             content.put("header-img-src", VPN.cfg.getProperty("mail.headerImageURL"));
             content.put("header-img-alt", VPN.cfg.getProperty("mail.headerImageAlt"));
-            content.put("base-url", "https://" + VPN.cfg.getProperty("jetty.hostname") 
-                    + ":" + VPN.cfg.getProperty("jetty.port"));
+            content.put("base-url", "https://" + VPN.cfg.getProperty("service.hostname")
+                    + ":" + VPN.cfg.getProperty("service.port"));
         }
     }
 
