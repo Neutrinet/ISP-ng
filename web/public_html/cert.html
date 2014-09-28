@@ -17,6 +17,8 @@
     # preferably in your home folder and not shared via Dropbox etc.<br />
     cd [directory that will hold your keys] <br /><br />
     # generate your keypair and the certificate signing request <br />
+    # take care to certainly include a Common Name (CN) in your request, other fields are <br/>
+    # optional yet useful
     openssl req -out CSR.csr -new -newkey rsa:4096 -nodes -keyout client.key <br/>
     <br />
     cat CSR.csr # paste the contents below
