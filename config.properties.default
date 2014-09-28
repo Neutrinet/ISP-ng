@@ -31,6 +31,9 @@ jetty.hostname=
 jetty.port=8443
 jetty.keyStore=keystore
 jetty.keyStorePassword=password
+# Public endpoint
+service.hostname=
+service.port=443
 
 # Mail
 smtp.server=
