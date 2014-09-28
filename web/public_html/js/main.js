@@ -141,7 +141,7 @@ function App() {
     };
 
     this.handleFlow = function() {
-        self.vpn.registration.id = self.urlParams["id"];
+        self.vpn.registration.id = self.urlParams['id'];
 
         if (self.vpn.registration.id == undefined)
             return false;
@@ -152,8 +152,8 @@ function App() {
             dataType: 'json',
             success: function (response, status, xhr) {
                 self.vpn.registration = response;
-                if (self[self.urlParams["flow"]] == undefined) {
-                    self.ajaxError(null, null, "Illegal flow");
+                if (self[self.urlParams['flow']] == undefined) {
+                    self.ajaxError(null, null, 'Illegal flow');
                 } else {
                     // execute flow handler
                     document.cookie = 'Registration-ID=' + self.vpn.registration.id;
@@ -230,7 +230,7 @@ function App() {
                 self.vpn.registration = response;
                 app.content.hide();
                 app.preloader.fadeIn();
-                $('#content').load('keypair.html', self.keypairSelect);
+                $('#content').load('review.html', self.review);
             }
         });
     };
@@ -279,8 +279,8 @@ function App() {
                             $('#get-cert').addClass('btn-primary')
                             $('#get-cert').prop("disabled", false);
                         } catch (e) {
-                            feedback.text("The CSR you entered is invalid. Please make sure you've\n\
-                                correctly followed the instructions above and pasted the whole CSR. The parser\n\
+                            feedback.text("The CSR you entered is invalid. Please make sure you've\n
+                                correctly followed the instructions above and pasted the whole CSR. The parser\n
                                 expects a Base64-armored PKCS10 instance.");
                             feedback.fadeIn();
                             $('#get-cert').removeClass('btn-primary')
@@ -292,16 +292,22 @@ function App() {
                         // set cookie to avoid auth dialog
                         document.cookie = 'Registration-ID=' + self.vpn.registration.id;
 
-                        $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert/0', {
+                        $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert/new', {
                             data: $('#csr').val(),
                             type: 'PUT',
                             contentType: 'application/json',
                             dataType: 'json',
                             success: function(response, status, xhr) {
+                                $('#error').empty();
                                 app.content.hide();
                                 app.preloader.fadeIn();
                                 $('#content').load('review.html', self.review);
-                            }});
+                            },
+                            error: function(response, status, xhr) {
+                                $('#error').append($('<b>').text(response.errorKey));
+                                $('#error').append($('<p>').text(response.message));
+                            }
+                        });
                     });
                 }
             });
