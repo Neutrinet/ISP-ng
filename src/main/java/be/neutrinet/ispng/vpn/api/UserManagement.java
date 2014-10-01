@@ -26,7 +26,7 @@ public class UserManagement extends ResourceBase {
                 return new JacksonRepresentation(Users.dao.queryForAll());
             }
 
-            int userId = (int) getRequest().getAttributes().get("user");
+            int userId = Integer.parseInt(getRequestAttributes().get("user").toString());
 
             if (!Users.dao.idExists("" + userId)) {
                 return new JacksonRepresentation(new ClientError("NO_SUCH_OBJECT"));
