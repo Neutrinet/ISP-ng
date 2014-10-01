@@ -58,7 +58,7 @@ public class Generator {
                 content.put("ipv6", "No IPv6 subnet");
             }
 
-            packAndSend(msg, "unlock-code", content);
+            packAndSend(msg, "vpn-confirmation", content);
         } catch (SQLException | MessagingException ex) {
             Logger.getLogger(getClass()).error("Failed to send confirmation", ex);
         }
@@ -76,7 +76,7 @@ public class Generator {
             content.put("preview", "Here's your unlock key");
             content.put("key", key.key);
 
-            packAndSend(msg, "vpn-confirmation", content);
+            packAndSend(msg, "unlock-code", content);
         } catch (MessagingException ex) {
             Logger.getLogger(getClass()).error("Failed to send key", ex);
         }
@@ -86,10 +86,10 @@ public class Generator {
         MimeMultipart multipart = new MimeMultipart("alternative");
 
         MimeBodyPart plaintext = new MimeBodyPart();
-        plaintext.setText(renderer.renderInTemplate(template, content, true), "text/plain; charset=utf-8");
+        plaintext.setContent(renderer.renderInTemplate(template, content, true), "text/plain; charset=utf-8");
 
         MimeBodyPart html = new MimeBodyPart();
-        html.setText(renderer.renderInTemplate(template, content, false), "text/html; charset=utf-8");
+        html.setContent(renderer.renderInTemplate(template, content, false), "text/html; charset=utf-8");
 
         multipart.addBodyPart(plaintext);
         multipart.addBodyPart(html);
