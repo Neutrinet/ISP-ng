@@ -42,7 +42,8 @@ smtp.password=
 
 # Mailing settings
 mail.headerImageURL = 
-mail.headerImageAlt = 
+mail.headerImageAlt =
+userManagement.emailAddress=
 
 # Security
 # Location of the OpenVPN CA certificate:
