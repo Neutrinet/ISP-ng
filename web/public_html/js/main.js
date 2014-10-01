@@ -1,3 +1,5 @@
+"use strict";
+
 // disclaimer: this script is written by someone who's not particularly good
 // or interested in javascript. anyone willing to port this to something decent
 // like angular.js, please do so
@@ -10,7 +12,7 @@ function VPN() {
     // temporary, for primitive backoffice
     this.user = {};
 
-    this.createUser = function(username) {
+    this.createUser = function (username) {
 
     };
 
@@ -279,9 +281,9 @@ function App() {
                             $('#get-cert').addClass('btn-primary')
                             $('#get-cert').prop("disabled", false);
                         } catch (e) {
-                            feedback.text("The CSR you entered is invalid. Please make sure you've\n
-                                correctly followed the instructions above and pasted the whole CSR. The parser\n
-                                expects a Base64-armored PKCS10 instance.");
+                            feedback.text("The CSR you entered is invalid. Please make sure you've " +
+                                "correctly followed the instructions above and pasted the whole CSR. The parser " +
+                                "expects a Base64-armored PKCS10 instance.");
                             feedback.fadeIn();
                             $('#get-cert').removeClass('btn-primary')
                             $('#get-cert').prop("disabled", true);
