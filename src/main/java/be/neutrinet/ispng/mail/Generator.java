@@ -5,16 +5,21 @@
  */
 package be.neutrinet.ispng.mail;
 
+import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.admin.Registration;
+import be.neutrinet.ispng.vpn.admin.UnlockKey;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -53,18 +58,44 @@ public class Generator {
                 content.put("ipv6", "No IPv6 subnet");
             }
 
-            boolean plaintext = true;
-            String body = renderer.renderInTemplate("vpn-confirmation", content, plaintext);
-
-            if (plaintext)
-                msg.setContent(body, "text/plain; charset=utf-8");
-            else
-                msg.setContent(body, "text/html; charset=utf-8");
-
-            msg.setSentDate(new Date());
-            postman.sendMessage(msg);
+            packAndSend(msg, "unlock-code", content);
         } catch (SQLException | MessagingException ex) {
             Logger.getLogger(getClass()).error("Failed to send confirmation", ex);
         }
+    }
+
+    public void sendUnlockKey(UnlockKey key, String emailAddress) {
+        try {
+            MimeMessage msg = this.postman.createNewMessage();
+            msg.addRecipients(Message.RecipientType.TO, emailAddress);
+            msg.addRecipients(Message.RecipientType.CC, VPN.cfg.getProperty("userManagement.emailAddress"));
+            msg.setSubject("Your Neutrinet unlock key");
+
+            HashMap<String, String> content = new HashMap<>();
+            content.put("title", "Your unlock key");
+            content.put("preview", "Here's your unlock key");
+            content.put("key", key.key);
+
+            packAndSend(msg, "vpn-confirmation", content);
+        } catch (MessagingException ex) {
+            Logger.getLogger(getClass()).error("Failed to send key", ex);
+        }
+    }
+
+    protected void packAndSend(MimeMessage message, String template, Map<String, String> content) throws MessagingException {
+        MimeMultipart multipart = new MimeMultipart("alternative");
+
+        MimeBodyPart plaintext = new MimeBodyPart();
+        plaintext.setText(renderer.renderInTemplate(template, content, true), "text/plain; charset=utf-8");
+
+        MimeBodyPart html = new MimeBodyPart();
+        html.setText(renderer.renderInTemplate(template, content, false), "text/html; charset=utf-8");
+
+        multipart.addBodyPart(plaintext);
+        multipart.addBodyPart(html);
+
+        message.setContent(multipart);
+        message.setSentDate(new Date());
+        postman.sendMessage(message);
     }
 }
