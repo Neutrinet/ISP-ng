@@ -5,6 +5,8 @@
  */
 package be.neutrinet.ispng.vpn.api;
 
+import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.mail.Generator;
 import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
 import java.math.BigInteger;
@@ -52,6 +54,9 @@ public class UnlockKey extends ResourceBase {
             key.email = data.get("email");
             key.key = generateUnlockKey();
             UnlockKeys.dao.createIfNotExists(key);
+
+            if (data.containsKey("sendEmail") && !data.get("sendEmail").equals("false"))
+                VPN.generator.sendUnlockKey(key, key.email);
 
             return new JacksonRepresentation(key);
         } catch (Exception ex) {
