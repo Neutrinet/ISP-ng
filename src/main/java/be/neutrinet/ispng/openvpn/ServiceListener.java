@@ -20,7 +20,6 @@ package be.neutrinet.ispng.openvpn;
 import be.neutrinet.ispng.vpn.Client;
 
 /**
- *
  * @author double-u
  */
 public interface ServiceListener {
@@ -34,4 +33,6 @@ public interface ServiceListener {
     public void clientReAuth(Client client);
 
     public void addressInUse(Client client, String address, boolean primary);
+
+    public void bytecount(Client client, long bytesIn, long bytesOut);
 }

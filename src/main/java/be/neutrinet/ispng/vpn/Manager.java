@@ -20,6 +20,7 @@ package be.neutrinet.ispng.vpn;
 import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.config.Config;
+import be.neutrinet.ispng.monitoring.DataPoint;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
 import be.neutrinet.ispng.openvpn.ServiceListener;
 import com.googlecode.ipv6.IPv6Address;
@@ -40,12 +41,13 @@ import java.util.List;
  */
 public final class Manager {
 
+    public final static String YES = "yes";
     private static Manager instance;
     private final Logger log = Logger.getLogger(getClass());
     protected ManagementInterface vpn;
     protected HashMap<Integer, Connection> pendingConnections;
     protected boolean acceptNewConnections, acceptConnections;
-    public final static String YES = "yes";
+    protected boolean monitorBandwidth;
 
     private Manager() {
         pendingConnections = new HashMap<>();
@@ -54,6 +56,18 @@ public final class Manager {
         Config.get().getAndWatch("OpenVPN/connections/acceptNew", YES, value -> acceptNewConnections = YES.equals(value));
 
         vpn = new ManagementInterface(new ServiceListener() {
+
+            {
+                Config.get().getAndWatch("OpenVPN/monitoring/bandwidth", YES, value -> {
+                    if (YES.equals(value) && !monitorBandwidth) {
+                        vpn.setBandwidthMonitoringInterval(1);
+                        monitorBandwidth = true;
+                    } else if (!YES.equals(value) && monitorBandwidth) {
+                        vpn.setBandwidthMonitoringInterval(0);
+                        monitorBandwidth = false;
+                    }
+                });
+            }
 
             @Override
             public void clientConnect(Client client) {
@@ -215,8 +229,37 @@ public final class Manager {
                     log.error("Failed to insert connection", ex);
                 }
             }
+
+            @Override
+            public void bytecount(Client client, long bytesIn, long bytesOut) {
+                HashMap<String, String> tags = new HashMap<>();
+                tags.put("client", "" + client.id);
+                tags.put("connection", "" + client.kid);
+
+                DataPoint bytesInDataPoint = new DataPoint();
+                bytesInDataPoint.metric = "vpn.client.bytesIn";
+                bytesInDataPoint.timestamp = System.currentTimeMillis();
+                bytesInDataPoint.value = bytesIn;
+                bytesInDataPoint.tags = tags;
+
+                DataPoint bytesOutDataPoint = new DataPoint();
+                bytesOutDataPoint.metric = "vpn.client.bytesOut";
+                bytesOutDataPoint.timestamp = System.currentTimeMillis();
+                bytesOutDataPoint.value = bytesOut;
+                bytesOutDataPoint.tags = tags;
+
+                VPN.monitoringAgent.addDataPoint(bytesInDataPoint);
+                VPN.monitoringAgent.addDataPoint(bytesOutDataPoint);
+            }
         });
 
+    }
+
+    public static Manager get() {
+        if (instance == null) {
+            instance = new Manager();
+        }
+        return instance;
     }
 
     public void dropConnection(Connection connection) {
@@ -225,13 +268,6 @@ public final class Manager {
         }
 
         vpn.killClient(connection.clientId);
-    }
-
-    public static Manager get() {
-        if (instance == null) {
-            instance = new Manager();
-        }
-        return instance;
     }
 
     protected IPAddress assign(User user, Client client, int version) throws SQLException {

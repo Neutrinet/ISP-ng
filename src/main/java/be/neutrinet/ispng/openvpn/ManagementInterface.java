@@ -21,34 +21,29 @@ import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.Manager;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.log4j.Logger;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-import org.apache.log4j.Logger;
-
 /**
- *
  * @author double-u
  */
 public class ManagementInterface implements Runnable {
 
-    private Socket sock;
     private final Thread thread;
     private final Watchdog watchdog = new Watchdog();
+    private final ServiceListener listener;
+    protected boolean echoOpenVPNCommands = false;
+    private Socket sock;
     private BufferedReader br;
     private BufferedWriter bw;
     private String line;
     private boolean run;
-    private final ServiceListener listener;
-    protected boolean echoOpenVPNCommands = false;
 
     public ManagementInterface(ServiceListener listener) {
         thread = new Thread(this, "ManagementClient");
@@ -60,57 +55,6 @@ public class ManagementInterface implements Runnable {
                 Integer.parseInt(VPN.cfg.getProperty("openvpn.port")));
 
         Config.get().getAndWatch("debug/OpenVPN/echoCommands", "false", (String value) -> echoOpenVPNCommands = value.equals("true"));
-    }
-
-    public final class Watchdog extends Thread {
-
-        private final CircularFifoBuffer deltas = new CircularFifoBuffer(5);
-        private long timeLastRecover;
-
-        @Override
-        public void run() {
-            try {
-                run = false;
-
-                while (true) {
-
-                    if (sock == null || !sock.isConnected()) {
-                        connect();
-                        thread.start();
-                        thread.join();
-                    }
-
-                    if (run) {
-                        Logger.getLogger(getClass()).warn("Recovering from management interface failure");
-                        long delta = System.currentTimeMillis() - timeLastRecover;
-                        deltas.add((Long) delta);
-
-                        /*
-                        Calculate average of time deltas of last 5 recoveries
-                        If they are within 10 minutes, something is wrong
-                         */
-                        long sum = 0;
-                        for (Object o : deltas) {
-                            sum += (Long) o;
-                        }
-                        sum /= 5;
-
-                        // if average of recovery time deltas is smaller than 10 minutes
-                        if (sum < 600000L) {
-                            // Abort
-                            break;
-                        }
-
-                        timeLastRecover = System.currentTimeMillis();
-                        // wait ten seconds 'til recover attempt
-                        Thread.sleep(10000);
-                    }
-                }
-            } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(getClass()).error("Recovery failure", ex);
-                Manager.get().shutItDown("Could not recover from mgmt client failure");
-            }
-        }
     }
 
     public Watchdog getWatchdog() {
@@ -183,6 +127,15 @@ public class ManagementInterface implements Runnable {
         return null;
     }
 
+    public void setBandwidthMonitoringInterval(int interval) {
+        try {
+            if (interval < 0) throw new IllegalArgumentException("interval cannot be lower than zero");
+            writeLine("bytecount " + interval);
+        } catch (IOException ex) {
+            Logger.getLogger(getClass()).error("Failed to write command", ex);
+        }
+    }
+
     private synchronized void writeLine(String line) throws IOException {
         System.out.print(line);
         bw.write(line);
@@ -238,6 +191,11 @@ public class ManagementInterface implements Runnable {
                                 client = buildClient(args);
                                 listener.clientReAuth(client);
                                 break;
+                            case "BYTECOUNT_CLI":
+                                client = new Client();
+                                client.id = Integer.parseInt(args[0]);
+                                listener.bytecount(client, Long.parseLong(args[1]), Long.parseLong(args[2]));
+                                break;
                             case "INFO":
                                 Logger.getLogger(getClass()).info("OpenVPN: " + line);
                                 break;
@@ -258,6 +216,57 @@ public class ManagementInterface implements Runnable {
             } catch (Exception ex) {
                 Logger.getLogger(getClass()).error("Management client failure", ex);
                 break;
+            }
+        }
+    }
+
+    public final class Watchdog extends Thread {
+
+        private final CircularFifoBuffer deltas = new CircularFifoBuffer(5);
+        private long timeLastRecover;
+
+        @Override
+        public void run() {
+            try {
+                run = false;
+
+                while (true) {
+
+                    if (sock == null || !sock.isConnected()) {
+                        connect();
+                        thread.start();
+                        thread.join();
+                    }
+
+                    if (run) {
+                        Logger.getLogger(getClass()).warn("Recovering from management interface failure");
+                        long delta = System.currentTimeMillis() - timeLastRecover;
+                        deltas.add((Long) delta);
+
+                        /*
+                        Calculate average of time deltas of last 5 recoveries
+                        If they are within 10 minutes, something is wrong
+                         */
+                        long sum = 0;
+                        for (Object o : deltas) {
+                            sum += (Long) o;
+                        }
+                        sum /= 5;
+
+                        // if average of recovery time deltas is smaller than 10 minutes
+                        if (sum < 600000L) {
+                            // Abort
+                            break;
+                        }
+
+                        timeLastRecover = System.currentTimeMillis();
+                        // wait ten seconds 'til recover attempt
+                        Thread.sleep(10000);
+                    }
+                }
+            } catch (IOException | InterruptedException ex) {
+                Logger.getLogger(getClass()).error("Recovery failure", ex);
+                Manager.get().shutItDown("Could not recover from mgmt client failure");
             }
         }
     }

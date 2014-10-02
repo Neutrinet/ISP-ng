@@ -55,3 +55,6 @@ ca.storeDir = ca
 
 # Logging
 log.file = /var/log/ispng/vpn.log
+
+# Monitoring
+monitoring.opentsdb.server=

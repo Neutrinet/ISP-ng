@@ -20,21 +20,13 @@ package be.neutrinet.ispng;
 import be.fedict.eid.applet.service.AppletServiceServlet;
 import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.mail.Generator;
+import be.neutrinet.ispng.monitoring.Agent;
 import be.neutrinet.ispng.vpn.Manager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
-import java.io.FileInputStream;
-import java.util.Optional;
-import java.util.Properties;
-
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
-import org.apache.commons.daemon.DaemonInitException;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.DailyRollingFileAppender;
-import org.apache.log4j.EnhancedPatternLayout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -44,6 +36,10 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+
+import java.io.FileInputStream;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  *
@@ -56,6 +52,7 @@ public class VPN implements Daemon {
     public static ConnectionSource cs;
     public static Properties cfg;
     public static Generator generator;
+    public static Agent monitoringAgent;
     public Server server;
 
     public static void main(String[] args) throws Exception {
@@ -110,6 +107,8 @@ public class VPN implements Daemon {
     @Override
     public void start() throws Exception {
         Manager.get().start();
+
+        monitoringAgent = new Agent();
 
         server = new Server();
 
