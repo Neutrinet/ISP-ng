@@ -14,12 +14,14 @@ import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
 import org.apache.log4j.Logger;
+import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -132,6 +134,8 @@ public class UserRegistration extends ResourceBase {
 
                 return new JacksonRepresentation(reg);
             }
+        } catch (ParseException ex) {
+            return clientError("INVALID_DATE_FORMAT", Status.CLIENT_ERROR_BAD_REQUEST);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to handle flow", ex);
         }
