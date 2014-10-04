@@ -75,6 +75,13 @@ public class VPN implements Daemon {
 
         root.addAppender(new DailyRollingFileAppender(LAYOUT, cfg.getProperty("log.file", "ispng.log"), "'.'yyyy-MM-dd"));
 
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                Logger.getLogger(getClass()).error("Unhandled exception", e);
+            }
+        });
+
         Config.get().boot();
         generator = new Generator();
 
