@@ -4,6 +4,7 @@ import be.neutrinet.ispng.VPN;
 import org.apache.log4j.Logger;
 import org.restlet.resource.ClientResource;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -14,15 +15,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Agent {
     protected OpenTSDB api;
     protected ConcurrentLinkedQueue<DataPoint> queue;
+    public static int MAX_BACKLOG = 1000;
     protected Timer timer;
+    protected boolean busy;
 
     public Agent() {
-        if (!VPN.cfg.containsKey("monitoring.opentsdb.server")) {
+        if (!VPN.cfg.containsKey("monitoring.opentsdb.uri")) {
             Logger.getLogger(getClass()).warn("OpenTSDB server not configured");
             return;
         }
 
-        String tsdbServer = VPN.cfg.getProperty("monitoring.opentsdb.server");
+        String tsdbServer = VPN.cfg.getProperty("monitoring.opentsdb.uri").trim();
         ClientResource cr = new ClientResource(tsdbServer);
         api = cr.wrap(OpenTSDB.class);
         queue = new ConcurrentLinkedQueue<>();
@@ -32,25 +35,36 @@ public class Agent {
             public void run() {
                 pushData();
             }
-        }, 0, 100);
+        }, 0, 1000);
 
     }
 
     protected void pushData() {
+        if (queue.isEmpty() || busy) return;
         try {
-            DataPoint[] points = queue.toArray(new DataPoint[]{});
+            busy = true;
+            ArrayList<DataPoint> points = new ArrayList<>(queue);
             api.pushData(points);
             for (DataPoint p : points) queue.remove(p);
+            busy = false;
         } catch (Exception ex) {
-
+            while (queue.size() > MAX_BACKLOG) {
+                queue.remove();
+            }
+            busy = false;
+            Logger.getLogger(getClass()).debug("Failed to push monitoring data", ex);
         }
     }
 
     public void addDataPoint(DataPoint dp) {
-        if (dp.isValid() && queue != null) {
+        if (valid(dp) && queue != null) {
             queue.add(dp);
         } else {
             Logger.getLogger(getClass()).warn("Tried to add invalid datapoint");
         }
+    }
+
+    protected boolean valid(DataPoint dp) {
+        return dp.metric != null && !dp.metric.isEmpty() && dp.timestamp != 0;
     }
 }

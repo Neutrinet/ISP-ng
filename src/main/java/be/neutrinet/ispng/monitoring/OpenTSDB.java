@@ -1,11 +1,13 @@
 package be.neutrinet.ispng.monitoring;
 
-import org.restlet.resource.Put;
+import org.restlet.resource.Post;
+
+import java.util.List;
 
 /**
  * Created by wannes on 10/2/14.
  */
 public interface OpenTSDB {
-    @Put
-    public void pushData(DataPoint[] datapoints);
+    @Post
+    public void pushData(List<DataPoint> points);
 }
