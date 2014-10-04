@@ -11,8 +11,4 @@ public class DataPoint {
     public double value;
     public Map<String, String> tags;
 
-    public boolean isValid() {
-        return metric != null && !metric.isEmpty() && timestamp != 0;
-    }
-
 }
