@@ -3,7 +3,7 @@
 <ul>
     <li>Supported platform and version (see below)</li>
     <li>UDP port 1194 must be open on your firewall</li>
-    <li>Some preliminary debugging skills in case something goes wrong</li>
+    <li>Some debugging skills in case something goes wrong</li>
     <li><a href="http://eid.belgium.be/en/using_your_eid/installing_the_eid_software/" title="eID middleware site">Latest
         eID middleware</a> (only when using the keypair from your eID)
     </li>
@@ -12,13 +12,22 @@
     is used. We might be able to simply ship the PKCS11 library in the future, but ATM 
     please <a href="http://eid.belgium.be/en/using_your_eid/installing_the_eid_software/" title="eID middleware site">download</a>
     and install the eID middleware.</div>
+<div class="info-dialog">If you would like to persist your username and password to avoid having entering it each time, do the following: <br />
+<code>
+    cd [/path/to/config/dir]<br />
+    echo "[username]\n[password]" > auth<br />
+    echo "auth-user-pass auth" >> neutrinet.ovpn<br />
+</code>
+    Prefer GUI? Follow <a href="https://my.hostvpn.com/knowledgebase/22/Save-Password-in-OpenVPN-for-Automatic-Login.html">this guide</a>. Make sure to set correct file permissions.
+</div>
 <div class="platform-details" id="linux">
     <h3>Linux platform</h3>
     <div class="download-button">Download OpenVPN config archive</div>
     <p>The file you are about to download contains everything you need. Open a terminal, and run</p>
     <code>sudo aptitude install openvpn <br />
-        cd [download location] <br />
+        cd [/path/to/download location] <br />
         unzip neutrinet.zip <br />
+        cp [/path/to/client.key] . <br />
         sudo openvpn neutrinet.ovpn # root needed for tun adapter</code>
     <p>And you're connected!</p>
     <h3>Supported configurations</h3>
