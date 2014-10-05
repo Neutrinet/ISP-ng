@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.restlet.resource.ClientResource;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -44,8 +45,9 @@ public class Agent {
         try {
             busy = true;
             ArrayList<DataPoint> points = new ArrayList<>(queue);
-            api.pushData(points);
-            for (DataPoint p : points) queue.remove(p);
+            List<DataPoint> pointRange = points.subList(0, 50);
+            api.pushData(pointRange);
+            for (DataPoint p : pointRange) queue.remove(p);
             busy = false;
         } catch (Exception ex) {
             while (queue.size() > MAX_BACKLOG) {
