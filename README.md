@@ -13,6 +13,13 @@ IP address pools, manage active connections etc.
 2. Install Maven (apt-get install maven)
 3. mvn clean install
 
+For ubuntu:
+
+    sudo add-apt-repository ppa:webupd8team/java
+    sudo apt-get update
+    sudo apt-get install oracle-java8-installer maven
+    mvn clean install  # in the source code directory
+
 **Run instructions**
 
 1. Install JRE/JDK 8
