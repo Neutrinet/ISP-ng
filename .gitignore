@@ -27,5 +27,9 @@ nb-configuration.xml
 nbactions.xml
 junk/**
 
+# Shipped JS
+web/public_html/js/**
+!web/public_html/js/main.js
+
 # setting files
 config.properties
