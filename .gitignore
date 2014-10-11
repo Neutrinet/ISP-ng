@@ -28,8 +28,9 @@ nbactions.xml
 junk/**
 
 # Shipped JS
-web/public_html/js/**
-!web/public_html/js/main.js
+web/registration/js/**
+!web/registration/js/main.js
+web/mgmt
 
 # setting files
 config.properties

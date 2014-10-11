@@ -132,7 +132,7 @@ public class VPN implements Daemon {
         ResourceHandler rh = new ResourceHandler();
         rh.setDirectoriesListed(true);
         rh.setWelcomeFiles(new String[]{"index.html"});
-        rh.setResourceBase("web/public_html/");
+        rh.setResourceBase("web/registration/");
 
         ServletContextHandler sch = new ServletContextHandler(ServletContextHandler.SESSIONS);
         sch.setContextPath("/");

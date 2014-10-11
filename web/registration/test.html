@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <script type="text/javascript" src="js/deployJava.js"></script>
+        <script type="text/javascript">
+            var attributes = {
+                    alt: 'eID applet',
+                    code: 'be.fedict.eid.applet.Applet.class',
+                    archive: 'objects/eid-applet-package-1.2.0-SNAPSHOT.jar',
+                    width: 700,
+                    height: 300
+                };
+                var parameters = {
+                    TargetPage: 'poop',
+                    AppletService: 'applet',
+                    BackgroundColor: '#ffffff',
+                    codebase_lookup: 'false',
+                    cache_option: 'no'
+                };
+                var version = '1.6';
+
+                // fix for Mac OS X 64 bit
+                var javaArgs = '';
+                if (navigator.userAgent.indexOf('Mac OS X 10_6') !== -1
+                    || navigator.userAgent.indexOf('Mac OS X 10.6') !== -1) {
+                    javaArgs += '-d32';
+                }
+                parameters.java_arguments = javaArgs;
+                // fix for IE 7/8
+                var browser = deployJava.getBrowser();
+                if (browser === 'MSIE') {
+                    version = '1.6.0_27';
+                }
+
+                deployJava.runApplet(attributes, parameters, version);
+
+        </script>
+    </body>
+</html>
