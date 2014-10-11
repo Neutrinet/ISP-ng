@@ -137,6 +137,9 @@ public class ManagementInterface implements Runnable {
     }
 
     private synchronized void writeLine(String line) throws IOException {
+        if (echoOpenVPNCommands)
+            Logger.getLogger(getClass()).debug("Sent OpenVPN command '" + line + "'");
+
         System.out.print(line);
         bw.write(line);
         bw.flush();
@@ -158,11 +161,16 @@ public class ManagementInterface implements Runnable {
                             Logger.getLogger(getClass()).debug("OpenVPN command: " + line);
 
                         int cmdSep = line.indexOf(',');
-                        String cmd;
+                        String cmd, subCmd = "";
                         String[] args;
                         if (cmdSep != -1) {
                             cmd = line.substring(1, cmdSep);
                             args = line.substring(cmdSep + 1).split(",");
+                            int subCmdSep = cmd.indexOf(':');
+                            if (subCmdSep != -1) {
+                                subCmd = cmd.substring(subCmdSep + 1);
+                                cmd = cmd.substring(0, subCmdSep);
+                            }
                         } else {
                             cmdSep = line.indexOf(':');
                             cmd = line.substring(1, cmdSep);
@@ -170,31 +178,35 @@ public class ManagementInterface implements Runnable {
                         }
 
                         switch (cmd) {
-                            case "CLIENT:CONNECT":
-                                Client client = buildClient(args);
-                                listener.clientConnect(client);
-                                break;
-                            case "CLIENT:ESTABLISHED":
-                                client = buildClient(args);
-                                listener.connectionEstablished(client);
-                                break;
-                            case "CLIENT:DISCONNECT":
-                                client = buildClient(args);
-                                listener.clientDisconnect(client);
-                                break;
-                            case "CLIENT:ADDRESS":
-                                client = new Client();
-                                client.id = Integer.parseInt(args[0]);
-                                listener.addressInUse(client, args[1], args[2].equals("1"));
-                                break;
-                            case "CLIENT:REAUTH":
-                                client = buildClient(args);
-                                listener.clientReAuth(client);
+                            case "CLIENT":
+                                switch (subCmd) {
+                                    case "CONNECT":
+                                        Client client = buildClient(args);
+                                        listener.clientConnect(client);
+                                        break;
+                                    case "ESTABLISHED":
+                                        client = buildClient(args);
+                                        listener.connectionEstablished(client);
+                                        break;
+                                    case "DISCONNECT":
+                                        client = buildClient(args);
+                                        listener.clientDisconnect(client);
+                                        break;
+                                    case "ADDRESS":
+                                        client = new Client();
+                                        client.kid = Integer.parseInt(args[0]);
+                                        listener.addressInUse(client, args[1], args[2].equals("1"));
+                                        break;
+                                    case "REAUTH":
+                                        client = buildClient(args);
+                                        listener.clientReAuth(client);
+                                        break;
+                                }
                                 break;
                             case "BYTECOUNT_CLI":
-                                client = new Client();
-                                client.id = Integer.parseInt(args[0]);
-                                listener.bytecount(client, Long.parseLong(args[1]), Long.parseLong(args[2]));
+                                Client client = new Client();
+                                client.id = Integer.parseInt(subCmd);
+                                listener.bytecount(client, Long.parseLong(args[0]), Long.parseLong(args[1]));
                                 break;
                             case "INFO":
                                 Logger.getLogger(getClass()).info("OpenVPN: " + line);
