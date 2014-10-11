@@ -47,7 +47,6 @@ public final class Manager {
     protected ManagementInterface vpn;
     protected HashMap<Integer, Connection> pendingConnections;
     protected boolean acceptNewConnections, acceptConnections;
-    protected boolean monitorBandwidth;
 
     private Manager() {
         pendingConnections = new HashMap<>();
@@ -59,12 +58,10 @@ public final class Manager {
 
             {
                 Config.get().getAndWatch("OpenVPN/monitoring/bandwidth", YES, value -> {
-                    if (YES.equals(value) && !monitorBandwidth) {
+                    if (YES.equals(value)) {
                         vpn.setBandwidthMonitoringInterval(1);
-                        monitorBandwidth = true;
-                    } else if (!YES.equals(value) && monitorBandwidth) {
+                    } else if (!YES.equals(value)) {
                         vpn.setBandwidthMonitoringInterval(0);
-                        monitorBandwidth = false;
                     }
                 });
             }
