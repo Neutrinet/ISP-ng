@@ -18,9 +18,12 @@ function VPN() {
 
     this.handleIfError = function(response) {
         if (response === undefined) {
+            var errorBlock = $('<div class="alert alert-danger" role="alert">');
+
             app.content.empty();
-            app.content.append($('<h2>').text('An error ocurred'));
-            app.content.append($('<p>').text('Our backend did not return a response. Please try again.'));
+            errorBlock.append($('<h2>').text('An error ocurred'));
+            errorBlock.append($('<p>').text('Our backend did not return a response. Please try again.'));
+            app.content.append(errorBlock);
             app.preloader.hide();
             app.content.fadeIn();
 
@@ -28,11 +31,15 @@ function VPN() {
         }
 
         if (response.errorKey !== undefined) {
+            var errorBlock = $('<div class="alert alert-danger" role="alert">');
+
             //app.content.empty();
-            app.content.prepend($('<br>'));
-            app.content.prepend($('<p>').text(response.errorKey));
-            app.content.prepend($('<p>').text(response.message));
-            app.content.prepend($('<h2>').text('An error ocurred'));
+            errorBlock.prepend($('<br>'));
+            errorBlock.prepend($('<p>').text(response.errorKey));
+            errorBlock.prepend($('<p>').text(response.message));
+            errorBlock.prepend($('<h2>').text('An error ocurred'));
+
+            app.content.prepend(errorBlock);
 
             app.preloader.hide();
             app.content.fadeIn();
