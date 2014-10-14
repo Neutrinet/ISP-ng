@@ -407,6 +407,18 @@ function App() {
 
         console.log('l' + pwd.length + " " + (pwd === verify ? "true" : "false"));
 
+        if (pwd.length < 6) {
+            $('#password').parent().addClass("has-error")
+        } else {
+            $('#password').parent().removeClass("has-error")
+        }
+
+        if (pwd !== verify) {
+            $('#password-verify').parent().addClass("has-error")
+        } else {
+            $('#password-verify').parent().removeClass("has-error")
+        }
+
         if (pwd.length < 6 || pwd !== verify) {
             $('#password-done').attr('disabled', '');
         } else {
