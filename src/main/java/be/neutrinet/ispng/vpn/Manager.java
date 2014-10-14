@@ -19,21 +19,18 @@ package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.config.Config;
-import be.neutrinet.ispng.monitoring.DataPoint;
+import be.neutrinet.ispng.openvpn.Client;
+import be.neutrinet.ispng.openvpn.DefaultServiceListener;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
-import be.neutrinet.ispng.openvpn.ServiceListener;
 import com.googlecode.ipv6.IPv6Address;
 import com.googlecode.ipv6.IPv6Network;
 import com.j256.ormlite.misc.TransactionManager;
 import org.apache.log4j.Logger;
 
-import java.net.InetAddress;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -41,215 +38,24 @@ import java.util.List;
  */
 public final class Manager {
 
-    public final static String YES = "yes";
     private static Manager instance;
     private final Logger log = Logger.getLogger(getClass());
-    protected ManagementInterface vpn;
-    protected HashMap<Integer, Connection> pendingConnections;
-    protected boolean acceptNewConnections, acceptConnections;
+    protected HashMap<String, ManagementInterface> openvpnInstances;
 
     private Manager() {
-        pendingConnections = new HashMap<>();
+        openvpnInstances = new HashMap<>();
 
-        Config.get().getAndWatch("OpenVPN/connections/accept", YES, value -> acceptConnections = YES.equals(value));
-        Config.get().getAndWatch("OpenVPN/connections/acceptNew", YES, value -> acceptNewConnections = YES.equals(value));
+        if (!VPN.cfg.containsKey("openvpn.instances")) {
+            throw new Error("OpenVPN instance(s) are not configured");
+        }
 
-        vpn = new ManagementInterface(new ServiceListener() {
-
-            {
-                Config.get().getAndWatch("OpenVPN/monitoring/bandwidth", YES, value -> {
-                    if (YES.equals(value)) {
-                        vpn.setBandwidthMonitoringInterval(1);
-                    } else if (!YES.equals(value)) {
-                        vpn.setBandwidthMonitoringInterval(0);
-                    }
-                });
-            }
-
-            @Override
-            public void clientConnect(Client client) {
-                if (!acceptConnections || !acceptNewConnections) {
-                    vpn.denyClient(client.id, client.kid, "Connection denied");
-                    return;
-                }
-
-                try {
-                    Client.dao.createOrUpdate(client);
-                } catch (SQLException ex) {
-                    log.error("Failed to insert client", ex);
-                }
-
-                try {
-                    User user = Users.authenticate(client.username, client.password);
-                    if (user != null) {
-                        TransactionManager.callInTransaction(VPN.cs, () -> {
-                            IPAddress ipv4 = assign(user, client, 4);
-                            IPAddress ipv6 = assign(user, client, 6);
-
-                            if (ipv4 == null && ipv6 == null) {
-                                vpn.denyClient(client.id, client.kid, "No IP address available");
-                                return null;
-                            }
-
-                            Connection c = new Connection(client.id, user);
-                            if (ipv4 != null) {
-                                c.addresses.add(ipv4);
-                            }
-                            if (ipv6 != null) {
-                                c.addresses.add(ipv6);
-                            }
-
-                            pendingConnections.put(client.id, c);
-                            log.info(String.format("Authorized %s (%s,%s)", client.username, client.id, client.kid));
-
-                            LinkedHashMap<String, String> options = new LinkedHashMap<>();
-                            options.put("push-reset", null);
-                            if (ipv4 != null) {
-                                options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.localip.4"));
-                                options.put("push route", VPN.cfg.getProperty("openvpn.network.4") + " " +
-                                        VPN.cfg.getProperty("openvpn.netmask.4") + " " + VPN.cfg.getProperty("openvpn.localip.4"));
-                                // route the OpenVPN server over the default gateway, not over the VPN itself
-                                InetAddress[] addr = InetAddress.getAllByName(VPN.cfg.getProperty("openvpn.publicaddress"));
-                                for (InetAddress address : addr) {
-                                    if (address.getAddress().length == 4) {
-                                        options.put("push route", address.getHostAddress() + " 255.255.255.255 net_gateway");
-                                    }
-                                }
-
-                                if (user.settings().get("routeIPv4TrafficOverVPN", true).equals(true)) {
-                                    options.put("push redirect-gateway", "def1");
-                                }
-                            }
-
-                            //options.put("push route-gateway", "192.168.2.1");
-                            if (ipv6 != null) {
-                                IPAddress v6alloc = allocateIPv6FromSubnet(ipv6, user);
-                                options.put("push tun-ipv6", "");
-                                options.put("ifconfig-ipv6-push", v6alloc.address + "/64 " + VPN.cfg.getProperty("openvpn.localip.6"));
-                                options.put("push route-ipv6", VPN.cfg.getProperty("openvpn.network.6") + "/" + VPN.cfg.getProperty("openvpn.netmask.6"));
-                                // route assigned IPv6 subnet through client
-                                options.put("iroute-ipv6", ipv6.address + "/64");
-
-                                if (user.settings().get("routeIPv6TrafficOverVPN", true).equals(true)) {
-                                    //options.put("push redirect-gateway-ipv6", "def1");
-                                    options.put("push route-ipv6", "2000::/3");
-                                }
-                            }
-
-                            if (VPN.cfg.containsKey("openvpn.ping")) {
-                                options.put("push ping", VPN.cfg.get("openvpn.ping").toString());
-                                if (VPN.cfg.containsKey("openvpn.pingRestart")) {
-                                    options.put("push ping-restart", VPN.cfg.get("openvpn.pingRestart").toString());
-                                }
-                            } else {
-                                log.warn("No ping and set, will cause spurious connection resets");
-                            }
-
-                            vpn.authorizeClient(client.id, client.kid, options);
-                            return null;
-                        });
-
-                    } else {
-                        log.info(String.format("Refused %s (%s,%s)", client.username, client.id, client.kid));
-                        vpn.denyClient(client.id, client.kid, "Invalid user/password combination");
-                    }
-                } catch (SQLException ex) {
-                    log.error("Failed to set client configuration", ex);
-                }
-            }
-
-            @Override
-            public void clientDisconnect(Client client) {
-                try {
-                    List<Connection> cons = Connections.dao.queryForEq("clientId", client.id);
-                    if (cons.isEmpty()) {
-                        return;
-                    }
-
-                    Connection c = cons.get(0);
-                    c.closed = new Date();
-                    c.active = false;
-
-                    Connections.dao.update(c);
-
-                    for (IPAddress ip : c.addresses) {
-                        ip.connection = null;
-                        IPAddresses.dao.update(ip);
-                    }
-                } catch (SQLException ex) {
-                    log.error("Failed to insert client", ex);
-                }
-            }
-
-            @Override
-            public void clientReAuth(Client client) {
-                if (!acceptConnections) {
-                    vpn.denyClient(client.id, client.kid, "Reconnection denied");
-                }
-
-                try {
-                    // FIX THIS
-                    List<Connection> connections = Connections.dao.queryForEq("clientId", client.id);
-                    if (connections.stream().filter(c -> c.active).count() > 0) {
-                        vpn.authorizeClient(client.id, client.kid);
-                        return;
-                    };
-                } catch (Exception ex) {
-                    Logger.getLogger(getClass()).error("Failed to reauth connection " + client.id);
-                }
-
-                vpn.denyClient(client.id, client.kid, "Reconnection failed");
-            }
-
-            @Override
-            public void connectionEstablished(Client client) {
-                Logger.getLogger(getClass()).debug("Connection established " + client.id);
-            }
-
-            @Override
-            public void addressInUse(Client client, String address, boolean primary) {
-                try {
-                    Connection c = pendingConnections.remove(client.id);
-
-                    if (c == null) {
-                        // connection is being re-established
-                        return;
-                    }
-
-                    Connections.dao.create(c);
-
-                    for (IPAddress ip : c.addresses) {
-                        ip.connection = c;
-                        IPAddresses.dao.update(ip);
-                    }
-                } catch (SQLException ex) {
-                    log.error("Failed to insert connection", ex);
-                }
-            }
-
-            @Override
-            public void bytecount(Client client, long bytesIn, long bytesOut) {
-                HashMap<String, String> tags = new HashMap<>();
-                tags.put("client", "" + client.id);
-                tags.put("connection", "" + client.kid);
-
-                DataPoint bytesInDataPoint = new DataPoint();
-                bytesInDataPoint.metric = "vpn.client.bytesIn";
-                bytesInDataPoint.timestamp = System.currentTimeMillis();
-                bytesInDataPoint.value = bytesIn;
-                bytesInDataPoint.tags = tags;
-
-                DataPoint bytesOutDataPoint = new DataPoint();
-                bytesOutDataPoint.metric = "vpn.client.bytesOut";
-                bytesOutDataPoint.timestamp = System.currentTimeMillis();
-                bytesOutDataPoint.value = bytesOut;
-                bytesOutDataPoint.tags = tags;
-
-                VPN.monitoringAgent.addDataPoint(bytesInDataPoint);
-                VPN.monitoringAgent.addDataPoint(bytesOutDataPoint);
-            }
-        });
-
+        String[] instances = VPN.cfg.getProperty("openvpn.instances").split(";");
+        for (String instance : instances) {
+            String[] split = instance.split(":");
+            ManagementInterface m = new ManagementInterface(new DefaultServiceListener(),
+                    split[0], Integer.parseInt(split[1]));
+            openvpnInstances.put(instance, m);
+        }
     }
 
     public static Manager get() {
@@ -260,38 +66,42 @@ public final class Manager {
     }
 
     public void dropConnection(Connection connection) {
-        if (pendingConnections.containsKey(connection.id)) {
-            pendingConnections.remove(connection.id);
+        openvpnInstances.get(connection.openvpnInstance).killClient(connection.vpnClientId);
+        try {
+            connection.closed = new Date();
+            Connections.dao.update(connection);
+        } catch (Exception ex) {
+            log.error("Failed to update dropped connection", ex);
         }
-
-        vpn.killClient(connection.clientId);
     }
 
-    protected IPAddress assign(User user, Client client, int version) throws SQLException {
-        List<IPAddress> addrs = IPAddresses.forUser(user, version);
-        if (addrs.isEmpty()) {
-            IPAddress unused = IPAddresses.findUnused(version);
+    public IPAddress assign(User user, Client client, int version) throws SQLException {
+        return TransactionManager.callInTransaction(VPN.cs, () -> {
+            List<IPAddress> addrs = IPAddresses.forUser(user, version);
+            if (addrs.isEmpty()) {
+                IPAddress unused = IPAddresses.findUnused(version);
 
-            if (unused == null) {
-                log.info(String.format("Could not allocate IPv%s address for user %s (%s,%s)", version, client.username, client.id, client.kid));
-                return null;
+                if (unused == null) {
+                    log.info(String.format("Could not allocate IPv%s address for user %s (%s,%s)", version, client.username, client.id, client.kid));
+                    return null;
+                }
+
+                unused.user = user;
+                unused.leasedAt = new Date();
+                unused.expiry = DateUtil.convert(LocalDate.now().plusDays(1L));
+                IPAddresses.dao.update(unused);
+                addrs.add(unused);
+
+                if (version == 6) {
+                    return allocateIPv6FromSubnet(unused, user);
+                }
             }
 
-            unused.user = user;
-            unused.leasedAt = new Date();
-            unused.expiry = DateUtil.convert(LocalDate.now().plusDays(1L));
-            IPAddresses.dao.update(unused);
-            addrs.add(unused);
-
-            if (version == 6) {
-                return allocateIPv6FromSubnet(unused, user);
-            }
-        }
-
-        return addrs.get(0);
+            return addrs.get(0);
+        });
     }
 
-    protected IPAddress allocateIPv6FromSubnet(IPAddress v6subnet, User user) throws SQLException {
+    public IPAddress allocateIPv6FromSubnet(IPAddress v6subnet, User user) throws SQLException {
         IPv6Network subnet = IPv6Network.fromString(v6subnet.address + "/" + v6subnet.netmask);
         // TODO
         IPv6Address first = subnet.getFirst().add(1);
@@ -314,7 +124,8 @@ public final class Manager {
     }
 
     public void start() {
-        vpn.getWatchdog().start();
+        for (ManagementInterface vpn : openvpnInstances.values())
+            vpn.getWatchdog().start();
     }
 
     /**

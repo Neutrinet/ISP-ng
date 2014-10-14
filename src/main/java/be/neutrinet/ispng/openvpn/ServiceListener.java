@@ -17,8 +17,6 @@
  */
 package be.neutrinet.ispng.openvpn;
 
-import be.neutrinet.ispng.vpn.Client;
-
 /**
  * @author double-u
  */
@@ -35,4 +33,8 @@ public interface ServiceListener {
     public void addressInUse(Client client, String address, boolean primary);
 
     public void bytecount(Client client, long bytesIn, long bytesOut);
+
+    public void setManagementInterface(ManagementInterface mgmt);
+
+    public void managementConnectionEstablished();
 }

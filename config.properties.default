@@ -10,8 +10,7 @@ settings.dir=usercfg
 zookeeper.connectionString = 127.0.0.1:2181
 
 # OpenVPN management channel
-openvpn.host=
-openvpn.port=
+openvpn.instances=<host:mgmtport>;<host:mgmtport>;...
 # Use IP addresses
 openvpn.network.4=
 openvpn.netmask.4=255.255.255.0

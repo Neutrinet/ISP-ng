@@ -17,11 +17,8 @@
  */
 package be.neutrinet.ispng.openvpn;
 
-import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.config.Config;
-import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.Manager;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -31,28 +28,42 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author double-u
+ * @author wannes
  */
 public class ManagementInterface implements Runnable {
 
-    private final Thread thread;
     private final Watchdog watchdog = new Watchdog();
     private final ServiceListener listener;
     protected boolean echoOpenVPNCommands = false;
+    protected String host;
+    protected int port;
+    protected String instanceId;
+    private Thread thread;
     private Socket sock;
     private BufferedReader br;
     private BufferedWriter bw;
     private String line;
     private boolean run;
 
-    public ManagementInterface(ServiceListener listener) {
-        thread = new Thread(this, "ManagementClient");
+    public ManagementInterface(ServiceListener listener, String host, int port) {
         this.listener = listener;
+        this.host = host;
+        this.port = port;
+        this.instanceId = host + ":" + port;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 
     public void connect() throws IOException {
-        sock = new Socket(VPN.cfg.getProperty("openvpn.host"),
-                Integer.parseInt(VPN.cfg.getProperty("openvpn.port")));
+        listener.setManagementInterface(this);
+        // dispose of possible old socket
+        if (sock != null && !sock.isConnected()) sock.close();
+        // check if a connection already exists
+        if (sock != null && !sock.isClosed()) return;
+
+        sock = new Socket(host, port);
 
         Config.get().getAndWatch("debug/OpenVPN/echoCommands", "false", (String value) -> echoOpenVPNCommands = value.equals("true"));
     }
@@ -147,15 +158,24 @@ public class ManagementInterface implements Runnable {
 
     @Override
     public void run() {
-        run = true;
-
+        main:
         while (run) {
             try {
+                connect();
+
                 this.br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 this.bw = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
                 line = br.readLine();
 
+                listener.managementConnectionEstablished();
+
+                commandHandling:
                 while (run) {
+                    if (line == null) {
+                        // Abort and recover
+                        break;
+                    }
+
                     if (line.startsWith(">")) {
                         if (echoOpenVPNCommands)
                             Logger.getLogger(getClass()).debug("OpenVPN command: " + line);
@@ -218,13 +238,9 @@ public class ManagementInterface implements Runnable {
                     }
 
                     line = br.readLine();
-
-                    if (line == null && !sock.isConnected()) {
-                        // Abort and recover
-                        break;
-                    }
                 }
 
+                sock.close();
             } catch (Exception ex) {
                 Logger.getLogger(getClass()).error("Management client failure", ex);
                 break;
@@ -234,51 +250,28 @@ public class ManagementInterface implements Runnable {
 
     public final class Watchdog extends Thread {
 
-        private final CircularFifoBuffer deltas = new CircularFifoBuffer(5);
-        private long timeLastRecover;
-
         @Override
         public void run() {
+            run = true;
+
             try {
-                run = false;
-
-                while (true) {
-
-                    if (sock == null || !sock.isConnected()) {
-                        connect();
-                        thread.start();
-                        thread.join();
-                    }
+                while (run) {
+                    // Threads cannot be restarted, create a new instance each time
+                    thread = new Thread(ManagementInterface.this, "ManagementClient-" + host + ":" + port);
+                    thread.start();
+                    thread.join();
 
                     if (run) {
                         Logger.getLogger(getClass()).warn("Recovering from management interface failure");
-                        long delta = System.currentTimeMillis() - timeLastRecover;
-                        deltas.add((Long) delta);
 
-                        /*
-                        Calculate average of time deltas of last 5 recoveries
-                        If they are within 10 minutes, something is wrong
-                         */
-                        long sum = 0;
-                        for (Object o : deltas) {
-                            sum += (Long) o;
-                        }
-                        sum /= 5;
-
-                        // if average of recovery time deltas is smaller than 10 minutes
-                        if (sum < 600000L) {
-                            // Abort
-                            break;
-                        }
-
-                        timeLastRecover = System.currentTimeMillis();
-                        // wait ten seconds 'til recover attempt
-                        Thread.sleep(10000);
+                        // wait one second 'til recover attempt
+                        Thread.sleep(1000);
                     }
                 }
-            } catch (IOException | InterruptedException ex) {
+            } catch (Exception ex) {
                 Logger.getLogger(getClass()).error("Recovery failure", ex);
                 Manager.get().shutItDown("Could not recover from mgmt client failure");
+                run = false;
             }
         }
     }
