@@ -425,8 +425,10 @@ function App() {
 
         if (pwd.length < 6 || pwd !== verify) {
             $('#password-done').attr('disabled', '');
+            $('#password-done').removeClass('btn-primary');
         } else {
             $('#password-done').removeAttr('disabled');
+            $('#password-done').addClass('btn-primary');
         }
 
     };
