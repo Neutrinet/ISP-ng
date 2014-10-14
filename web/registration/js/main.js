@@ -401,7 +401,24 @@ function App() {
             self.urlParams[decode(match[1])] = decode(match[2]);
     };
 
+    this.show_alert = function(theAlert) {
+        if (theAlert.hasClass("hide")) {
+           theAlert.hide().removeClass("hide");
+        }
+
+        if (theAlert.is(":visible") === false) {
+            theAlert.fadeIn();
+        }
+    }
+
+    this.hide_alert = function(theAlert) {
+        if (theAlert.is(":visible") === true) {
+            theAlert.fadeOut();
+        }
+    }
+
     this.validatePassword = function() {
+
         var pwd = $('#password').val();
         var verify = $('#password-verify').val();
 
@@ -409,17 +426,19 @@ function App() {
 
         if (pwd.length < 6) {
             $('#password').parent().addClass("has-error");
-            $('#alert-password').removeClass("hide");
+            app.show_alert($("#alert-password"));
+
         } else {
             $('#password').parent().removeClass("has-error");
-            $('#alert-password').addClass("hide");
+            app.hide_alert($("#alert-password"));
 
+            var alert_password_verify = $('#alert-password-verify');
             if (pwd !== verify) {
                 $('#password-verify').parent().addClass("has-error");
-                $('#alert-password-verify').removeClass("hide");
+                app.show_alert($('#alert-password-verify'));
             } else {
                 $('#password-verify').parent().removeClass("has-error");
-                $('#alert-password-verify').addClass("hide");
+                app.hide_alert($('#alert-password-verify'));
             }
         }
 
