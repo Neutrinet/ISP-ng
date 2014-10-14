@@ -409,14 +409,18 @@ function App() {
 
         if (pwd.length < 6) {
             $('#password').parent().addClass("has-error")
+            $('#alert-password').removeClass("hide")
         } else {
             $('#password').parent().removeClass("has-error")
+            $('#alert-password').addClass("hide")
         }
 
         if (pwd !== verify) {
             $('#password-verify').parent().addClass("has-error")
+            $('#alert-password-verify').removeClass("hide")
         } else {
             $('#password-verify').parent().removeClass("has-error")
+            $('#alert-password-verify').addClass("hide")
         }
 
         if (pwd.length < 6 || pwd !== verify) {
