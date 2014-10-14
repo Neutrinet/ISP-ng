@@ -18,9 +18,12 @@ function VPN() {
 
     this.handleIfError = function(response) {
         if (response === undefined) {
+            var errorBlock = $('<div class="alert alert-danger" role="alert">');
+
             app.content.empty();
-            app.content.append($('<h2>').text('An error ocurred'));
-            app.content.append($('<p>').text('Our backend did not return a response. Please try again.'));
+            errorBlock.append($('<h2>').text('An error ocurred'));
+            errorBlock.append($('<p>').text('Our backend did not return a response. Please try again.'));
+            app.content.append(errorBlock);
             app.preloader.hide();
             app.content.fadeIn();
 
@@ -28,11 +31,15 @@ function VPN() {
         }
 
         if (response.errorKey !== undefined) {
+            var errorBlock = $('<div class="alert alert-danger" role="alert">');
+
             //app.content.empty();
-            app.content.prepend($('<br>'));
-            app.content.prepend($('<p>').text(response.errorKey));
-            app.content.prepend($('<p>').text(response.message));
-            app.content.prepend($('<h2>').text('An error ocurred'));
+            errorBlock.prepend($('<br>'));
+            errorBlock.prepend($('<p>').text(response.errorKey));
+            errorBlock.prepend($('<p>').text(response.message));
+            errorBlock.prepend($('<h2>').text('An error ocurred'));
+
+            app.content.prepend(errorBlock);
 
             app.preloader.hide();
             app.content.fadeIn();
@@ -82,7 +89,7 @@ function VPN() {
                     return;
                 vpn.registration = response;
                 app.preloader.hide();
-                app.content.load('password.html', app.unlocked);
+                app.content.load('password.html?' + new Date().getTime(), app.unlocked);
             }});
     };
 }
@@ -394,16 +401,53 @@ function App() {
             self.urlParams[decode(match[1])] = decode(match[2]);
     };
 
+    this.show_alert = function(theAlert) {
+        if (theAlert.hasClass("hide")) {
+           theAlert.hide().removeClass("hide");
+        }
+
+        if (theAlert.is(":visible") === false) {
+            theAlert.fadeIn();
+        }
+    }
+
+    this.hide_alert = function(theAlert) {
+        if (theAlert.is(":visible") === true) {
+            theAlert.fadeOut();
+        }
+    }
+
     this.validatePassword = function() {
+
         var pwd = $('#password').val();
         var verify = $('#password-verify').val();
 
         console.log('l' + pwd.length + " " + (pwd === verify ? "true" : "false"));
 
-        if (pwd.length <= 6 || pwd !== verify) {
+        if (pwd.length < 6) {
+            $('#password').parent().addClass("has-error");
+            app.show_alert($("#alert-password"));
+
+        } else {
+            $('#password').parent().removeClass("has-error");
+            app.hide_alert($("#alert-password"));
+
+            var alert_password_verify = $('#alert-password-verify');
+            if (pwd !== verify) {
+                $('#password-verify').parent().addClass("has-error");
+                app.show_alert($('#alert-password-verify'));
+            } else {
+                $('#password-verify').parent().removeClass("has-error");
+                app.hide_alert($('#alert-password-verify'));
+            }
+        }
+
+        if (pwd.length < 6 || pwd !== verify) {
             $('#password-done').attr('disabled', '');
+            $('#password-done').removeClass('btn-primary');
         } else {
             $('#password-done').removeAttr('disabled');
+            $('#password-done').addClass('btn-primary');
         }
 
     };
