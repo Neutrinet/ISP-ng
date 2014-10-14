@@ -89,7 +89,7 @@ function VPN() {
                     return;
                 vpn.registration = response;
                 app.preloader.hide();
-                app.content.load('password.html', app.unlocked);
+                app.content.load('password.html?' + new Date().getTime(), app.unlocked);
             }});
     };
 }
