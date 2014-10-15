@@ -158,7 +158,7 @@ public class DefaultServiceListener implements ServiceListener {
         try {
             // FIX THIS
             HashMap<String, Object> query = new HashMap<>();
-            query.put("clientId", client.id);
+            query.put("client_id", client.id);
             query.put("openvpnInstance", vpn.getInstanceId());
             List<Connection> connections = Connections.dao.queryForFieldValues(query);
 
@@ -166,7 +166,7 @@ public class DefaultServiceListener implements ServiceListener {
                 vpn.authorizeClient(client.id, client.kid);
                 return;
             }
-            ;
+
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to reauth connection " + client.id);
         }
