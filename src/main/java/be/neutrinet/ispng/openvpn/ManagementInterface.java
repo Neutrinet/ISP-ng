@@ -65,6 +65,8 @@ public class ManagementInterface implements Runnable {
 
         sock = new Socket(host, port);
 
+        listener.managementConnectionEstablished();
+
         Config.get().getAndWatch("debug/OpenVPN/echoCommands", "false", (String value) -> echoOpenVPNCommands = value.equals("true"));
     }
 
@@ -166,8 +168,6 @@ public class ManagementInterface implements Runnable {
                 this.br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 this.bw = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
                 line = br.readLine();
-
-                listener.managementConnectionEstablished();
 
                 commandHandling:
                 while (run) {
