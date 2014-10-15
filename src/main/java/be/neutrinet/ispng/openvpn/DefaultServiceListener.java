@@ -39,7 +39,7 @@ public class DefaultServiceListener implements ServiceListener {
             return;
         }
 
-        be.neutrinet.ispng.vpn.Client userClient = be.neutrinet.ispng.vpn.Client.match(client).orElse(be.neutrinet.ispng.vpn.Client.create(client));
+        be.neutrinet.ispng.vpn.Client userClient = be.neutrinet.ispng.vpn.Client.match(client).orElseGet(() -> be.neutrinet.ispng.vpn.Client.create(client));
 
         try {
             User user = Users.authenticate(client.username, client.password);
@@ -145,7 +145,7 @@ public class DefaultServiceListener implements ServiceListener {
                 IPAddresses.dao.update(ip);
             }
         } catch (SQLException ex) {
-            log.error("Failed to insert client", ex);
+            log.error("Failed to update client", ex);
         }
     }
 
