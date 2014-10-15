@@ -77,6 +77,8 @@ public class Client implements Serializable {
 
             User user = users.get(0);
             c.user = user;
+
+            dao.create(c);
         } catch (Exception ex) {
             Logger.getLogger(Client.class).error("Failed to create VPN client", ex);
         }
