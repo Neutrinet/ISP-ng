@@ -84,7 +84,9 @@ public class Config {
             CuratorWatcher cw = (WatchedEvent watchedEvent) -> {
                 if (watchedEvent.getType() == Watcher.Event.EventType.NodeDataChanged) {
                     byte[] value = cf.getData().forPath(watchedEvent.getPath());
-                    listener.accept(new String(value, CHARSET));
+                    String strVal = new String(value, CHARSET);
+                    Logger.getLogger(getClass()).debug("ZK key " + key + " changed value to " + strVal);
+                    listener.accept(strVal);
                 }
             };
 
