@@ -20,17 +20,7 @@ import java.util.Optional;
 @DatabaseTable(tableName = "ovpn_clients")
 public class Client implements Serializable {
 
-    @DatabaseField(generatedId = true)
-    public int id;
-    @DatabaseField
-    public String platform;
-    @DatabaseField(canBeNull = false)
-    public String commonName;
-    @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
-    public User user;
-
     public static Dao<Client, String> dao;
-
     static {
         try {
             dao = DaoManager.createDao(VPN.cs, Client.class);
@@ -40,9 +30,22 @@ public class Client implements Serializable {
         }
     }
 
+    @DatabaseField(generatedId = true)
+    public int id;
+    @DatabaseField
+    public String platform;
+    @DatabaseField(canBeNull = false)
+    public String commonName;
+    @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
+    public User user;
+
     public static Optional<Client> match(be.neutrinet.ispng.openvpn.Client vpnClient) {
         try {
-            User user = Users.dao.queryForId(vpnClient.username);
+            List<User> users = Users.dao.queryForEq("email", vpnClient.username);
+
+            assert users.size() == 1;
+
+            User user = users.get(0);
             HashMap<String, Object> query = new HashMap<>();
             query.put("user_id", user.id);
             query.put("commonName", vpnClient.commonName);
@@ -68,7 +71,11 @@ public class Client implements Serializable {
         c.commonName = client.commonName;
         c.platform = client.platform;
         try {
-            User user = Users.dao.queryForId(client.username);
+            List<User> users = Users.dao.queryForEq("email", client.username);
+
+            assert users.size() == 1;
+
+            User user = users.get(0);
             c.user = user;
         } catch (Exception ex) {
             Logger.getLogger(Client.class).error("Failed to create VPN client", ex);
