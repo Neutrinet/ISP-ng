@@ -214,7 +214,7 @@ public class ManagementInterface implements Runnable {
                                         break;
                                     case "ADDRESS":
                                         client = new Client();
-                                        client.kid = Integer.parseInt(args[0]);
+                                        client.id = Integer.parseInt(args[0]);
                                         listener.addressInUse(client, args[1], args[2].equals("1"));
                                         break;
                                     case "REAUTH":
