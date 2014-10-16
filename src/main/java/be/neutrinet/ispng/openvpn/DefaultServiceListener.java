@@ -158,7 +158,8 @@ public class DefaultServiceListener implements ServiceListener {
         try {
             // FIX THIS
             HashMap<String, Object> query = new HashMap<>();
-            query.put("client_id", client.id);
+            be.neutrinet.ispng.vpn.Client vc = be.neutrinet.ispng.vpn.Client.match(client).get();
+            query.put("client_id", vc.id);
             query.put("openvpnInstance", vpn.getInstanceId());
             List<Connection> connections = Connections.dao.queryForFieldValues(query);
 
@@ -176,27 +177,40 @@ public class DefaultServiceListener implements ServiceListener {
 
     @Override
     public void connectionEstablished(Client client) {
-        Logger.getLogger(getClass()).debug("Connection established " + client.id);
+        Connection c = pendingConnections.remove(client.id);
+
+        if (c == null) {
+            log.debug("Re-established connection" + client.id);
+            return;
+        } else {
+            log.debug("Connection established " + client.id);
+        }
+
+        try {
+            Connections.dao.create(c);
+        } catch (SQLException ex) {
+            log.error("Failed to insert connection", ex);
+        }
     }
 
     @Override
     public void addressInUse(Client client, String address, boolean primary) {
         try {
-            Connection c = pendingConnections.remove(client.id);
+            List<IPAddress> addresses = IPAddresses.dao.queryForEq("address", address);
 
-            if (c == null) {
-                // connection is being re-established
+            if (addresses.isEmpty()) {
                 return;
             }
 
-            Connections.dao.create(c);
-
-            for (IPAddress ip : c.addresses) {
-                ip.connection = c;
-                IPAddresses.dao.update(ip);
+            if (addresses.size() > 1) {
+                throw new Error("Address " + address + " has multiple instances in the address pool");
             }
+
+            IPAddress addr = addresses.get(0);
+            addr.connection = pendingConnections.get(client.id);
+            IPAddresses.dao.update(addr);
         } catch (SQLException ex) {
-            log.error("Failed to insert connection", ex);
+            log.error("Failed to update IP addresses", ex);
         }
     }
 
