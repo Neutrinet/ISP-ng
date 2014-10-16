@@ -49,6 +49,11 @@ public final class Manager {
             throw new Error("OpenVPN instance(s) are not configured");
         }
 
+        if (VPN.cfg.get("openvpn.instances").toString().isEmpty()) {
+            Logger.getLogger(getClass()).warn("No OpenVPN instance(s) configured, continuing without VPN support");
+            return;
+        }
+
         String[] instances = VPN.cfg.getProperty("openvpn.instances").split(";");
         for (String instance : instances) {
             String[] split = instance.split(":");
