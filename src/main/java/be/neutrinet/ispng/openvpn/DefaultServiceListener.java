@@ -127,7 +127,7 @@ public class DefaultServiceListener implements ServiceListener {
     public void clientDisconnect(Client client) {
         try {
             HashMap<String, Object> query = new HashMap<>();
-            query.put("client_id", client.id);
+            query.put("vpnClientId", client.id);
             query.put("openvpnInstance", vpn.getInstanceId());
             List<Connection> cons = Connections.dao.queryForFieldValues(query);
             if (cons.isEmpty()) {
