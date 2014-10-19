@@ -6,13 +6,7 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.mail.Generator;
-import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
-import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.Map;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
@@ -20,6 +14,11 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
+
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.Map;
 
 /**
  *

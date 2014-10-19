@@ -3,7 +3,6 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.vpn.Connection;
 import be.neutrinet.ispng.vpn.Connections;
 import be.neutrinet.ispng.vpn.Manager;
-import be.neutrinet.ispng.vpn.ResourceBase;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;

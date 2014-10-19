@@ -1,6 +1,5 @@
 package be.neutrinet.ispng.vpn.api;
 
-import be.neutrinet.ispng.vpn.ResourceBase;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import org.restlet.ext.jackson.JacksonRepresentation;

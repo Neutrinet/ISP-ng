@@ -7,14 +7,14 @@ package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.IPAddresses;
-import be.neutrinet.ispng.vpn.ResourceBase;
-import java.sql.SQLException;
-import java.util.Map;
 import org.apache.log4j.Logger;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
+
+import java.sql.SQLException;
+import java.util.Map;
 
 /**
  *
