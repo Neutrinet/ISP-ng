@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package be.neutrinet.ispng.vpn;
+package be.neutrinet.ispng.vpn.api;
 
-import java.util.concurrent.ConcurrentMap;
+import be.neutrinet.ispng.vpn.ClientError;
 import org.restlet.Message;
 import org.restlet.data.Status;
 import org.restlet.engine.header.Header;
@@ -15,15 +15,16 @@ import org.restlet.resource.Options;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * @author double-u
  */
 public abstract class ResourceBase extends ServerResource {
 
-    private static final String HEADERS_KEY = "org.restlet.http.headers";
-
     protected final static JacksonRepresentation DEFAULT_ERROR = new JacksonRepresentation(new ClientError("UNKNOWN_ERROR"));
     protected final static JacksonRepresentation DEFAULT_SUCCESS = new JacksonRepresentation("OK");
+    private static final String HEADERS_KEY = "org.restlet.http.headers";
 
     @SuppressWarnings("unchecked")
     static Series<Header> getMessageHeaders(Message message) {
