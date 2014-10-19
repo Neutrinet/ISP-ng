@@ -49,7 +49,7 @@ public class RestletServlet extends HttpServlet {
         router.attach("/user/{user}/config", UserVPNClientConfig.class);
         router.attach("/user/{user}/setting/{setting}", UserSettings.class);
         router.attach("/user/{user}/cert/{cert}", UserCertificate.class);
-        router.attach("/user/{user}/manage/{operation}", UserManagement.class);
+        router.attach("/user/{user}", UserManagement.class);
         router.attach("/user/login", UserLogin.class);
 
         ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
