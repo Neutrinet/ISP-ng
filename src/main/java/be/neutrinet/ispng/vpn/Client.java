@@ -1,15 +1,10 @@
 package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.VPN;
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import com.j256.ormlite.table.TableUtils;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -20,16 +15,6 @@ import java.util.Optional;
 @DatabaseTable(tableName = "ovpn_clients")
 public class Client implements Serializable {
 
-    public static Dao<Client, String> dao;
-    static {
-        try {
-            dao = DaoManager.createDao(VPN.cs, Client.class);
-            TableUtils.createTableIfNotExists(VPN.cs, Client.class);
-        } catch (SQLException ex) {
-            Logger.getLogger(Client.class).error("Failed to create DAO", ex);
-        }
-    }
-
     @DatabaseField(generatedId = true)
     public int id;
     @DatabaseField
@@ -38,6 +23,8 @@ public class Client implements Serializable {
     public String commonName;
     @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
     public User user;
+    @DatabaseField(defaultValue = "true")
+    public boolean enabled;
 
     public static Optional<Client> match(be.neutrinet.ispng.openvpn.Client vpnClient) {
         try {
@@ -49,7 +36,7 @@ public class Client implements Serializable {
             HashMap<String, Object> query = new HashMap<>();
             query.put("user_id", user.id);
             query.put("commonName", vpnClient.commonName);
-            List<Client> clients = dao.queryForFieldValues(query);
+            List<Client> clients = Clients.dao.queryForFieldValues(query);
 
             if (clients.size() > 1) {
                 Logger.getLogger(Client.class).error("Multiple client definitions, user: " + vpnClient.username +
@@ -78,7 +65,7 @@ public class Client implements Serializable {
             User user = users.get(0);
             c.user = user;
 
-            dao.createIfNotExists(c);
+            Clients.dao.createIfNotExists(c);
         } catch (Exception ex) {
             Logger.getLogger(Client.class).error("Failed to create VPN client", ex);
         }
