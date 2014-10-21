@@ -39,6 +39,7 @@ public class RestletServlet extends HttpServlet {
         super.init();
         this.adapter = new ServletAdapter(getServletContext());
 
+        // Mind the order - most specific routes first
         Router router = new Router(this.adapter.getContext());
         router.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
         router.attach("/reg/{id}", UserRegistration.class);
@@ -46,9 +47,10 @@ public class RestletServlet extends HttpServlet {
         router.attach("/address/lease/{id}", AddressLease.class);
         router.attach("/unlock-key/{key}", UnlockKey.class);
         router.attach("/connection/{id}", VPNConnections.class);
+        router.attach("/client/{client}/cert/{cert}", VPNClientCertificate.class);
+        router.attach("/client/{client}", VPNClient.class);
         router.attach("/user/{user}/config", UserVPNClientConfig.class);
         router.attach("/user/{user}/setting/{setting}", UserSettings.class);
-        router.attach("/user/{user}/cert/{cert}", UserCertificate.class);
         router.attach("/user/{user}", UserManagement.class);
         router.attach("/user/login", UserLogin.class);
 
