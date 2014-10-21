@@ -7,11 +7,8 @@ package be.neutrinet.ispng.vpn.admin;
 
 import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.vpn.IPAddress;
-import be.neutrinet.ispng.vpn.IPAddresses;
-import be.neutrinet.ispng.vpn.User;
-import be.neutrinet.ispng.vpn.Users;
-import be.neutrinet.ispng.vpn.api.UserCertificate;
+import be.neutrinet.ispng.vpn.*;
+import be.neutrinet.ispng.vpn.api.VPNClientCertificate;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
 import com.j256.ormlite.field.DatabaseField;
@@ -33,6 +30,8 @@ public class Registration {
     private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public User user;
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    public Client client;
     @DatabaseField(canBeNull = false)
     public Date timeInitiated;
     @DatabaseField
@@ -62,6 +61,20 @@ public class Registration {
         return id;
     }
 
+    public void createInitialClient() {
+        if (this.user == null) throw new IllegalStateException("No user is coupled");
+
+        try {
+            this.client = new Client();
+            this.client.commonName = "!!TEMPORARY_CN!!";
+            this.client.user = this.user;
+
+            Clients.dao.create(client);
+        } catch (SQLException ex) {
+            Logger.getLogger(getClass()).error("Failed to create initial client", ex);
+        }
+    }
+
     /**
      * Commits and finalizes registration
      */
@@ -72,7 +85,7 @@ public class Registration {
                     IPAddress ip4 = IPAddresses.dao.queryForId("" + this.ipv4Id);
                     ip4.expiry = DateUtil.convert(LocalDate.now().plusDays(365L));
                     ip4.leasedAt = new Date();
-                    ip4.user = this.user;
+                    ip4.client = this.client;
                     IPAddresses.dao.update(ip4);
                 }
 
@@ -81,13 +94,13 @@ public class Registration {
                 UnlockKeys.dao.update(unlockKey);
 
                 this.completed = new Date();
-                this.user.enabled = true;
-                Users.dao.update(user);
+                this.client.user.enabled = true;
+                Users.dao.update(this.client.user);
 
                 // Check if user has certificates that need to be signed
-                List<Certificate> certs = Certificates.dao.queryForEq("user_id", user.id);
+                List<Certificate> certs = Certificates.dao.queryForEq("client_id", client.id);
                 for (Certificate cert : certs) {
-                    UserCertificate.sign(cert);
+                    VPNClientCertificate.sign(cert);
                 }
                 
                 Registrations.dao.update(this);
