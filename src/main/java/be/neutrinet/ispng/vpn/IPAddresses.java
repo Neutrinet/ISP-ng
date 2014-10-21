@@ -26,11 +26,12 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.table.TableUtils;
 import com.tufar.IPCalculator.IPv4;
+import org.apache.log4j.Logger;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.log4j.Logger;
 
 /**
  *
@@ -55,7 +56,7 @@ public class IPAddresses {
         try {
             QueryBuilder<IPAddress, String> queryBuilder = dao.queryBuilder();
             queryBuilder.limit(1L);
-            queryBuilder.where().eq("user_id", -1).and()
+            queryBuilder.where().eq("client_id", -1).and()
                     .eq("ipVersion", ipVersion);
             List<IPAddress> query = dao.query(queryBuilder.prepare());
 

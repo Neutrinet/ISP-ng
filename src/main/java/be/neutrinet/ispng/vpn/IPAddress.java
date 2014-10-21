@@ -19,6 +19,7 @@ package be.neutrinet.ispng.vpn;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
 import java.util.Date;
 
 /**
@@ -33,7 +34,7 @@ public class IPAddress {
     @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     public Connection connection;
     @DatabaseField(defaultValue = "-1", foreign = true, foreignAutoRefresh = true)
-    public User user;
+    public Client client;
     @DatabaseField(canBeNull = false, unique = true)
     public String address;
     @DatabaseField(defaultValue = "4")
