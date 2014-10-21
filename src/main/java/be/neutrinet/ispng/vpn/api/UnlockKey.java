@@ -54,7 +54,7 @@ public class UnlockKey extends ResourceBase {
             key.key = generateUnlockKey();
             UnlockKeys.dao.createIfNotExists(key);
 
-            if (data.containsKey("sendEmail") && !data.get("sendEmail").equals("false"))
+            if (data.containsKey("sendEmail") && data.get("sendEmail").equals("true"))
                 VPN.generator.sendUnlockKey(key, key.email);
 
             return new JacksonRepresentation(key);
