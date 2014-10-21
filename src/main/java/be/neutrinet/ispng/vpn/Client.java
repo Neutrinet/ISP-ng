@@ -17,8 +17,6 @@ public class Client implements Serializable {
 
     @DatabaseField(generatedId = true)
     public int id;
-    @DatabaseField
-    public String platform;
     @DatabaseField(canBeNull = false)
     public String commonName;
     @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
@@ -56,7 +54,7 @@ public class Client implements Serializable {
     public static Client create(be.neutrinet.ispng.openvpn.Client client) {
         Client c = new Client();
         c.commonName = client.commonName;
-        c.platform = client.platform;
+
         try {
             List<User> users = Users.dao.queryForEq("email", client.username);
 

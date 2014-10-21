@@ -45,6 +45,8 @@ public class Connection {
     @DatabaseField
     public Date closed;
     @DatabaseField
+    public String platform;
+    @DatabaseField
     public String version;
     @DatabaseField
     public int localPort;
@@ -70,6 +72,7 @@ public class Connection {
         this.localPort = client.localPort;
         this.untrustedIP = client.untrustedIP;
         this.vpnClientId = client.id;
+        this.platform = client.platform;
     }
 
 }
