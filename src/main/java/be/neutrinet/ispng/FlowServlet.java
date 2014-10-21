@@ -7,17 +7,19 @@ package be.neutrinet.ispng;
 
 import be.fedict.eid.applet.service.Address;
 import be.fedict.eid.applet.service.Identity;
+import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.UUID;
+import org.apache.log4j.Logger;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  *
@@ -51,16 +53,20 @@ public class FlowServlet extends HttpServlet {
                             resp.sendError(400, "Illegal registration id");
                             return;
                         }
-                        reg.user.name = identity.getFirstName() + " " + identity.getMiddleName();
-                        reg.user.lastName = identity.getName();
-                        reg.user.birthPlace = identity.getPlaceOfBirth();
-                        reg.user.birthDate = identity.getDateOfBirth().getTime();
-                        reg.user.street = address.getStreetAndNumber();
-                        reg.user.postalCode = address.getZip();
-                        reg.user.municipality = address.getMunicipality();
-                        reg.user.certId = identity.chipNumber;
 
-                        Users.dao.create(reg.user);
+                        User user = reg.user;
+                        user.name = identity.getFirstName() + " " + identity.getMiddleName();
+                        user.lastName = identity.getName();
+                        user.birthPlace = identity.getPlaceOfBirth();
+                        user.birthDate = identity.getDateOfBirth().getTime();
+                        user.street = address.getStreetAndNumber();
+                        user.postalCode = address.getZip();
+                        user.municipality = address.getMunicipality();
+                        user.certId = identity.chipNumber;
+
+                        Users.dao.create(user);
+
+                        reg.createInitialClient();
                         Registrations.dao.update(reg);
                         resp.sendRedirect("/?id=" + id + "&flow=eIdDone");
                     }
@@ -72,8 +78,8 @@ public class FlowServlet extends HttpServlet {
             case "confirm-email":
                 try {
                     Registration r = Registrations.dao.queryForEq("id", id).get(0);
-                    r.user.enabled = true;
-                    Users.dao.update(r.user);
+                    r.client.user.enabled = true;
+                    Users.dao.update(r.client.user);
 
                     resp.sendRedirect("/?id=" + id + "&flow=emailDone");
                 } catch (SQLException ex) {
