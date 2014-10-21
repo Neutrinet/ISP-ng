@@ -7,10 +7,9 @@ package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.ClientError;
-import be.neutrinet.ispng.vpn.ResourceBase;
-import be.neutrinet.ispng.vpn.User;
-import be.neutrinet.ispng.vpn.Users;
+import be.neutrinet.ispng.vpn.Clients;
 import be.neutrinet.ispng.vpn.ca.CA;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
@@ -47,7 +46,7 @@ import java.util.List;
  *
  * @author wannes
  */
-public class UserCertificate extends ResourceBase {
+public class VPNClientCertificate extends ResourceBase {
 
     public static X509CertificateHolder sign(Certificate cert) {
         try {
@@ -64,7 +63,7 @@ public class UserCertificate extends ResourceBase {
 
             return cert.get();
         } catch (Exception ex) {
-            Logger.getLogger(UserCertificate.class).error("Failed to sign certificate", ex);
+            Logger.getLogger(VPNClientCertificate.class).error("Failed to sign certificate", ex);
         }
 
         return null;
@@ -77,9 +76,9 @@ public class UserCertificate extends ResourceBase {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
-        String userId = getRequestAttributes().get("user").toString();
+        String clientId = getRequestAttributes().get("client").toString();
         try {
-            List<Certificate> certs = Certificates.dao.queryForEq("user_id", userId);
+            List<Certificate> certs = Certificates.dao.queryForEq("client_id", clientId);
 
             if (getRequestAttributes().containsKey("cert")) {
                 String certId = getRequestAttributes().get("cert").toString();
@@ -107,15 +106,15 @@ public class UserCertificate extends ResourceBase {
                 return new JacksonRepresentation(certs);
             }
         } catch (Exception ex) {
-            Logger.getLogger(UserCertificate.class).error("Failed to get certificate", ex);
+            Logger.getLogger(VPNClientCertificate.class).error("Failed to get certificate", ex);
         }
 
         return DEFAULT_ERROR;
     }
 
-    @Put
+    @Put()
     public Representation storeCSR(Representation csrstream) {
-        if (!getRequest().getAttributes().containsKey("user")) {
+        if (!getRequest().getAttributes().containsKey("client")) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
@@ -123,7 +122,7 @@ public class UserCertificate extends ResourceBase {
 
         // Do all kinds of security checks
         try {
-            User user = Users.dao.queryForId(getRequest().getAttributes().get("user").toString());
+            Client client = Clients.dao.queryForId(getAttribute("client").toString());
 
             PEMParser parser = new PEMParser(sr.getReader());
             PKCS10CertificationRequest csr = (PKCS10CertificationRequest) parser.readObject();
@@ -149,6 +148,10 @@ public class UserCertificate extends ResourceBase {
                 return clientError("INVALID_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
             }
 
+            // couple CN to client
+            client.commonName = CN;
+            Clients.dao.update(client);
+
             String caStorePath = VPN.cfg.getProperty("ca.storeDir", "ca");
             File dir = new File(caStorePath);
             if (!dir.isDirectory()) {
@@ -156,7 +159,7 @@ public class UserCertificate extends ResourceBase {
             }
 
             Certificate cert = new Certificate();
-            cert.user = user;
+            cert.client = client;
             Certificates.dao.create(cert);
 
             FileWriter fw = new FileWriter(caStorePath + "/" + cert.id + ".csr");
