@@ -1,7 +1,7 @@
 package be.neutrinet.ispng.vpn.ca;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.vpn.api.UserCertificate;
+import be.neutrinet.ispng.vpn.api.VPNClientCertificate;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
@@ -44,7 +44,7 @@ public class CA {
             caKey = (PrivateKey) keyStore.getKey("ca", VPN.cfg.get("ca.keyPassword").toString().toCharArray());
             caCert = (X509Certificate) keyStore.getCertificate("ca");
         } catch (Exception ex) {
-            Logger.getLogger(UserCertificate.class).error("Failed to load ca key", ex);
+            Logger.getLogger(VPNClientCertificate.class).error("Failed to load ca key", ex);
         }
     }
 
