@@ -129,6 +129,8 @@ public class UserRegistration extends ResourceBase {
                 reg.user.country = (String) data.get("country");
 
                 if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
+
+                reg.createInitialClient();
                 Registrations.dao.update(reg);
 
                 return new JacksonRepresentation(reg);
