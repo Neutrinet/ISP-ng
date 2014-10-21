@@ -301,11 +301,10 @@ function App() {
                         // set cookie to avoid auth dialog
                         document.cookie = 'Registration-ID=' + self.vpn.registration.id;
 
-                        $.ajax(self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/cert/new', {
+                        $.ajax(self.vpn.endpoint + 'api/client/' + self.vpn.registration.client.id + '/cert/new', {
                             data: $('#csr').val(),
                             type: 'PUT',
-                            contentType: 'application/json',
-                            dataType: 'json',
+                            contentType: 'text/plain',
                             success: function(response, status, xhr) {
                                 $('#error').empty();
                                 app.content.hide();
@@ -344,6 +343,7 @@ function App() {
             $.ajax(self.vpn.endpoint + 'api/address/lease/0', {
                 data: JSON.stringify({
                     user: self.vpn.registration.user.id,
+                    client: self.vpn.registration.client.id,
                     version: parseInt(version, 10)
                 }),
                 type: 'PUT',
