@@ -1,7 +1,7 @@
 package be.neutrinet.ispng.vpn.ca;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.vpn.Client;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.apache.commons.io.IOUtils;
@@ -26,7 +26,7 @@ public class Certificate {
     public int id;
 
     @DatabaseField(foreign = true, canBeNull = false)
-    public User user;
+    public Client client;
 
     @DatabaseField
     public BigInteger serial;
