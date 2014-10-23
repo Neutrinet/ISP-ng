@@ -43,7 +43,7 @@ import java.util.Properties;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 public class VPN implements Daemon {
 
@@ -116,6 +116,8 @@ public class VPN implements Daemon {
         Manager.get().start();
 
         monitoringAgent = new Agent();
+
+        System.setProperty("org.restlet.engine.loggerFacadeClass", "org.restlet.ext.slf4j.Slf4jLoggerFacade");
 
         server = new Server();
 
