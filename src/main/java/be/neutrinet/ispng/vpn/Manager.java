@@ -19,7 +19,6 @@ package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.openvpn.Client;
 import be.neutrinet.ispng.openvpn.DefaultServiceListener;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
 import com.googlecode.ipv6.IPv6Address;
@@ -34,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * @author double-u
+ * @author wannes
  */
 public final class Manager {
 
@@ -80,25 +79,26 @@ public final class Manager {
         }
     }
 
-    public IPAddress assign(User user, Client client, int version) throws SQLException {
+    public IPAddress assign(Client client, int version) throws SQLException {
         return TransactionManager.callInTransaction(VPN.cs, () -> {
+            User user = client.user;
             List<IPAddress> addrs = IPAddresses.forUser(user, version);
             if (addrs.isEmpty()) {
                 IPAddress unused = IPAddresses.findUnused(version);
 
                 if (unused == null) {
-                    log.info(String.format("Could not allocate IPv%s address for user %s (%s,%s)", version, client.username, client.id, client.kid));
+                    log.info(String.format("Could not allocate IPv%s address for user %s (client %s)", version, user.email, client.id));
                     return null;
                 }
 
-                unused.user = user;
+                unused.client = client;
                 unused.leasedAt = new Date();
                 unused.expiry = DateUtil.convert(LocalDate.now().plusDays(1L));
                 IPAddresses.dao.update(unused);
                 addrs.add(unused);
 
                 if (version == 6) {
-                    return allocateIPv6FromSubnet(unused, user);
+                    return allocateIPv6FromSubnet(unused, client);
                 }
             }
 
@@ -106,7 +106,7 @@ public final class Manager {
         });
     }
 
-    public IPAddress allocateIPv6FromSubnet(IPAddress v6subnet, User user) throws SQLException {
+    public IPAddress allocateIPv6FromSubnet(IPAddress v6subnet, Client client) throws SQLException {
         IPv6Network subnet = IPv6Network.fromString(v6subnet.address + "/" + v6subnet.netmask);
         // TODO
         IPv6Address first = subnet.getFirst().add(1);
@@ -122,7 +122,7 @@ public final class Manager {
         v6.netmask = 128;
         v6.enabled = true;
         v6.leasedAt = new Date();
-        v6.user = user;
+        v6.client = client;
 
         IPAddresses.dao.createOrUpdate(v6);
         return v6;
