@@ -41,13 +41,16 @@ public class VPNClient extends ResourceBase {
 
     @Get
     public Representation getClients() {
-        String userId = getRequestAttributes().get("user").toString();
-        if (userId == null || userId.isEmpty()) {
-            return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-
         try {
-            List<Client> clients = Clients.dao.queryForEq("user_id", userId);
+            if (getRequestAttributes().containsKey("client"))
+                return new JacksonRepresentation<>(Clients.dao.queryForId(getAttribute("client")));
+
+            List<Client> clients;
+
+            if (getQueryValue("user") != null)
+                clients = Clients.dao.queryForEq("user_id", getQueryValue("user"));
+            else
+                clients = Clients.dao.queryForAll();
             return new JacksonRepresentation<>(clients);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve clients", ex);
