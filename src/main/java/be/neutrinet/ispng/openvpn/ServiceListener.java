@@ -18,7 +18,7 @@
 package be.neutrinet.ispng.openvpn;
 
 /**
- * @author double-u
+ * @author wannes
  */
 public interface ServiceListener {
 

@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 /**
- * Created by double-u on 04/07/14.
+ * Created by wannes on 04/07/14.
  */
 @DatabaseTable(tableName = "certificates")
 public class Certificate {

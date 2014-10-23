@@ -18,16 +18,16 @@
 package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.vpn.Connection;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 public class Connections {
 

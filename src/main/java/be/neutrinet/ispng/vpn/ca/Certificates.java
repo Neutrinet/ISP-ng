@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import java.sql.SQLException;
 
 /**
- * Created by double-u on 04/07/14.
+ * Created by wannes on 04/07/14.
  */
 public class Certificates {
 

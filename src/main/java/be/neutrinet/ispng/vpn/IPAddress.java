@@ -24,7 +24,7 @@ import java.util.Date;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 @DatabaseTable(tableName = "address_pool")
 public class IPAddress {

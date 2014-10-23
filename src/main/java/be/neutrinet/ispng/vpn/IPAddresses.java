@@ -34,8 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- *
- * @author double-u
+ * @author wannes
  */
 public class IPAddresses {
 
@@ -137,7 +136,7 @@ public class IPAddresses {
         try {
             IPAddresses.dao.callBatchTasks(() -> {
                 Iterator<IPv6Network> it = subnet.split(IPv6NetworkMask.fromPrefixLength(prefix));
-                for (; it.hasNext();) {
+                for (; it.hasNext(); ) {
                     IPv6Network net = it.next();
 
                     IPAddress ipa = new IPAddress();

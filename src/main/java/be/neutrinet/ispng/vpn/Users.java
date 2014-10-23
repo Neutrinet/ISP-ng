@@ -21,13 +21,14 @@ import be.neutrinet.ispng.VPN;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.table.TableUtils;
+import org.apache.log4j.Logger;
+
 import java.sql.SQLException;
 import java.util.List;
-import org.apache.log4j.Logger;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 public class Users {
 

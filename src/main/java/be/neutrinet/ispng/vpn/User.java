@@ -26,7 +26,7 @@ import java.util.Date;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 @DatabaseTable(tableName = "users")
 public class User {

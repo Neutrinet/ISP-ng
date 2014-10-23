@@ -22,7 +22,7 @@ import be.neutrinet.ispng.vpn.TLSCertificate;
 import java.io.Serializable;
 
 /**
- * @author double-u
+ * @author wannes
  */
 public class Client implements Serializable {
 

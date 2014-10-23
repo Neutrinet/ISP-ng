@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 /**
  *
- * @author double-u
+ * @author wannes
  */
 public @interface Alias {
 

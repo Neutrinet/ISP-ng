@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 public class I18N {
 

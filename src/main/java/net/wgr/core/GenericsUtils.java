@@ -6,11 +6,7 @@
  */
 package net.wgr.core;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +15,7 @@ import java.util.Map;
 /**
  *
  * @created Jul 3, 2011
- * @author double-u
+ * @author wannes
  */
 public class GenericsUtils {
 

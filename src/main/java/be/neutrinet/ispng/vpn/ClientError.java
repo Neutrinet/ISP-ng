@@ -9,7 +9,7 @@ import be.neutrinet.ispng.i18n.I18N;
 
 /**
  *
- * @author double-u
+ * @author wannes
  */
 public class ClientError {
 

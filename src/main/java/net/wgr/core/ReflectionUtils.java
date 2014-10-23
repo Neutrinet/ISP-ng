@@ -6,6 +6,8 @@
  */
 package net.wgr.core;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -14,19 +16,14 @@ import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.apache.log4j.Logger;
 
 /**
  *
  * @created Jul 8, 2011
- * @author double-u
+ * @author wannes
  */
 public class ReflectionUtils {
 

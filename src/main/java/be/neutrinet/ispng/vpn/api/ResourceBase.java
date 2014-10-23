@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * @author double-u
+ * @author wannes
  */
 public abstract class ResourceBase extends ServerResource {
 
