@@ -46,10 +46,10 @@ public class RestletServlet extends HttpServlet {
         router.attach("/address/pool/{id}", AddressPool.class);
         router.attach("/address/lease/{id}", AddressLease.class);
         router.attach("/unlock-key/{key}", UnlockKey.class);
-        router.attach("/connection/{id}", VPNConnections.class);
+        router.attach("/client/{client}/connection/{id}", VPNConnections.class);
         router.attach("/client/{client}/cert/{cert}", VPNClientCertificate.class);
+        router.attach("/client/{client}/config", VPNClientConfig.class);
         router.attach("/client/{client}", VPNClient.class);
-        router.attach("/user/{user}/config", UserVPNClientConfig.class);
         router.attach("/user/{user}/setting/{setting}", UserSettings.class);
         router.attach("/user/{user}", UserManagement.class);
         router.attach("/user/login", UserLogin.class);
