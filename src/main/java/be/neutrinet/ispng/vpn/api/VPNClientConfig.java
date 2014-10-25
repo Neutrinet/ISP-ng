@@ -6,10 +6,10 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.ClientError;
+import be.neutrinet.ispng.vpn.Clients;
 import be.neutrinet.ispng.vpn.User;
-import be.neutrinet.ispng.vpn.admin.Registration;
-import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
 import org.apache.commons.io.IOUtils;
@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.representation.Representation;
@@ -26,7 +27,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,7 +38,7 @@ import java.util.zip.ZipOutputStream;
  *
  * @author wannes
  */
-public class UserVPNClientConfig extends ResourceBase {
+public class VPNClientConfig extends ResourceBase {
 
     public final static String[] DEFAULTS = new String[]{
         "client",
@@ -54,23 +58,10 @@ public class UserVPNClientConfig extends ResourceBase {
     @Post
     public Representation getConfig(Map<String, String> data) {
         try {
-            Registration r = null;
-            if (data.containsKey("regId")) {
-                // First try by reg id
-                r = Registrations.dao.queryForEq("id", UUID.fromString(data.get("regId"))).get(0);
-            }
+            if (!getRequestAttributes().containsKey("client"))
+                return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
-            if (r == null) {
-                // second try via user id
-                r = Registrations.dao.queryForEq("user_id", getRequestAttributes().get("user").toString()).get(0);
-            }
-
-            if (r == null) {
-                // bail
-                return new JacksonRepresentation(new ClientError("INVALID_REG_ID"));
-            }
-
-            User user = r.user;
+            Client client = Clients.dao.queryForId(getAttribute("client"));
 
             ArrayList<String> config = new ArrayList<>();
             config.addAll(Arrays.asList(DEFAULTS));
@@ -78,8 +69,8 @@ public class UserVPNClientConfig extends ResourceBase {
             // create zip
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ZipOutputStream zip = new ZipOutputStream(baos);
-            
-            List<Certificate> userCert = Certificates.dao.queryForEq("user_id", user.id);
+
+            List<Certificate> userCert = Certificates.dao.queryForEq("client_id", client.id);
             if (!userCert.isEmpty()) {
                 byte[] raw = userCert.get(0).getRaw();
                 zip.putNextEntry(new ZipEntry("client.crt"));
@@ -91,10 +82,10 @@ public class UserVPNClientConfig extends ResourceBase {
                 config.add("cert client.crt");
                 config.add("key client.key");
             } else {
-                if (user.certId == null || user.certId.isEmpty()) {
+                if (client.user.certId == null || client.user.certId.isEmpty()) {
                     return new JacksonRepresentation(new ClientError("NO_KEYPAIR"));
                 }
-                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, user);
+                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user);
                 if (res != null) return res;
             }
             

@@ -41,12 +41,14 @@ public class DefaultServiceListener implements ServiceListener {
 
         be.neutrinet.ispng.vpn.Client userClient = be.neutrinet.ispng.vpn.Client.match(client).orElseGet(() -> be.neutrinet.ispng.vpn.Client.create(client));
 
+        if (!userClient.enabled) vpn.denyClient(client.id, client.kid, "Client is disabled");
+
         try {
             User user = Users.authenticate(client.username, client.password);
             if (user != null) {
                 TransactionManager.callInTransaction(VPN.cs, () -> {
-                    IPAddress ipv4 = Manager.get().assign(user, client, 4);
-                    IPAddress ipv6 = Manager.get().assign(user, client, 6);
+                    IPAddress ipv4 = Manager.get().assign(userClient, 4);
+                    IPAddress ipv6 = Manager.get().assign(userClient, 6);
 
                     if (ipv4 == null && ipv6 == null) {
                         vpn.denyClient(client.id, client.kid, "No IP address available");
@@ -88,7 +90,7 @@ public class DefaultServiceListener implements ServiceListener {
 
                     //options.put("push route-gateway", "192.168.2.1");
                     if (ipv6 != null) {
-                        IPAddress v6alloc = Manager.get().allocateIPv6FromSubnet(ipv6, user);
+                        IPAddress v6alloc = Manager.get().allocateIPv6FromSubnet(ipv6, userClient);
                         options.put("push tun-ipv6", "");
                         options.put("ifconfig-ipv6-push", v6alloc.address + "/64 " + VPN.cfg.getProperty("openvpn.localip.6"));
                         options.put("push route-ipv6", VPN.cfg.getProperty("openvpn.network.6") + "/" + VPN.cfg.getProperty("openvpn.netmask.6"));

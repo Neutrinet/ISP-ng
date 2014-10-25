@@ -64,7 +64,7 @@ public class AddressLease extends ResourceBase {
 
         try {
             Client client = Clients.dao.queryForId("" + clientId);
-            List<IPAddress> ipAddresses = IPAddresses.forUser(client.user, version);
+            List<IPAddress> ipAddresses = IPAddresses.forClient(client, version);
 
             if (ipAddresses.size() > 0) {
                 return new JacksonRepresentation(new ClientError("MAX_IP_ADDRESSES_EXCEEDED"));
@@ -98,8 +98,8 @@ public class AddressLease extends ResourceBase {
 
         try {
             if (data.containsKey("user")) {
-                List<IPAddress> forUser = IPAddresses.forUser(Users.dao.queryForId(data.get("user")), ipVersion);
-                for (IPAddress addr : forUser) {
+                List<IPAddress> addrs = IPAddresses.forClient(Clients.dao.queryForId(data.get("client")), ipVersion);
+                for (IPAddress addr : addrs) {
                     addr.client = Clients.NONE;
                     IPAddresses.dao.update(addr);
                 }

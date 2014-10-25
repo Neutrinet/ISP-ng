@@ -18,16 +18,19 @@ import java.util.List;
 public class VPNConnections extends ResourceBase {
     @Get
     public Representation getConnection() {
-        String connectionId = getRequestAttributes().get("id").toString();
+        if (!getRequestAttributes().containsKey("client"))
+            return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+
+        String connectionId = getAttribute("id").toString();
         if (connectionId == null || connectionId.isEmpty()) {
-            connectionId = "ALL";
+            connectionId = "all";
         }
 
         try {
-            if (connectionId.equals("ALL"))
-            return new JacksonRepresentation(Connections.dao.queryForAll());
+            if (connectionId.equals("all"))
+                return new JacksonRepresentation(Connections.dao.queryForAll());
             else
-                return new JacksonRepresentation(Connections.dao.queryForEq("id", connectionId));
+                return new JacksonRepresentation(Connections.dao.queryForId(connectionId));
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to get connection", ex);
             return clientError("INVALID_ARGUMENT", Status.SERVER_ERROR_INTERNAL);
@@ -51,7 +54,7 @@ public class VPNConnections extends ResourceBase {
                 Connections.dao.delete(c);
             }
             return DEFAULT_SUCCESS;
-        }  catch (Exception ex) {
+        } catch (Exception ex) {
             return clientError("INVALID_INPUT", Status.CLIENT_ERROR_BAD_REQUEST);
         }
     }

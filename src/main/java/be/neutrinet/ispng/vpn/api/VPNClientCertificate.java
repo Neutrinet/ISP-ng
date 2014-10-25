@@ -26,6 +26,7 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.io.pem.PemObject;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -47,6 +48,8 @@ import java.util.List;
  * @author wannes
  */
 public class VPNClientCertificate extends ResourceBase {
+
+    public final static MediaType PEM_MIME = new MediaType("application/x-pem-file", "PEM encoded object");
 
     public static X509CertificateHolder sign(Certificate cert) {
         try {
@@ -72,38 +75,55 @@ public class VPNClientCertificate extends ResourceBase {
     @Get
     public Representation getCertificate() {
         // TODO: decide if returning an entire list of certificates needs to be implemented
-        if (!getRequestAttributes().containsKey("user")) {
+        if (!getRequestAttributes().containsKey("client")) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
-        String clientId = getRequestAttributes().get("client").toString();
+        String clientId = getAttribute("client").toString();
         try {
             List<Certificate> certs = Certificates.dao.queryForEq("client_id", clientId);
 
-            if (getRequestAttributes().containsKey("cert")) {
-                String certId = getRequestAttributes().get("cert").toString();
+            if (getQueryValue("raw") != null) {
+                if (getRequestAttributes().containsKey("cert") && !getAttribute("cert").equals("all")) {
+                    String certId = getAttribute("cert").toString();
 
-                Certificate cert = certs.stream()
-                        .filter(c -> c.id == Integer.parseInt(certId))
-                        .iterator()
-                        .next();
+                    Certificate cert = certs.stream()
+                            .filter(c -> c.id == Integer.parseInt(certId))
+                            .iterator()
+                            .next();
 
-                X509CertificateHolder c = null;
-                if (cert.signedDate == null) {
-                    c = sign(cert);
+                    X509CertificateHolder c = null;
+                    if (cert.signedDate == null) {
+                        c = sign(cert);
+                    } else {
+                        c = cert.get();
+                    }
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    OutputStreamWriter osw = new OutputStreamWriter(baos);
+                    PemObject po = new PemObject("CERTIFICATE", c.getEncoded());
+                    PEMWriter pw = new PEMWriter(osw);
+                    pw.writeObject(po);
+                    pw.close();
+
+
+                    return new ByteArrayRepresentation(baos.toByteArray(), PEM_MIME);
                 } else {
-                    c = cert.get();
+                    return clientError("ONE_RAW_CERT", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
                 }
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                OutputStreamWriter osw = new OutputStreamWriter(baos);
-                PemObject po = new PemObject("CERTIFICATE", c.getEncoded());
-                PEMWriter pw = new PEMWriter(osw);
-                pw.writeObject(po);
-                pw.close();
-                return new ByteArrayRepresentation(baos.toByteArray());
             } else {
-                return new JacksonRepresentation(certs);
+                if (getRequestAttributes().containsKey("cert") && !getAttribute("cert").equals("all")) {
+                    String certId = getAttribute("cert").toString();
+
+                    Certificate cert = certs.stream()
+                            .filter(c -> c.id == Integer.parseInt(certId))
+                            .iterator()
+                            .next();
+
+                    return new JacksonRepresentation(cert);
+                } else {
+                    return new JacksonRepresentation(certs);
+                }
             }
         } catch (Exception ex) {
             Logger.getLogger(VPNClientCertificate.class).error("Failed to get certificate", ex);
