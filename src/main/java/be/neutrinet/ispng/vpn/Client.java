@@ -1,6 +1,9 @@
 package be.neutrinet.ispng.vpn;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.apache.log4j.Logger;
 
@@ -21,6 +24,9 @@ public class Client implements Serializable {
     public String commonName;
     @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
     public User user;
+    @ForeignCollectionField(foreignColumnName = "client")
+    @JsonManagedReference
+    public ForeignCollection<IPAddress> leases;
     @DatabaseField(defaultValue = "true")
     public boolean enabled;
 
