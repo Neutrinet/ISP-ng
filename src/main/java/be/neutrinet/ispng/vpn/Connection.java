@@ -17,6 +17,7 @@
  */
 package be.neutrinet.ispng.vpn;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -35,6 +36,7 @@ public class Connection {
     @DatabaseField(generatedId = true)
     public int id;
     @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
+    @JsonBackReference
     public Client client;
     @ForeignCollectionField(foreignFieldName = "connection")
     public Collection<IPAddress> addresses;
