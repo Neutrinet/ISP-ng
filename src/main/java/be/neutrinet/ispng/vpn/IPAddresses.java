@@ -72,11 +72,11 @@ public class IPAddresses {
         return null;
     }
 
-    public static List<IPAddress> forUser(User user, int ipVersion) {
+    public static List<IPAddress> forClient(Client client, int ipVersion) {
         try {
             QueryBuilder<IPAddress, String> queryBuilder = dao.queryBuilder();
             queryBuilder.limit(1L);
-            queryBuilder.where().eq("user_id", user.id).and()
+            queryBuilder.where().eq("client_id", client.id).and()
                     .eq("ipVersion", ipVersion);
             return dao.query(queryBuilder.prepare());
         } catch (SQLException ex) {
