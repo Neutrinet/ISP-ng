@@ -82,7 +82,7 @@ public final class Manager {
     public IPAddress assign(Client client, int version) throws SQLException {
         return TransactionManager.callInTransaction(VPN.cs, () -> {
             User user = client.user;
-            List<IPAddress> addrs = IPAddresses.forUser(user, version);
+            List<IPAddress> addrs = IPAddresses.forClient(client, version);
             if (addrs.isEmpty()) {
                 IPAddress unused = IPAddresses.findUnused(version);
 
