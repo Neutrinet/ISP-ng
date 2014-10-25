@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
@@ -17,8 +18,18 @@ import java.util.List;
  */
 public class VPNClient extends ResourceBase {
     @Post
-    public void modifyVPNClient(Client client) {
+    public Representation modifyVPNClient(Client client) {
+        if (!getRequestAttributes().containsKey("client"))
+            return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
+        try {
+            Clients.dao.update(client);
+            return new JacksonRepresentation<>(client);
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to update client", ex);
+        }
+
+        return clientError("UNKNOWN_ERROR", Status.SERVER_ERROR_INTERNAL);
     }
 
     @Put
@@ -43,6 +54,7 @@ public class VPNClient extends ResourceBase {
     public Representation getClients() {
         try {
             if (getRequestAttributes().containsKey("client"))
+                if (!getAttribute("client").toLowerCase().equals("all"))
                 return new JacksonRepresentation<>(Clients.dao.queryForId(getAttribute("client")));
 
             List<Client> clients;
@@ -54,6 +66,22 @@ public class VPNClient extends ResourceBase {
             return new JacksonRepresentation<>(clients);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve clients", ex);
+        }
+
+        return clientError("UNKNOWN_ERROR", Status.SERVER_ERROR_INTERNAL);
+    }
+
+    @Delete
+    public Representation delete() {
+        try {
+            if (!getRequestAttributes().containsKey("client"))
+                return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+
+            Clients.dao.delete(Clients.dao.queryForId(getAttribute("client")));
+
+            return DEFAULT_SUCCESS;
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to delete client", ex);
         }
 
         return clientError("UNKNOWN_ERROR", Status.SERVER_ERROR_INTERNAL);
