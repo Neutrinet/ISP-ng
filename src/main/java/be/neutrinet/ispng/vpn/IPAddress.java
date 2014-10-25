@@ -17,6 +17,7 @@
  */
 package be.neutrinet.ispng.vpn;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -34,6 +35,7 @@ public class IPAddress {
     @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     public Connection connection;
     @DatabaseField(defaultValue = "-1", foreign = true, foreignAutoRefresh = true)
+    @JsonBackReference
     public Client client;
     @DatabaseField(canBeNull = false, unique = true)
     public String address;
