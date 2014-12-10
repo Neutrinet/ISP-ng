@@ -25,7 +25,7 @@ public class Certificate {
     @DatabaseField(generatedId = true)
     public int id;
 
-    @DatabaseField(foreign = true, canBeNull = false)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, canBeNull = false)
     public Client client;
 
     @DatabaseField
