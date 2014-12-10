@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author wannes
@@ -51,7 +52,7 @@ public class IPAddresses {
         }
     }
 
-    public static IPAddress findUnused(int ipVersion) {
+    public static Optional<IPAddress> findUnused(int ipVersion) {
         try {
             QueryBuilder<IPAddress, String> queryBuilder = dao.queryBuilder();
             queryBuilder.limit(1L);
@@ -63,10 +64,26 @@ public class IPAddresses {
                 // Houston, we have a problem
                 Logger.getLogger(IPAddresses.class).error("Ran out of IPv" + ipVersion + " addresses");
             } else {
-                return query.get(0);
+                return Optional.ofNullable(query.get(0));
             }
         } catch (SQLException ex) {
             Logger.getLogger(IPAddresses.class).error("Failed to find IPv" + ipVersion + " address", ex);
+        }
+
+        return Optional.empty();
+    }
+
+    public static List<IPAddress> forUser(User user, int ipVersion) {
+        try {
+            ArrayList<IPAddress> addrs = new ArrayList<>();
+            List<Client> clients = Clients.dao.queryForEq("user_id", "" + user.id);
+            for (Client client : clients) {
+                addrs.addAll(client.leases);
+            }
+
+            return addrs;
+        } catch (SQLException ex) {
+            Logger.getLogger(IPAddresses.class).error("Failed to find IP address", ex);
         }
 
         return null;
@@ -75,7 +92,6 @@ public class IPAddresses {
     public static List<IPAddress> forClient(Client client, int ipVersion) {
         try {
             QueryBuilder<IPAddress, String> queryBuilder = dao.queryBuilder();
-            queryBuilder.limit(1L);
             queryBuilder.where().eq("client_id", client.id).and()
                     .eq("ipVersion", ipVersion);
             return dao.query(queryBuilder.prepare());
@@ -91,14 +107,17 @@ public class IPAddresses {
         try {
             IPAddresses.dao.callBatchTasks(() -> {
                 for (String addr : subnet.getAvailableIPs(subnet.getNumberOfHosts().intValue())) {
-                    IPAddress ipa = new IPAddress();
-                    ipa.address = addr;
-                    ipa.ipVersion = 4;
-                    ipa.netmask = 32;
-                    IPAddresses.dao.createIfNotExists(ipa);
-                    addrs.add(ipa);
+                    try {
+                        IPAddress ipa = new IPAddress();
+                        ipa.address = addr;
+                        ipa.ipVersion = 4;
+                        ipa.netmask = 32;
+                        IPAddresses.dao.createIfNotExists(ipa);
+                        addrs.add(ipa);
+                    } catch (Exception ex) {
+                        Logger.getLogger(IPAddresses.class).error("Failed to add IPv4 address to pool", ex);
+                    }
                 }
-
                 return null;
             });
         } catch (Exception ex) {
