@@ -15,15 +15,22 @@ openvpn.instances=<host:mgmtport>;<host:mgmtport>;...
 openvpn.network.4=
 openvpn.netmask.4=255.255.255.0
 openvpn.localip.4=
-openvpn.network.6=
-openvpn.netmask.6=64
-openvpn.localip.6=
 # Client connectivity checks
 openvpn.ping=10
 openvpn.pingRestart=60
 # Use DNS name
 openvpn.publicaddress=
 openvpn.publicport=1194
+# VPN client cfg
+vpn.maxIPv4LeaseAmount=1
+# RFC 3177
+vpn.ipv6.pool.minAllocPrefix=48
+# RFC 6177
+vpn.ipv6.pool.defaultAllocPrefix=56
+vpn.ipv6.network=
+vpn.ipv6.prefix=64
+vpn.ipv6.localip=
+vpn.ipv6.pool.subnet=
 
 # Service endpoint
 jetty.hostname=
