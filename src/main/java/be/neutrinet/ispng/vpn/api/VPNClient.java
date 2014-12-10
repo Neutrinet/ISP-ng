@@ -23,7 +23,11 @@ public class VPNClient extends ResourceBase {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
         try {
-            Clients.dao.update(client);
+            Client c = Clients.dao.queryForId(getAttribute("client"));
+            if (c != null) {
+                c = mergeUpdate(c, client).get();
+            }
+            Clients.dao.update(c);
             return new JacksonRepresentation<>(client);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to update client", ex);
