@@ -17,17 +17,14 @@
  */
 package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.openvpn.DefaultServiceListener;
 import be.neutrinet.ispng.openvpn.ManagementInterface;
 import com.googlecode.ipv6.IPv6Address;
 import com.googlecode.ipv6.IPv6Network;
-import com.j256.ormlite.misc.TransactionManager;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -77,33 +74,6 @@ public final class Manager {
         } catch (Exception ex) {
             log.error("Failed to update dropped connection", ex);
         }
-    }
-
-    public IPAddress assign(Client client, int version) throws SQLException {
-        return TransactionManager.callInTransaction(VPN.cs, () -> {
-            User user = client.user;
-            List<IPAddress> addrs = IPAddresses.forClient(client, version);
-            if (addrs.isEmpty()) {
-                IPAddress unused = IPAddresses.findUnused(version);
-
-                if (unused == null) {
-                    log.info(String.format("Could not allocate IPv%s address for user %s (client %s)", version, user.email, client.id));
-                    return null;
-                }
-
-                unused.client = client;
-                unused.leasedAt = new Date();
-                unused.expiry = DateUtil.convert(LocalDate.now().plusDays(1L));
-                IPAddresses.dao.update(unused);
-                addrs.add(unused);
-
-                if (version == 6) {
-                    return allocateIPv6FromSubnet(unused, client);
-                }
-            }
-
-            return addrs.get(0);
-        });
     }
 
     public IPAddress allocateIPv6FromSubnet(IPAddress v6subnet, Client client) throws SQLException {
