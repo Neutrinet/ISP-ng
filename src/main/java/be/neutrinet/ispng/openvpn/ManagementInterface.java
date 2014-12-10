@@ -19,12 +19,12 @@ package be.neutrinet.ispng.openvpn;
 
 import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.vpn.Manager;
+import com.google.common.collect.LinkedListMultimap;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -83,11 +83,11 @@ public class ManagementInterface implements Runnable {
         }
     }
 
-    public void authorizeClient(int id, int kid, LinkedHashMap<String, String> options) {
+    public void authorizeClient(int id, int kid, LinkedListMultimap<String, String> options) {
         String authorize = "client-auth " + id + ' ' + kid + '\n';
         try {
             writeLine(authorize);
-            for (Map.Entry<String, String> entry : options.entrySet()) {
+            for (Map.Entry<String, String> entry : options.entries()) {
                 writeLine(entry.getKey() + (entry.getValue() != null ? " " + entry.getValue() : "") + '\n');
             }
             writeLine("END\n");
