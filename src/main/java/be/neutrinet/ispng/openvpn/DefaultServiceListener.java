@@ -4,6 +4,8 @@ import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.monitoring.DataPoint;
 import be.neutrinet.ispng.vpn.*;
+import be.neutrinet.ispng.vpn.ip.SubnetLease;
+import com.google.common.collect.LinkedListMultimap;
 import com.j256.ormlite.misc.TransactionManager;
 import org.apache.log4j.Logger;
 
@@ -11,8 +13,8 @@ import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by wannes on 14/10/14.
@@ -47,11 +49,10 @@ public class DefaultServiceListener implements ServiceListener {
             User user = Users.authenticate(client.username, client.password);
             if (user != null) {
                 TransactionManager.callInTransaction(VPN.cs, () -> {
-                    IPAddress ipv4 = Manager.get().assign(userClient, 4);
-                    IPAddress ipv6 = Manager.get().assign(userClient, 6);
+                    Optional<IPAddress> ipv4 = userClient.leases.stream().filter(addr -> addr.ipVersion == 4).findFirst();
 
-                    if (ipv4 == null && ipv6 == null) {
-                        vpn.denyClient(client.id, client.kid, "No IP address available");
+                    if (!ipv4.isPresent() && userClient.subnetLeases.isEmpty()) {
+                        vpn.denyClient(client.id, client.kid, "No IP address or subnet leases assigned");
                         return null;
                     }
 
@@ -59,20 +60,18 @@ public class DefaultServiceListener implements ServiceListener {
                     c.openvpnInstance = vpn.getInstanceId();
                     c.fill(client);
 
-                    if (ipv4 != null) {
-                        c.addresses.add(ipv4);
-                    }
-                    if (ipv6 != null) {
-                        c.addresses.add(ipv6);
+                    if (ipv4.isPresent()) {
+                        c.addresses.add(ipv4.get());
                     }
 
                     pendingConnections.put(client.id, c);
                     log.info(String.format("Authorized %s (%s,%s)", client.username, client.id, client.kid));
 
-                    LinkedHashMap<String, String> options = new LinkedHashMap<>();
+                    LinkedListMultimap<String, String> options = LinkedListMultimap.create();
                     options.put("push-reset", null);
-                    if (ipv4 != null) {
-                        options.put("ifconfig-push", ipv4.address + " " + VPN.cfg.getProperty("openvpn.localip.4"));
+
+                    if (ipv4.isPresent()) {
+                        options.put("ifconfig-push", ipv4.get().address + " " + VPN.cfg.getProperty("openvpn.localip.4"));
                         options.put("push route", VPN.cfg.getProperty("openvpn.network.4") + " " +
                                 VPN.cfg.getProperty("openvpn.netmask.4") + " " + VPN.cfg.getProperty("openvpn.localip.4"));
                         // route the OpenVPN server over the default gateway, not over the VPN itself
@@ -88,16 +87,20 @@ public class DefaultServiceListener implements ServiceListener {
                         }
                     }
 
-                    //options.put("push route-gateway", "192.168.2.1");
-                    if (ipv6 != null) {
-                        IPAddress v6alloc = Manager.get().allocateIPv6FromSubnet(ipv6, userClient);
+                    if (!userClient.subnetLeases.isEmpty()) {
                         options.put("push tun-ipv6", "");
-                        options.put("ifconfig-ipv6-push", v6alloc.address + "/64 " + VPN.cfg.getProperty("openvpn.localip.6"));
-                        options.put("push route-ipv6", VPN.cfg.getProperty("openvpn.network.6") + "/" + VPN.cfg.getProperty("openvpn.netmask.6"));
-                        // route assigned IPv6 subnet through client
-                        options.put("iroute-ipv6", ipv6.address + "/64");
 
-                        if (user.settings().get("routeIPv6TrafficOverVPN", true).equals(true)) {
+                        for (SubnetLease lease : userClient.subnetLeases) {
+                            String firstAddress = lease.subnet.subnet.substring(0, lease.subnet.subnet.indexOf('/')) + "1";
+                            // Why /64? See https://community.openvpn.net/openvpn/ticket/264
+                            options.put("ifconfig-ipv6-push", firstAddress + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.localip"));
+                            options.put("push route-ipv6", VPN.cfg.getProperty("vpn.ipv6.network") + "/" + VPN.cfg.getProperty("vpn.ipv6.prefix")
+                                    + " " + VPN.cfg.getProperty("vpn.ipv6.localip"));
+                            // route assigned IPv6 subnet through client
+                            options.put("iroute-ipv6", lease.subnet.subnet);
+                        }
+
+                        if (user.settings().get("ip.route.ipv6.defaultRoute").isPresent()) {
                             //options.put("push redirect-gateway-ipv6", "def1");
                             options.put("push route-ipv6", "2000::/3");
                         }
