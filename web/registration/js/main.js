@@ -202,7 +202,7 @@ function App() {
                 // Ugh.
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', self.vpn.endpoint + 'api/user/' + self.vpn.registration.user.id + '/config', true);
+                xhr.open('POST', self.vpn.endpoint + 'api/client/' + self.vpn.registration.client.id + '/config', true);
                 xhr.responseType = 'blob';
                 xhr.onload = function(e) {
                     if (this.status == 200) {
