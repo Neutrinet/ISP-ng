@@ -109,7 +109,7 @@ public class VPNClientCertificate extends ResourceBase {
 
                     return new ByteArrayRepresentation(baos.toByteArray(), PEM_MIME);
                 } else {
-                    return clientError("ONE_RAW_CERT", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
+                    return clientError("MAX_ONE_RAW_CERT", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
                 }
             } else {
                 if (getRequestAttributes().containsKey("cert") && !getAttribute("cert").equals("all")) {
@@ -132,7 +132,7 @@ public class VPNClientCertificate extends ResourceBase {
         return DEFAULT_ERROR;
     }
 
-    @Put()
+    @Put
     public Representation storeCSR(Representation csrstream) {
         if (!getRequest().getAttributes().containsKey("client")) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
