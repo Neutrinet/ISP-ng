@@ -6,6 +6,7 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.vpn.ClientError;
+import be.neutrinet.ispng.vpn.Clients;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
@@ -36,7 +37,6 @@ public class UserRegistration extends ResourceBase {
 
     @Get
     public Representation handleGet() {
-        setCORSHeaders(getResponseEntity());
         String lastSegment = getReference().getLastSegment();
 
         if (lastSegment != null) {
@@ -53,6 +53,12 @@ public class UserRegistration extends ResourceBase {
                     if (results.size() == 1) {
                         reg = results.get(0);
                     }
+
+                    // Legacy fix
+                    if (reg.client == null) {
+                        reg.client = Clients.dao.queryForEq("user_id", reg.user.id).get(0);
+                    }
+
                 } catch (SQLException ex) {
                     Logger.getLogger(getClass()).error("Failed to query for existing registration", ex);
                 }
