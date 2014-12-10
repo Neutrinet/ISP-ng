@@ -1,5 +1,6 @@
 package be.neutrinet.ispng.vpn;
 
+import be.neutrinet.ispng.vpn.ip.SubnetLease;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
@@ -27,6 +28,9 @@ public class Client implements Serializable {
     @ForeignCollectionField(foreignColumnName = "client")
     @JsonManagedReference
     public ForeignCollection<IPAddress> leases;
+    @ForeignCollectionField(foreignColumnName = "client")
+    @JsonManagedReference
+    public ForeignCollection<SubnetLease> subnetLeases;
     @DatabaseField(defaultValue = "true")
     public boolean enabled;
 
