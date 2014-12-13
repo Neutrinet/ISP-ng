@@ -6,9 +6,12 @@
 package be.neutrinet.ispng.mail;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.vpn.Client;
+import be.neutrinet.ispng.vpn.Clients;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
+import be.neutrinet.ispng.vpn.ip.SubnetLease;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
@@ -19,6 +22,7 @@ import javax.mail.internet.MimeMultipart;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -79,6 +83,28 @@ public class Generator {
             packAndSend(msg, "unlock-code", content);
         } catch (MessagingException ex) {
             Logger.getLogger(getClass()).error("Failed to send key", ex);
+        }
+    }
+
+    public void sendIPv6SubnetDetails() {
+        try {
+            for (Client c : Clients.dao.queryForEq("id", "64")) {
+                if (c.subnetLeases != null) {
+                    for (Iterator<SubnetLease> it = c.subnetLeases.iterator(); it.hasNext(); ) {
+                        MimeMessage msg = this.postman.createNewMessage();
+                        msg.addRecipients(Message.RecipientType.TO, c.user.email);
+                        msg.setSubject("Your new IPv6 subnet");
+
+                        HashMap<String, String> content = new HashMap<>();
+                        content.put("title", "Your new IPv6 subnet");
+                        content.put("subnetv6", it.next().subnet.subnet);
+
+                        packAndSend(msg, "ipv6-moved-to-subnetlease", content);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

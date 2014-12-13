@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * Created by wannes on 8/9/14.
@@ -24,8 +25,8 @@ public class UserSettings {
         load();
     }
 
-    public Object get(Object key) {
-        return settings.get(key);
+    public Optional<Object> get(Object key) {
+        return Optional.of(settings.get(key));
     }
 
     public <V> V get(Object key, V defaultValue) {

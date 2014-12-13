@@ -1,0 +1,21 @@
+Hi there,
+
+Due to a recent upgrade of our control stack we needed to reassign your IPv6 address range.
+We apologize for any inconvenience caused, but it isn't all bad news: your new range has a /56 prefix!
+That means you have 256 /64 subnets to use and abuse.
+
+Your new IPv6 subnet: [% subnetv6 %]
+
+When you connect to the VPN, your tun interface will be configured with a /64 prefix, due to some OpenVPN peculiarities.
+It is advisable to use an OpenVPN 'up' script [1] to automatically reconfigure the interface with the correct prefix.
+
+Oh, one small extra: if you just love to create subnets and ran out, we allow you to go to a /48 prefix.
+You know, 65k+ /64 subnets. Not bad.
+
+We will be launching a small web app to manage your subscription at our official launch, where you'll be able
+to adjust your subnet.
+
+More to come
+Your friendly Neutrinet team
+
+[1] http://askubuntu.com/questions/28733/how-do-i-run-a-script-after-openvpn-has-connected-successfully
