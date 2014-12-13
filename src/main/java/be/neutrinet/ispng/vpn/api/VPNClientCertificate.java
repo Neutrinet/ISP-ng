@@ -42,9 +42,9 @@ import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author wannes
  */
 public class VPNClientCertificate extends ResourceBase {
@@ -83,6 +83,10 @@ public class VPNClientCertificate extends ResourceBase {
         try {
             List<Certificate> certs = Certificates.dao.queryForEq("client_id", clientId);
 
+            if (getQueryValue("active") != null && getQueryValue("active").equals("true")) {
+                certs = certs.stream().filter(cert -> cert.revocationDate.getTime() > System.currentTimeMillis()).collect(Collectors.toList());
+            }
+
             if (getQueryValue("raw") != null) {
                 if (getRequestAttributes().containsKey("cert") && !getAttribute("cert").equals("all")) {
                     String certId = getAttribute("cert").toString();
@@ -105,7 +109,6 @@ public class VPNClientCertificate extends ResourceBase {
                     PEMWriter pw = new PEMWriter(osw);
                     pw.writeObject(po);
                     pw.close();
-
 
                     return new ByteArrayRepresentation(baos.toByteArray(), PEM_MIME);
                 } else {
@@ -134,7 +137,7 @@ public class VPNClientCertificate extends ResourceBase {
 
     @Put
     public Representation storeCSR(Representation csrstream) {
-        if (!getRequest().getAttributes().containsKey("client")) {
+        if (!getRequestAttributes().containsKey("client")) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
@@ -143,19 +146,43 @@ public class VPNClientCertificate extends ResourceBase {
         // Do all kinds of security checks
         try {
             Client client = Clients.dao.queryForId(getAttribute("client").toString());
-
             PEMParser parser = new PEMParser(sr.getReader());
             PKCS10CertificationRequest csr = (PKCS10CertificationRequest) parser.readObject();
-            // This makes the NSA work harder on their quantum computer
-            // Require 4096 bit key
+
             SubjectPublicKeyInfo pkInfo = csr.getSubjectPublicKeyInfo();
             RSAKeyParameters rsa = (RSAKeyParameters) PublicKeyFactory.createKey(pkInfo);
+
+            if (getQueryValue("rekey") != null && getQueryValue("rekey").equals("true")) {
+                if (!getRequestAttributes().containsKey("cert")) {
+                    return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+                }
+
+                Certificate old = Certificates.dao.queryForId(getAttribute("cert"));
+                old.revocationDate = new Date();
+
+                if (old.get() == null) {
+                    // this can happen when the old certificate is no longer present on the system
+                    // in which case the rekey has to go through
+                } else if (pkInfo.getPublicKeyData().getString().equals(old.get().getSubjectPublicKeyInfo().getPublicKeyData().getString())) {
+                    return clientError("REKEY_USING_SAME_KEY", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
+                }
+
+                Certificates.dao.update(old);
+            }
+
+            for (Certificate existingCert : Certificates.dao.queryForEq("client_id", client)) {
+                if (existingCert.revocationDate.getTime() > System.currentTimeMillis()) {
+                    return clientError("ANOTHER_CLIENT_CERT_ACTIVE", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
+                }
+            }
+
+            // This makes the NSA work harder on their quantum computer
+            // Require 4096 bit key
             // http://stackoverflow.com/a/20622933
             if (!(rsa.getModulus().bitLength() > 2048)) {
                 ClientError err = new ClientError("ILLEGAL_KEY_SIZE");
                 return new JacksonRepresentation(err);
             }
-
 
             X500Name subject = X500Name.getInstance(csr.getSubject());
             RDN[] rdns = subject.getRDNs(BCStyle.CN);
@@ -187,7 +214,7 @@ public class VPNClientCertificate extends ResourceBase {
             pw.writeObject(csr);
             pw.flush();
 
-            return DEFAULT_SUCCESS;
+            return new JacksonRepresentation<>(cert);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to validate CSR and/or sign CSR", ex);
         }
