@@ -52,6 +52,8 @@ public class UserRegistration extends ResourceBase {
                     List<Registration> results = Registrations.dao.queryForEq("id", id);
                     if (results.size() == 1) {
                         reg = results.get(0);
+                    } else {
+                        return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
                     }
 
                     // Legacy fix
