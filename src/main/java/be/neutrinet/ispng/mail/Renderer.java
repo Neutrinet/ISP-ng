@@ -49,7 +49,7 @@ public class Renderer {
 
     public String render(String segmentName, Map<String, String> content, boolean plaintext) {
         try {
-            String segment = IOUtils.toString(new FileReader("web/public_html/mail/" + 
+            String segment = IOUtils.toString(new FileReader("web/mail/" +
                     (plaintext ? "plaintext" : "html") + '/' + segmentName + (plaintext ? ".txt" : ".html")));
             int idx = segment.indexOf("[%");
 
