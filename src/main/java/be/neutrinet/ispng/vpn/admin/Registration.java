@@ -68,6 +68,7 @@ public class Registration {
             this.client = new Client();
             this.client.commonName = "!!TEMPORARY_CN!!";
             this.client.user = this.user;
+            this.client.enabled = true;
 
             Clients.dao.create(client);
         } catch (SQLException ex) {
