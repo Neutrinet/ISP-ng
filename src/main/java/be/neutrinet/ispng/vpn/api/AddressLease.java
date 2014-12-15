@@ -16,6 +16,7 @@ import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
+import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 
 import java.sql.SQLException;
@@ -30,6 +31,10 @@ public class AddressLease extends ResourceBase {
     @Get
     public Representation getAssignedLeases() {
         try {
+            if (getRequestAttributes().containsKey("id")) {
+                return new JacksonRepresentation<>(IPAddresses.dao.queryForId(getAttribute("id")));
+            }
+
             HashMap<Client, List<IPAddress>> map = new HashMap<>();
             List<Client> clients = Clients.dao.queryForAll();
 
@@ -77,6 +82,24 @@ public class AddressLease extends ResourceBase {
         return error();
     }
 
+    @Post
+    public Representation updateLease(IPAddress addr) {
+        if (!getRequestAttributes().containsKey("id"))
+            return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+        if (addr == null) return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+
+        try {
+            IPAddress ip = IPAddresses.dao.queryForId(getAttribute("id"));
+            mergeUpdate(ip, addr);
+            IPAddresses.dao.update(ip);
+        } catch (SQLException ex) {
+            Logger.getLogger(getClass()).error("Failed to update subnet lease", ex);
+        }
+
+        return new JacksonRepresentation<>(addr);
+    }
+
+
     @Delete
     public Representation deleteLease(Map<String, String> data) {
         int ipVersion = Integer.parseInt(data.get("version"));
@@ -88,6 +111,13 @@ public class AddressLease extends ResourceBase {
                     addr.client = Clients.NONE;
                     IPAddresses.dao.update(addr);
                 }
+            } else {
+                if (!getRequestAttributes().containsKey("id"))
+                    return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+                IPAddress ipAddress = IPAddresses.dao.queryForId(getAttribute("id"));
+                ipAddress.client = null;
+                ipAddress.connection = null;
+                IPAddresses.dao.update(ipAddress);
             }
         } catch (SQLException ex) {
             Logger.getLogger(getClass()).error("Failed to modify address lease", ex);
