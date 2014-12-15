@@ -224,7 +224,7 @@ public class DefaultServiceListener implements ServiceListener {
         HashMap<String, String> tags = new HashMap<>();
         tags.put("client", "" + client.id);
         tags.put("connection", "" + client.kid);
-        tags.put("vpnInstance", "" + vpn.getInstanceId());
+        tags.put("vpnInstance", "" + vpn.getInstanceId().replace(':', '-'));
 
         DataPoint bytesInDataPoint = new DataPoint();
         bytesInDataPoint.metric = "vpn.client.bytesIn";
