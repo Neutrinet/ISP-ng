@@ -21,16 +21,24 @@ public class VPNConnections extends ResourceBase {
         if (!getRequestAttributes().containsKey("client"))
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
+        String clientId = getAttribute("client").toString();
         String connectionId = getAttribute("id").toString();
         if (connectionId == null || connectionId.isEmpty()) {
             connectionId = "all";
         }
 
         try {
-            if (connectionId.equals("all"))
-                return new JacksonRepresentation(Connections.dao.queryForAll());
-            else
-                return new JacksonRepresentation(Connections.dao.queryForId(connectionId));
+            if (clientId.equals("all")) {
+                if (connectionId.equals("all"))
+                    return new JacksonRepresentation(Connections.dao.queryForAll());
+                else
+                    return new JacksonRepresentation(Connections.dao.queryForId(connectionId));
+            } else {
+                if (connectionId.equals("all"))
+                    return new JacksonRepresentation(Connections.dao.queryForEq("client_id", clientId));
+                else
+                    return new JacksonRepresentation(Connections.dao.queryForId(connectionId));
+            }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to get connection", ex);
             return clientError("INVALID_ARGUMENT", Status.SERVER_ERROR_INTERNAL);
