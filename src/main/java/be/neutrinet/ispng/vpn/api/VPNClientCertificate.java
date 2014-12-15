@@ -84,7 +84,7 @@ public class VPNClientCertificate extends ResourceBase {
             List<Certificate> certs = Certificates.dao.queryForEq("client_id", clientId);
 
             if (getQueryValue("active") != null && getQueryValue("active").equals("true")) {
-                certs = certs.stream().filter(cert -> cert.revocationDate.getTime() > System.currentTimeMillis()).collect(Collectors.toList());
+                certs = certs.stream().filter(cert -> cert.valid()).collect(Collectors.toList());
             }
 
             if (getQueryValue("raw") != null) {
@@ -158,6 +158,10 @@ public class VPNClientCertificate extends ResourceBase {
                 }
 
                 Certificate old = Certificates.dao.queryForId(getAttribute("cert"));
+
+                if (old == null)
+                    return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+
                 old.revocationDate = new Date();
 
                 if (old.get() == null) {
