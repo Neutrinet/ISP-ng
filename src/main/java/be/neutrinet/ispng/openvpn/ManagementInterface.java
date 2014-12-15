@@ -64,7 +64,9 @@ public class ManagementInterface implements Runnable {
         if (sock != null && !sock.isClosed()) return;
 
         sock = new Socket(host, port);
+    }
 
+    public void connected() {
         listener.managementConnectionEstablished();
 
         Config.get().getAndWatch("debug/OpenVPN/echoCommands", "false", (String value) -> echoOpenVPNCommands = value.equals("true"));
@@ -167,6 +169,9 @@ public class ManagementInterface implements Runnable {
 
                 this.br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 this.bw = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+
+                connected();
+
                 line = br.readLine();
 
                 commandHandling:
