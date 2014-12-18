@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -70,7 +71,9 @@ public class VPNClientConfig extends ResourceBase {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ZipOutputStream zip = new ZipOutputStream(baos);
 
-            List<Certificate> userCert = Certificates.dao.queryForEq("client_id", client.id);
+            List<Certificate> userCert = Certificates.dao.queryForEq("client_id", client.id).stream()
+                    .filter(cert -> cert.valid()).collect(Collectors.toList());
+
             if (!userCert.isEmpty()) {
                 byte[] raw = userCert.get(0).getRaw();
                 zip.putNextEntry(new ZipEntry("client.crt"));

@@ -53,6 +53,13 @@ public class Certificate {
         return null;
     }
 
+    public boolean valid() {
+        if (signedDate == null || signedDate.getTime() > System.currentTimeMillis()) return false;
+        if (revocationDate.getTime() <= System.currentTimeMillis()) return false;
+
+        return true;
+    }
+
     public X509CertificateHolder get() {
         String crtPath = VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + serial + ".crt";
         File crt = new File(crtPath);
