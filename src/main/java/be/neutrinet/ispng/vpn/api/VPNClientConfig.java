@@ -44,7 +44,7 @@ public class VPNClientConfig extends ResourceBase {
     public final static String[] DEFAULTS = new String[]{
         "client",
         "dev tun",
-        "proto tcp-client",
+            "proto udp",
         "remote " + VPN.cfg.getProperty("openvpn.publicaddress") + ' ' + VPN.cfg.getProperty("openvpn.publicport"),
         "resolv-retry infinite",
         "nobind",
