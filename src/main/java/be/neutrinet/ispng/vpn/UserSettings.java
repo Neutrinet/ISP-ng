@@ -26,13 +26,13 @@ public class UserSettings {
     }
 
     public Optional<Object> get(Object key) {
-        return Optional.of(settings.get(key));
+        return Optional.ofNullable(settings.get(key));
     }
 
     public <V> V get(Object key, V defaultValue) {
         if (!settings.containsKey(key)) return defaultValue;
 
-        return (V) get(key);
+        return (V) get(key).get();
     }
 
     public Object put(String key, Object value) {
