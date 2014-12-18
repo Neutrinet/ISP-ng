@@ -122,7 +122,7 @@ public class UserRegistration extends ResourceBase {
 
                 boolean sendEmailConfirmation = true;
                 if (data.containsKey("sendEmail")) {
-                    sendEmailConfirmation = (data.get("sendEmail").equals("false")) ? false : true;
+                    sendEmailConfirmation = Boolean.parseBoolean(data.get("sendEmail").toString());
                 }
 
                 reg.commit(sendEmailConfirmation);
