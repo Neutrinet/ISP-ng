@@ -79,7 +79,7 @@ public class Registration {
     /**
      * Commits and finalizes registration
      */
-    public void commit() {
+    public void commit(boolean sendConfirmationEmail) {
         try {
             TransactionManager.callInTransaction(VPN.cs, () -> {
                 if (ipv4Id != 0) {
@@ -105,7 +105,7 @@ public class Registration {
                 }
                 
                 Registrations.dao.update(this);
-                VPN.generator.sendRegistrationConfirmation(this);
+                if (sendConfirmationEmail) VPN.generator.sendRegistrationConfirmation(this);
                 return true;
             });
         } catch (SQLException ex) {
