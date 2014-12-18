@@ -83,7 +83,7 @@ public class VPNClientCertificate extends ResourceBase {
         try {
             List<Certificate> certs = Certificates.dao.queryForEq("client_id", clientId);
 
-            if (getQueryValue("active") != null && getQueryValue("active").equals("true")) {
+            if (getQueryValue("active") != null && Boolean.parseBoolean(getQueryValue("active"))) {
                 certs = certs.stream().filter(cert -> cert.valid()).collect(Collectors.toList());
             }
 
@@ -152,7 +152,7 @@ public class VPNClientCertificate extends ResourceBase {
             SubjectPublicKeyInfo pkInfo = csr.getSubjectPublicKeyInfo();
             RSAKeyParameters rsa = (RSAKeyParameters) PublicKeyFactory.createKey(pkInfo);
 
-            if (getQueryValue("rekey") != null && getQueryValue("rekey").equals("true")) {
+            if (getQueryValue("rekey") != null && Boolean.parseBoolean(getQueryValue("rekey"))) {
                 if (!getRequestAttributes().containsKey("cert")) {
                     return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
                 }
