@@ -119,7 +119,13 @@ public class UserRegistration extends ResourceBase {
                     reg.ipv4Id = (int) data.get("ipv4Id");
                 if (data.containsKey("ipv6Id"))
                     reg.ipv6Id = (int) data.get("ipv6Id");
-                reg.commit();
+
+                boolean sendEmailConfirmation = true;
+                if (data.containsKey("sendEmail")) {
+                    sendEmailConfirmation = (data.get("sendEmail").equals("false")) ? false : true;
+                }
+
+                reg.commit(sendEmailConfirmation);
                 Registration.getActiveRegistrations().remove(reg.getId());
                 return new JacksonRepresentation("OK");
             } else if (data.containsKey("password")) {
