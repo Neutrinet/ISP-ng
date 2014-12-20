@@ -31,5 +31,7 @@
 <script>
 $(function() {
     $("#birthdate").birthdayPicker();
+    $("#birthdate select").addClass("form-control");
+    $("select.birthMonth").before($("select.birthDate"));
 });
 </script>
