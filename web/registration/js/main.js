@@ -496,12 +496,12 @@ function App() {
             var fields = $('#reg-form').children('input[type=text]');
             for (var i in fields) {
                 var field = fields[i];
-                
+
                 if (typeof field !== 'object') continue;
-                
+
                 data[field.id] = $(field).val();
             }
-            
+
             data['country'] = $('#country').val();
             data['id'] = self.vpn.registration.id;
 
