@@ -1,5 +1,6 @@
 import json
 from flask import Flask, render_template, request
+from BeautifulSoup import BeautifulSoup
 
 
 app = Flask(__name__,
@@ -47,6 +48,15 @@ def validate_key():
         "id": "7ed0cea2-1eef-43a9-b7db-b372aa67700f"
     })
 
+
+@app.route("/form")
+def form():
+    index = BeautifulSoup(open("../../web/registration/index.html", "r").read())
+    soup2 = BeautifulSoup(open("../../web/registration/reg-form.html", "r").read())
+
+    index.find("div", id="content").replaceWith(soup2)
+
+    return str(index)
 
 
 @app.route("/")
