@@ -502,9 +502,16 @@ function App() {
                 data[field.id] = $(field).val();
             }
 
+            var javascriptStringFormattingIsLame = function(value) {
+                if (value < 10) {
+                    return "0" + value
+                }
+                return value
+            }
+
             data['country'] = $('#country').val();
             data['id'] = self.vpn.registration.id;
-            data["birthdate"] = $("select.birthDate").val() + "-" + $("select.birthMonth").val() + "-" + $("select.birthYear").val();
+            data["birthdate"] = javascriptStringFormattingIsLame($("select.birthDate").val()) + "-" + javascriptStringFormattingIsLame($("select.birthMonth").val()) + "-" + $("select.birthYear").val();
 
             $.ajax(self.vpn.endpoint + 'api/reg/manual', {
                 data: JSON.stringify(data),
