@@ -504,6 +504,7 @@ function App() {
 
             data['country'] = $('#country').val();
             data['id'] = self.vpn.registration.id;
+            data["birthdate"] = $("select.birthDate").val() + "-" + $("select.birthMonth").val() + "-" + $("select.birthYear").val();
 
             $.ajax(self.vpn.endpoint + 'api/reg/manual', {
                 data: JSON.stringify(data),
