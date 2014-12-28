@@ -16,7 +16,7 @@ function VPN() {
 
     };
 
-    this.handleIfError = function(response) {
+    this.handleIfError = function (response) {
         if (response === undefined) {
             var errorBlock = $('<div class="alert alert-danger" role="alert">');
 
@@ -50,7 +50,7 @@ function VPN() {
         return false;
     };
 
-    this.confirm = function() {
+    this.confirm = function () {
         if (vpn.registration != undefined) {
             app.content.hide();
             app.preloader.show();
@@ -59,12 +59,12 @@ function VPN() {
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'json',
-                success: function(response, status, xhr) {
-                    $('#content').load('done.html', function() {
+                success: function (response, status, xhr) {
+                    $('#content').load('done.html', function () {
                         //activate starz
                         var mq = window.matchMedia('only screen and (min-device-width: 800px)');
                         if (mq.matches) {
-                            $.getScript('js/starz.js', function() {
+                            $.getScript('js/starz.js', function () {
                                 new StarField('starz').render(50, 1);
                             });
                         }
@@ -72,11 +72,12 @@ function VPN() {
                         app.preloader.hide();
                         app.content.fadeIn();
                     });
-                }});
+                }
+            });
         }
     };
 
-    this.validateKey = function(email, key) {
+    this.validateKey = function (email, key) {
         app.content.hide();
         app.preloader.show();
         $.ajax(vpn.endpoint + 'api/reg/validateKey', {
@@ -84,13 +85,14 @@ function VPN() {
             type: 'POST',
             contentType: 'application/json',
             dataType: 'json',
-            success: function(response, status, xhr) {
+            success: function (response, status, xhr) {
                 if (vpn.handleIfError(response))
                     return;
                 vpn.registration = response;
                 app.preloader.hide();
                 app.content.load('password.html?' + new Date().getTime(), app.unlocked);
-            }});
+            }
+        });
     };
 }
 
@@ -102,7 +104,7 @@ function App() {
     this.vpn = new VPN();
     this.urlParams = {};
 
-    this.run = function() {
+    this.run = function () {
 
         if (!window.location.origin)
             window.location.origin = window.location.protocol + "//" + window.location.host;
@@ -122,15 +124,15 @@ function App() {
         //check for re-entry
         self.parseQueryString();
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             if (self.urlParams["flow"] != undefined) {
                 if (self.handleFlow())
                     return;
             }
 
-            $('#content').load('start.html', function() {
+            $('#content').load('start.html', function () {
 
-                $('#login-link').click(function(e){
+                $('#login-link').click(function (e) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
 
@@ -142,14 +144,14 @@ function App() {
                 self.preloader.fadeOut();
                 self.content.fadeIn();
 
-                $('form .btn-primary').click(function(event) {
+                $('form .btn-primary').click(function (event) {
                     self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
                 });
             });
         });
     };
 
-    this.handleFlow = function() {
+    this.handleFlow = function () {
         self.vpn.registration.id = self.urlParams['id'];
 
         if (self.vpn.registration.id == undefined)
@@ -174,8 +176,8 @@ function App() {
         return false;
     };
 
-    this.setupVPN = function() {
-        $('#content').load('config.html', function() {
+    this.setupVPN = function () {
+        $('#content').load('config.html', function () {
             self.preloader.hide();
             self.content.fadeIn();
             var platform = "";
@@ -190,13 +192,13 @@ function App() {
             if (navigator.userAgent.indexOf("BSD") != -1)
                 platform = "linux";
 
-            $('div.platform-details').each(function(e) {
+            $('div.platform-details').each(function (e) {
                 $(this).hide();
             });
 
             $('div#' + platform).show();
 
-            $('div#' + platform + ' .download-button').click(function() {
+            $('div#' + platform + ' .download-button').click(function () {
                 // sadly, jQuery have their nickers in a twist when it comes
                 // to XHR2 support (which allows for Blob return content types) in $.ajax
                 // Ugh.
@@ -204,9 +206,9 @@ function App() {
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', self.vpn.endpoint + 'api/client/' + self.vpn.registration.client.id + '/config', true);
                 xhr.responseType = 'blob';
-                xhr.onload = function(e) {
+                xhr.onload = function (e) {
                     if (this.status == 200) {
-                        $.getScript('js/FileSaver.js', function() {
+                        $.getScript('js/FileSaver.js', function () {
                             var blob = new Blob([xhr.response], {type: 'application/zip; charset=utf-8'});
                             if (platform == "osx")
                                 saveAs(blob, "neutrinet.tblk.zip");
@@ -226,12 +228,12 @@ function App() {
 
     this.emailDone = this.setupVPN;
 
-    this.eIdDone = function() {
+    this.eIdDone = function () {
         $.ajax(self.vpn.endpoint + 'api/reg/' + self.vpn.registration.id, {
             type: 'GET',
             contentType: 'application/json',
             dataType: 'json',
-            success: function(response, status, xhr) {
+            success: function (response, status, xhr) {
                 if (response == undefined) {
                     window.location = window.location.origin;
                     return;
@@ -244,30 +246,30 @@ function App() {
         });
     };
 
-    this.keypairSelect = function() {
+    this.keypairSelect = function () {
         app.preloader.hide();
         app.content.fadeIn();
 
-        $('#use-eid').click(function() {
+        $('#use-eid').click(function () {
             app.content.hide();
             app.preloader.fadeIn();
             app.content.load('review.html', self.review);
         });
 
-        $('#use-csr').click(function() {
+        $('#use-csr').click(function () {
             app.content.hide();
             app.preloader.fadeIn();
             app.content.load('cert.html', self.useCSR);
         });
     };
 
-    this.useCSR = function() {
+    this.useCSR = function () {
         var scripts = ['js/asn1js/asn1.js', 'js/asn1js/base64.js', 'js/asn1js/oids.js'];
         var numloaded = 0;
 
         // super awesome dependency loader
         for (var i = 0; i < scripts.length; i++) {
-            $.getScript(scripts[i], function() {
+            $.getScript(scripts[i], function () {
                 numloaded++;
 
                 if (numloaded === scripts.length) {
@@ -277,7 +279,7 @@ function App() {
                     var reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
                     var feedback = $('#feedback');
 
-                    $('#csr').on('input', function(e) {
+                    $('#csr').on('input', function (e) {
                         feedback.hide();
                         feedback.removeClass();
                         var pem = $('#csr').val();
@@ -289,15 +291,15 @@ function App() {
                             $('#get-cert').prop("disabled", false);
                         } catch (e) {
                             feedback.text("The CSR you entered is invalid. Please make sure you've " +
-                                "correctly followed the instructions above and pasted the whole CSR. The parser " +
-                                "expects a Base64-armored PKCS10 instance.");
+                            "correctly followed the instructions above and pasted the whole CSR. The parser " +
+                            "expects a Base64-armored PKCS10 instance.");
                             feedback.fadeIn();
                             $('#get-cert').removeClass('btn-primary')
                             $('#get-cert').prop("disabled", true);
                         }
                     });
 
-                    $('#get-cert').click(function() {
+                    $('#get-cert').click(function () {
                         // set cookie to avoid auth dialog
                         document.cookie = 'Registration-ID=' + self.vpn.registration.id;
 
@@ -305,13 +307,13 @@ function App() {
                             data: $('#csr').val(),
                             type: 'PUT',
                             contentType: 'text/plain',
-                            success: function(response, status, xhr) {
+                            success: function (response, status, xhr) {
                                 $('#error').empty();
                                 app.content.hide();
                                 app.preloader.fadeIn();
                                 $('#content').load('review.html', self.review);
                             },
-                            error: function(response, status, xhr) {
+                            error: function (response, status, xhr) {
                                 $('#error').append($('<b>').text(response.errorKey));
                                 $('#error').append($('<p>').text(response.message));
                             }
@@ -322,8 +324,8 @@ function App() {
         }
     };
 
-    this.review = function() {
-        $.getScript('js/renderjson.js', function() {
+    this.review = function () {
+        $.getScript('js/renderjson.js', function () {
             app.preloader.hide();
             $('#ip-address input[type="checkbox"]').bootstrapSwitch();
             $('#ip-address input[type="checkbox"]').on('switchChange.bootstrapSwitch', self.requestIP);
@@ -335,41 +337,61 @@ function App() {
         });
     };
 
-    this.requestIP = function(event, state) {
-        var version = event.currentTarget.id.charAt(2);
+    this.requestIP = function (event, state) {
+        var version = parseInt(event.currentTarget.id.charAt(2), 10);
         $(event.currentTarget).bootstrapSwitch('indeterminate', true);
 
-        if (state == true)
-            $.ajax(self.vpn.endpoint + 'api/address/lease/0', {
-                data: JSON.stringify({
-                    user: self.vpn.registration.user.id,
-                    client: self.vpn.registration.client.id,
-                    version: parseInt(version, 10)
-                }),
+        var payload = {};
+        var api = '';
+        if (version === 4) {
+            payload = JSON.stringify({
+                user: self.vpn.registration.user.id,
+                client: self.vpn.registration.client.id,
+                version: version
+            });
+            api = 'address';
+        } else if (version === 6) {
+            payload = JSON.stringify({
+                prefix: 56,
+                client: self.vpn.registration.client.id,
+                version: version
+            });
+            api = 'subnet';
+        }
+
+        if (state == true) {
+            $.ajax(self.vpn.endpoint + 'api/' + api + '/lease/new', {
+                data: payload,
                 type: 'PUT',
                 contentType: 'application/json',
                 dataType: 'json',
-                success: function(response, status, xhr) {
+                success: function (response, status, xhr) {
                     self.vpn.handleIfError(response);
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
                     $(event.currentTarget).bootstrapSwitch('state', true, true);
-                    $('#ip' + version + '-address').text(response.address + "/" + response.netmask);
-                    self.vpn.registration["ipv" + version + "Id"] = response.id;
+                    if (version === 4) {
+                        $('#ip' + version + '-address').text(response.address + '/' + response.netmask);
+                        self.vpn.registration["ipv" + version + "Id"] = response.id;
+                    } else if (version === 6) {
+                        $('#ip' + version + '-address').text(response.subnet + '/' + response.prefix);
+                    }
                 },
-                error: function(response, status, xhr) {
+                error: function (response, status, xhr) {
                     $(event.currentTarget).bootstrapSwitch('indeterminate', false);
                     $(event.currentTarget).bootstrapSwitch('state', false, true);
                     $('#ip' + version + '-address').text("No IPv" + version + " available");
-                }});
+                }
+            });
+        }
     };
 
-    this.unlocked = function() {
+    this.unlocked = function () {
         app.preloader.hide();
         app.content.fadeIn();
 
         $('#password').keyup(self.validatePassword);
         $('#password-verify').keyup(self.validatePassword);
-        $('#password-done').click(function() {
+        $('#password-done').click(function () {
             $.ajax(self.vpn.endpoint + 'api/reg/enterPassword', {
                 data: JSON.stringify({
                     id: self.vpn.registration.id,
@@ -378,32 +400,33 @@ function App() {
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'json',
-                success: function(response, status, xhr) {
+                success: function (response, status, xhr) {
                     self.vpn.registration['user'] = response;
                     app.content.hide();
                     app.preloader.fadeIn();
                     $('#content').load('eid.html', self.useEIDIdentification);
-                }});
+                }
+            });
         });
     };
 
-    this.parseQueryString = function() {
+    this.parseQueryString = function () {
         var match,
-                pl = /\+/g, // Regex for replacing addition symbol with a space
-                search = /([^&=]+)=?([^&]*)/g,
-                decode = function(s) {
-                    return decodeURIComponent(s.replace(pl, " "));
-                },
-                query = window.location.search.substring(1);
+            pl = /\+/g, // Regex for replacing addition symbol with a space
+            search = /([^&=]+)=?([^&]*)/g,
+            decode = function (s) {
+                return decodeURIComponent(s.replace(pl, " "));
+            },
+            query = window.location.search.substring(1);
 
         self.urlParams = {};
         while (match = search.exec(query))
             self.urlParams[decode(match[1])] = decode(match[2]);
     };
 
-    this.show_alert = function(theAlert) {
+    this.show_alert = function (theAlert) {
         if (theAlert.hasClass("hide")) {
-           theAlert.hide().removeClass("hide");
+            theAlert.hide().removeClass("hide");
         }
 
         if (theAlert.is(":visible") === false) {
@@ -411,13 +434,13 @@ function App() {
         }
     }
 
-    this.hide_alert = function(theAlert) {
+    this.hide_alert = function (theAlert) {
         if (theAlert.is(":visible") === true) {
             theAlert.fadeOut();
         }
     }
 
-    this.validatePassword = function() {
+    this.validatePassword = function () {
 
         var pwd = $('#password').val();
         var verify = $('#password-verify').val();
@@ -452,14 +475,14 @@ function App() {
 
     };
 
-    this.login = function() {
+    this.login = function () {
         self.preloader.fadeOut();
         self.content.fadeIn();
 
         $('#login').click(self.handleLogin);
     };
 
-    this.handleLogin = function(e) {
+    this.handleLogin = function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
@@ -482,7 +505,7 @@ function App() {
         })
     };
 
-    this.userMgmt = function() {
+    this.userMgmt = function () {
 
     };
 
@@ -496,18 +519,18 @@ function App() {
             var fields = $('#reg-form').children('input[type=text]');
             for (var i in fields) {
                 var field = fields[i];
-                
+
                 if (typeof field !== 'object') continue;
-                
+
                 data[field.id] = $(field).val();
             }
 
-            var javascriptStringFormattingIsLame = function(value) {
+            var javascriptStringFormattingIsLame = function (value) {
                 if (value < 10) {
                     return "0" + value
                 }
                 return value
-            }
+            };
 
             data['country'] = $('#country').val();
             data['id'] = self.vpn.registration.id;
@@ -528,7 +551,7 @@ function App() {
         });
     };
 
-    this.ajaxError = function(xhr, errorType, exception) {
+    this.ajaxError = function (xhr, errorType, exception) {
         var errorMessage = exception || xhr.statusText;
 
         app.content.html('<h2>Error</h2><p>' + errorMessage + '</p>');
@@ -536,7 +559,7 @@ function App() {
         app.content.fadeIn();
     };
 
-    this.useEIDIdentification = function() {
+    this.useEIDIdentification = function () {
         app.preloader.hide();
         app.content.fadeIn();
 
