@@ -6,6 +6,7 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.security.Policy;
 import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.Clients;
@@ -51,7 +52,8 @@ public class VPNClientConfig extends ResourceBase {
         "ns-cert-type server",
         "comp-lzo",
         "ca ca.crt",
-        "auth-user-pass"
+            "auth-user-pass",
+            "topology subnet"
     };
 
     public static byte[] caCert;
@@ -63,6 +65,9 @@ public class VPNClientConfig extends ResourceBase {
                 return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
             Client client = Clients.dao.queryForId(getAttribute("client"));
+            if (!Policy.get().canAccess(getSessionToken().get().getUser(), client)) {
+                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
 
             ArrayList<String> config = new ArrayList<>();
             config.addAll(Arrays.asList(DEFAULTS));
@@ -72,7 +77,7 @@ public class VPNClientConfig extends ResourceBase {
             ZipOutputStream zip = new ZipOutputStream(baos);
 
             List<Certificate> userCert = Certificates.dao.queryForEq("client_id", client.id).stream()
-                    .filter(cert -> cert.valid()).collect(Collectors.toList());
+                    .filter(Certificate::valid).collect(Collectors.toList());
 
             if (!userCert.isEmpty()) {
                 byte[] raw = userCert.get(0).getRaw();

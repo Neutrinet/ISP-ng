@@ -1,5 +1,6 @@
 package be.neutrinet.ispng.vpn.api;
 
+import be.neutrinet.ispng.security.Policy;
 import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.Clients;
 import org.apache.log4j.Logger;
@@ -24,6 +25,10 @@ public class VPNClient extends ResourceBase {
 
         try {
             Client c = Clients.dao.queryForId(getAttribute("client"));
+            if (!Policy.get().canModify(getSessionToken().get().getUser(), c)) {
+                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+
             if (c != null) {
                 c = mergeUpdate(c, client).get();
             }
@@ -67,6 +72,8 @@ public class VPNClient extends ResourceBase {
                 clients = Clients.dao.queryForEq("user_id", getQueryValue("user"));
             else
                 clients = Clients.dao.queryForAll();
+
+            clients = Policy.filterAccessible(getSessionToken().get().getUser(), clients);
             return new JacksonRepresentation<>(clients);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve clients", ex);
@@ -81,7 +88,11 @@ public class VPNClient extends ResourceBase {
             if (!getRequestAttributes().containsKey("client"))
                 return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
-            Clients.dao.delete(Clients.dao.queryForId(getAttribute("client")));
+            Client c = Clients.dao.queryForId(getAttribute("client"));
+            if (!Policy.get().canModify(getSessionToken().get().getUser(), c)) {
+                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+            Clients.dao.delete(c);
 
             return DEFAULT_SUCCESS;
         } catch (Exception ex) {
