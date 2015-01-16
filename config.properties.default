@@ -64,3 +64,6 @@ log.file = /var/log/ispng/vpn.log
 
 # Monitoring
 monitoring.opentsdb.uri=
+
+# Auth
+users.admin=
