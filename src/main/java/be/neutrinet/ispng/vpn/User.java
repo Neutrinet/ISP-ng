@@ -17,6 +17,7 @@
  */
 package be.neutrinet.ispng.vpn;
 
+import be.neutrinet.ispng.security.OwnedEntity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.mindrot.jbcrypt.BCrypt;
@@ -29,7 +30,7 @@ import java.util.Date;
  * @author wannes
  */
 @DatabaseTable(tableName = "users")
-public class User {
+public class User implements OwnedEntity {
 
     // Currently allowed countries = benelux
     public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
@@ -63,6 +64,10 @@ public class User {
 
     public boolean validatePassword(String password) {
         return BCrypt.checkpw(password, this.password);
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public void setPassword(String password) {
@@ -102,5 +107,11 @@ public class User {
         }
 
         return settings;
+    }
+
+    @Override
+    public boolean isOwnedBy(User user) {
+        if (user == null) return false;
+        return user.id == id;
     }
 }

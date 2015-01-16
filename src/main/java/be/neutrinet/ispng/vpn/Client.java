@@ -1,5 +1,6 @@
 package be.neutrinet.ispng.vpn;
 
+import be.neutrinet.ispng.security.OwnedEntity;
 import be.neutrinet.ispng.vpn.ip.SubnetLease;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.j256.ormlite.dao.ForeignCollection;
@@ -17,7 +18,7 @@ import java.util.Optional;
  * Created by wannes on 11/10/14.
  */
 @DatabaseTable(tableName = "ovpn_clients")
-public class Client implements Serializable {
+public class Client implements OwnedEntity, Serializable {
 
     @DatabaseField(generatedId = true)
     public int id;
@@ -79,5 +80,11 @@ public class Client implements Serializable {
         }
 
         return c;
+    }
+
+    @Override
+    public boolean isOwnedBy(User user) {
+        if (user == null) return false;
+        return user.id == this.user.id;
     }
 }
