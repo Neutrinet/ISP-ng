@@ -5,6 +5,7 @@
  */
 package be.neutrinet.ispng.vpn.api;
 
+import be.neutrinet.ispng.security.Policy;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
@@ -15,6 +16,8 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,7 +31,8 @@ public class UserManagement extends ResourceBase {
         try {
             if (!getRequestAttributes().containsKey("user") ||
                     getAttribute("user").equals("all")) {
-                return new JacksonRepresentation(Users.dao.queryForAll());
+                List<User> users = Users.dao.queryForAll();
+                return new JacksonRepresentation(Policy.filterAccessible(getSessionToken().get().getUser(), users));
             }
 
             int userId = Integer.parseInt(getAttribute("user").toString());
@@ -37,7 +41,12 @@ public class UserManagement extends ResourceBase {
                 return new JacksonRepresentation(new ClientError("NO_SUCH_OBJECT"));
             }
 
-            return new JacksonRepresentation(Users.dao.queryForId("" + userId));
+            User user = Users.dao.queryForId("" + userId);
+            if (Policy.get().canAccess(getSessionToken().get().getUser(), user)) {
+                return new JacksonRepresentation(user);
+            } else {
+                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve users", ex);
         }
@@ -58,7 +67,20 @@ public class UserManagement extends ResourceBase {
 
         try {
             User old = Users.dao.queryForId("" + userId);
-            Optional<User> optional = mergeUpdate(old, user);
+            if (!Policy.get().canModify(getSessionToken().get().getUser(), old)) {
+                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+
+            if (getQueryValue("changePassword") != null) {
+                // Deserialized object contains plaintext new password
+                user.setPassword(user.getPassword());
+                Users.dao.update(old);
+                return new JacksonRepresentation<>(old);
+            }
+
+            ArrayList<String> prohibitedFields = new ArrayList<>();
+            prohibitedFields.add("password");
+            Optional<User> optional = mergeUpdate(old, user, prohibitedFields);
 
             if (optional.isPresent()) {
                 Users.dao.update(optional.get());
