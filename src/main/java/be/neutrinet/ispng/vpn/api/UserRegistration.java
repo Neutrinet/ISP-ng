@@ -5,6 +5,7 @@
  */
 package be.neutrinet.ispng.vpn.api;
 
+import be.neutrinet.ispng.security.SessionManager;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.Clients;
 import be.neutrinet.ispng.vpn.User;
@@ -143,6 +144,10 @@ public class UserRegistration extends ResourceBase {
                 reg.user.country = (String) data.get("country");
 
                 if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
+
+                // Auto-login newly created user
+                getResponse().getCookieSettings().add("Session",
+                        SessionManager.createSessionToken(reg.user, getClientInfo().getAddress()).getToken().toString());
 
                 reg.createInitialClient();
                 Registrations.dao.update(reg);
