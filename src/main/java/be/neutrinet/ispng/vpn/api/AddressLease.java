@@ -56,6 +56,8 @@ public class AddressLease extends ResourceBase {
         assert clientId > 0;
         int version = (int) data.get("version");
         assert version == 4 || version == 6;
+        String purpose = data.get("purpose").toString();
+        if (purpose == null) purpose = IPAddress.Purpose.CLIENT_ASSIGN;
 
         try {
             Client client = Clients.dao.queryForId("" + clientId);
@@ -72,6 +74,7 @@ public class AddressLease extends ResourceBase {
                 addr.leasedAt = new Date();
                 addr.client = Clients.dao.queryForId("" + clientId);
                 addr.expiry = DateUtil.convert(LocalDate.now().plusDays(365L));
+                addr.purpose = purpose;
                 IPAddresses.dao.update(addr);
                 return new JacksonRepresentation(addr);
             }

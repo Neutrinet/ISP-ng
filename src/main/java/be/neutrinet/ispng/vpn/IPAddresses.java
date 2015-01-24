@@ -53,11 +53,15 @@ public class IPAddresses {
     }
 
     public static Optional<IPAddress> findUnused(int ipVersion) {
+        return findUnused(ipVersion, IPAddress.Purpose.CLIENT_ASSIGN);
+    }
+
+    public static Optional<IPAddress> findUnused(int ipVersion, String purpose) {
         try {
             QueryBuilder<IPAddress, String> queryBuilder = dao.queryBuilder();
             queryBuilder.limit(1L);
             queryBuilder.where().eq("client_id", -1).and()
-                    .eq("ipVersion", ipVersion);
+                    .eq("ipVersion", ipVersion).and().eq("purpose", purpose);
             List<IPAddress> query = dao.query(queryBuilder.prepare());
 
             if (query.isEmpty()) {
@@ -90,10 +94,15 @@ public class IPAddresses {
     }
 
     public static List<IPAddress> forClient(Client client, int ipVersion) {
+        return forClient(client, ipVersion, IPAddress.Purpose.CLIENT_ASSIGN);
+    }
+
+    public static List<IPAddress> forClient(Client client, int ipVersion, String purpose) {
         try {
             QueryBuilder<IPAddress, String> queryBuilder = dao.queryBuilder();
             queryBuilder.where().eq("client_id", client.id).and()
-                    .eq("ipVersion", ipVersion);
+                    .eq("ipVersion", ipVersion).and()
+                    .eq("purpose", purpose);
             return dao.query(queryBuilder.prepare());
         } catch (SQLException ex) {
             Logger.getLogger(IPAddresses.class).error("Failed to find IP address", ex);
@@ -101,7 +110,7 @@ public class IPAddresses {
         return null;
     }
 
-    public static List<IPAddress> addv4SubnetToPool(String subnetCIDR) {
+    public static List<IPAddress> addv4SubnetToPool(String subnetCIDR, String purpose) {
         ArrayList<IPAddress> addrs = new ArrayList<>();
         IPv4 subnet = new IPv4(subnetCIDR);
         try {
@@ -112,6 +121,7 @@ public class IPAddresses {
                         ipa.address = addr;
                         ipa.ipVersion = 4;
                         ipa.netmask = 32;
+                        ipa.purpose = purpose;
                         IPAddresses.dao.createIfNotExists(ipa);
                         addrs.add(ipa);
                     } catch (Exception ex) {
@@ -127,7 +137,7 @@ public class IPAddresses {
         return addrs;
     }
 
-    public static List<IPAddress> addv6SubnetToPool(String subnetstr) {
+    public static List<IPAddress> addv6SubnetToPool(String subnetstr, String purpose) {
         ArrayList<IPAddress> addrs = new ArrayList<>();
         IPv6Network subnet = IPv6Network.fromString(subnetstr);
         try {
@@ -137,6 +147,7 @@ public class IPAddresses {
                     ipa.address = addr.toString();
                     ipa.ipVersion = 6;
                     ipa.netmask = 128;
+                    ipa.purpose = purpose;
                     IPAddresses.dao.createIfNotExists(ipa);
                     addrs.add(ipa);
                 }
@@ -149,19 +160,22 @@ public class IPAddresses {
         return addrs;
     }
 
-    public static List<IPAddress> addv6SubnetToPool(String subnetstr, int prefix) {
+    public static List<IPAddress> addv6SubnetToPool(String subnetstr, String purpose, int prefix) {
         ArrayList<IPAddress> addrs = new ArrayList<>();
         IPv6Network subnet = IPv6Network.fromString(subnetstr);
         try {
             IPAddresses.dao.callBatchTasks(() -> {
                 Iterator<IPv6Network> it = subnet.split(IPv6NetworkMask.fromPrefixLength(prefix));
+                IPv6Network net = it.next(); // skip first zero address
+
                 for (; it.hasNext(); ) {
-                    IPv6Network net = it.next();
+                    net = it.next();
 
                     IPAddress ipa = new IPAddress();
-                    ipa.address = net.toString().substring(0, net.toString().length() - 3);
+                    ipa.address = net.toString().substring(0, net.toString().length() - ("" + prefix).length() - 1);
                     ipa.ipVersion = 6;
                     ipa.netmask = prefix;
+                    ipa.purpose = purpose;
                     IPAddresses.dao.createIfNotExists(ipa);
                     addrs.add(ipa);
                 }

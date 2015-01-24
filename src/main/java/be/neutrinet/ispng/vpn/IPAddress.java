@@ -24,7 +24,6 @@ import com.j256.ormlite.table.DatabaseTable;
 import java.util.Date;
 
 /**
- *
  * @author wannes
  */
 @DatabaseTable(tableName = "address_pool")
@@ -49,4 +48,11 @@ public class IPAddress {
     public Date expiry;
     @DatabaseField
     public int netmask;
+    @DatabaseField(defaultValue = "CLIENT_ASSIGN")
+    public String purpose;
+
+    public final static class Purpose {
+        public final static String CLIENT_ASSIGN = "CLIENT_ASSIGN";
+        public final static String INTERCONNECT = "CLIENT_INTERCONNECT";
+    }
 }

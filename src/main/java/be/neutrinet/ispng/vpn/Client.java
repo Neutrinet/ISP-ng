@@ -82,6 +82,18 @@ public class Client implements OwnedEntity, Serializable {
         return c;
     }
 
+    public IPAddress getOrCreateInterconnectIP(int ipVersion) {
+        IPAddress interconnect = null;
+        List<IPAddress> interconnects = IPAddresses.forClient(this, ipVersion, IPAddress.Purpose.INTERCONNECT);
+        if (interconnects.size() < 1) {
+            interconnect = IPAddresses.findUnused(6, IPAddress.Purpose.INTERCONNECT).orElseThrow(() -> new IllegalStateException("No interconnect IPs available"));
+        } else {
+            interconnect = interconnects.get(0);
+        }
+
+        return interconnect;
+    }
+
     @Override
     public boolean isOwnedBy(User user) {
         if (user == null) return false;

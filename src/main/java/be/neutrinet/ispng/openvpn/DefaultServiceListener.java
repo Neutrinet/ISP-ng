@@ -71,7 +71,7 @@ public class DefaultServiceListener implements ServiceListener {
                     options.put("push-reset", null);
 
                     if (ipv4.isPresent()) {
-                        options.put("ifconfig-push", ipv4.get().address + " " + VPN.cfg.getProperty("openvpn.localip.4"));
+                        options.put("ifconfig-push", ipv4.get().address + " " + VPN.cfg.getProperty("openvpn.netmask.4"));
                         options.put("push route", VPN.cfg.getProperty("openvpn.network.4") + " " +
                                 VPN.cfg.getProperty("openvpn.netmask.4") + " " + VPN.cfg.getProperty("openvpn.localip.4"));
                         // route the OpenVPN server over the default gateway, not over the VPN itself
@@ -84,20 +84,23 @@ public class DefaultServiceListener implements ServiceListener {
 
                         if (user.settings().get("routeIPv4TrafficOverVPN", true).equals(true)) {
                             options.put("push redirect-gateway", "def1");
+                            options.put("push route-gateway", VPN.cfg.getProperty("openvpn.localip.4"));
                         }
                     }
 
                     if (!userClient.subnetLeases.isEmpty()) {
                         options.put("push tun-ipv6", "");
 
+                        IPAddress interconnect = userClient.getOrCreateInterconnectIP(6);
+                        // Why /64? See https://community.openvpn.net/openvpn/ticket/264
+                        options.put("ifconfig-ipv6-push", interconnect.address + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.interconnect"));
+
                         for (SubnetLease lease : userClient.subnetLeases) {
-                            String firstAddress = lease.subnet.subnet.substring(0, lease.subnet.subnet.indexOf('/')) + "1";
-                            // Why /64? See https://community.openvpn.net/openvpn/ticket/264
-                            options.put("ifconfig-ipv6-push", firstAddress + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.localip"));
                             options.put("push route-ipv6", VPN.cfg.getProperty("vpn.ipv6.network") + "/" + VPN.cfg.getProperty("vpn.ipv6.prefix")
                                     + " " + VPN.cfg.getProperty("vpn.ipv6.localip"));
                             // route assigned IPv6 subnet through client
                             options.put("iroute-ipv6", lease.subnet.subnet);
+                            options.put("setenv-safe DELEGATED_IPv6_PREFIX", lease.subnet.subnet);
                         }
 
                         if (user.settings().get("ip.route.ipv6.defaultRoute").isPresent()) {

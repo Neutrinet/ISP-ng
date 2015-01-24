@@ -145,7 +145,7 @@ public class ManagementInterface implements Runnable {
     public void setBandwidthMonitoringInterval(int interval) {
         try {
             if (interval < 0) throw new IllegalArgumentException("interval cannot be lower than zero");
-            writeLine("bytecount " + interval);
+            writeLine("bytecount " + interval + "\n");
         } catch (IOException ex) {
             Logger.getLogger(getClass()).error("Failed to write command", ex);
         }
