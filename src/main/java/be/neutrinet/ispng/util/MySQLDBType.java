@@ -1,6 +1,7 @@
-package be.neutrinet.ispng;
+package be.neutrinet.ispng.util;
 
 import com.j256.ormlite.db.MysqlDatabaseType;
+
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
