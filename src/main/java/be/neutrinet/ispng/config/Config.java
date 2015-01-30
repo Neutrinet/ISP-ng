@@ -1,10 +1,9 @@
 package be.neutrinet.ispng.config;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.util.Zookeeper;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -43,9 +42,7 @@ public class Config {
     }
 
     public final void boot() {
-        ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
-        cf = CuratorFrameworkFactory.newClient(VPN.cfg.getProperty("zookeeper.connectionString").toString(), retryPolicy);
-        cf.start();
+        this.cf = Zookeeper.get();
 
         for (Map.Entry<Object, Object> entry : VPN.cfg.entrySet()) {
             write(entry.getKey().toString().replace(".", "/"), entry.getValue().toString());
