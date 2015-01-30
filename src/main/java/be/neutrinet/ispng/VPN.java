@@ -21,7 +21,12 @@ import be.fedict.eid.applet.service.AppletServiceServlet;
 import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.mail.Generator;
 import be.neutrinet.ispng.monitoring.Agent;
+import be.neutrinet.ispng.util.MariaDBType;
+import be.neutrinet.ispng.util.MySQLDBType;
+import be.neutrinet.ispng.util.Zookeeper;
 import be.neutrinet.ispng.vpn.Manager;
+import be.neutrinet.ispng.vpn.api.FlowServlet;
+import be.neutrinet.ispng.vpn.api.RestletServlet;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import org.apache.commons.daemon.Daemon;
@@ -82,6 +87,7 @@ public class VPN implements Daemon {
             }
         });
 
+        Zookeeper.boot(cfg.getProperty("zookeeper.connectionString"));
         Config.get().boot();
         generator = new Generator();
 

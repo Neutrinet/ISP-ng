@@ -3,13 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package be.neutrinet.ispng;
+package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.security.SessionManager;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.api.*;
+import be.neutrinet.ispng.vpn.api.DNS;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
@@ -57,6 +58,7 @@ public class RestletServlet extends HttpServlet {
         router.attach("/user/{user}/setting/{setting}", UserSettings.class);
         router.attach("/user/login", UserLogin.class);
         router.attach("/user/{user}", UserManagement.class);
+        router.attach("/dns/{zone}", DNS.class);
 
         ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
 
