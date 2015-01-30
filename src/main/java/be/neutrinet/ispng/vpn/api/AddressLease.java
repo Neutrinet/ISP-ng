@@ -5,7 +5,7 @@
  */
 package be.neutrinet.ispng.vpn.api;
 
-import be.neutrinet.ispng.DateUtil;
+import be.neutrinet.ispng.util.DateUtil;
 import be.neutrinet.ispng.vpn.Client;
 import be.neutrinet.ispng.vpn.Clients;
 import be.neutrinet.ispng.vpn.IPAddress;
