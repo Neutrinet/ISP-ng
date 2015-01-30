@@ -96,7 +96,6 @@ public class Client implements OwnedEntity, Serializable {
 
     @Override
     public boolean isOwnedBy(User user) {
-        if (user == null) return false;
-        return user.id == this.user.id;
+        return this.user.equals(user);
     }
 }
