@@ -25,7 +25,7 @@ public class DNSRecord implements Serializable, OwnedEntity {
     @DatabaseField(canBeNull = false)
     private String type;
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
-    public Client client;
+    public transient Client client;
 
     public final static String A = "A";
     public final static String AAAA = "AAAA";
@@ -57,6 +57,18 @@ public class DNSRecord implements Serializable, OwnedEntity {
         }
 
         if (this.type == null) throw new IllegalArgumentException("Invalid DNS record type");
+    }
+
+    public boolean validate() {
+        boolean validType = false;
+        for (String t : ALLOWED_TYPES) {
+            if (type.equalsIgnoreCase(t)) {
+                validType = true;
+                break;
+            }
+        }
+
+        return validType && client != null;
     }
 
     @Override
