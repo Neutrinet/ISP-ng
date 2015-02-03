@@ -17,15 +17,17 @@ public class DNSRecord implements Serializable, OwnedEntity {
     @DatabaseField(generatedId = true)
     private int id;
     @DatabaseField(canBeNull = false)
-    public String name;
+    private String name;
     @DatabaseField(canBeNull = false)
-    public String target;
+    private String target;
     @DatabaseField(defaultValue = "3600")
-    public int ttl;
+    private int ttl;
     @DatabaseField(canBeNull = false)
     private String type;
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public transient Client client;
+    @DatabaseField
+    public long lastModified;
 
     public final static String A = "A";
     public final static String AAAA = "AAAA";
@@ -41,6 +43,7 @@ public class DNSRecord implements Serializable, OwnedEntity {
         this.name = name;
         this.target = target;
         this.ttl = ttl;
+        this.lastModified = System.currentTimeMillis();
         setType(type);
     }
 
@@ -57,6 +60,33 @@ public class DNSRecord implements Serializable, OwnedEntity {
         }
 
         if (this.type == null) throw new IllegalArgumentException("Invalid DNS record type");
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.lastModified = System.currentTimeMillis();
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+        this.lastModified = System.currentTimeMillis();
+    }
+
+    public int getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(int ttl) {
+        this.ttl = ttl;
+        this.lastModified = System.currentTimeMillis();
     }
 
     public boolean validate() {

@@ -7,7 +7,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.data.Stat;
 import org.xbill.DNS.*;
 
 import java.net.InetAddress;
@@ -53,9 +52,7 @@ public class ZoneBuilder {
 
         try {
             String dir = "/ispng/dns";
-            Stat stat = cf.checkExists().forPath(dir);
-            if (stat == null)
-                cf.create().creatingParentsIfNeeded().forPath(dir, null);
+            Zookeeper.ensurePathExists(dir);
 
             zones = new KeptMap(cf.getZookeeperClient().getZooKeeper(),
                     PREFIX + "zoneMap", ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
@@ -71,6 +68,8 @@ public class ZoneBuilder {
             for (Map.Entry<String, List<DNSRecord>> entry : zs.entrySet()) {
                 String label = entry.getKey();
                 zones.put(label, DNSRecords.labelToZone.get(entry.getKey()));
+
+                Zookeeper.ensurePathExists(PREFIX + "zones");
 
                 KeptList<DNSRecord> kl = new KeptList<>(DNSRecord.class, Zookeeper.getZK(),
                         PREFIX + "zones/" + label, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
@@ -106,7 +105,7 @@ public class ZoneBuilder {
             ArrayList<Record> dnsRecords = new ArrayList<>();
             Name root = Name.fromString(zoneRoot);
             int suffix = suffixes.getOrDefault(zoneRoot, 1);
-            int serial = Integer.parseInt(SERIAL_NUMBER_FORMAT.format(new Date()) + String.format("%1$" + 2 + "s", suffix));
+            int serial = Integer.parseInt(SERIAL_NUMBER_FORMAT.format(new Date()) + String.format("%02d", suffix));
             suffixes.put(zoneRoot, suffix + 1);
 
             // SOA record
@@ -114,7 +113,7 @@ public class ZoneBuilder {
 
             // NS records
             for (String ns : nameServers) {
-                dnsRecords.add(new NSRecord(Name.concatenate(SAME_AS_ROOT, root), DClass.IN, ttl, Name.fromString(ns)));
+                dnsRecords.add(new NSRecord(Name.concatenate(SAME_AS_ROOT, root), DClass.IN, ttl, ensureFQDN(ns)));
             }
 
             // * records
@@ -134,8 +133,8 @@ public class ZoneBuilder {
                 name,
                 DClass.IN,
                 ttl,
-                Name.fromString(cfg.getProperty("zone.all.soa.nameserver")),
-                Name.fromString(cfg.getProperty("zone.all.soa.admin")),
+                ensureFQDN(cfg.getProperty("zone.all.soa.nameserver")),
+                ensureFQDN(cfg.getProperty("zone.all.soa.admin")),
                 serial,
                 Integer.parseInt(cfg.getProperty("zone.all.soa.refresh")),
                 Integer.parseInt(cfg.getProperty("zone.all.soa.retry")),
@@ -147,23 +146,52 @@ public class ZoneBuilder {
     private Record buildDNSRecord(Name root, DNSRecord record) throws Exception {
         switch (record.getType()) {
             case DNSRecord.PTR:
-                return new PTRRecord(Name.fromString(record.name, root),
-                        DClass.IN, ttl, Name.fromString(record.target));
+                return new PTRRecord(Name.fromString(record.getName(), root),
+                        DClass.IN, record.getTtl(), ensureFQDN(record.getTarget()));
             case DNSRecord.NS:
-                return new NSRecord(Name.fromString(record.name, root),
-                        DClass.IN, ttl, Name.fromString(record.target));
+                return new NSRecord(Name.fromString(record.getName(), root),
+                        DClass.IN, record.getTtl(), ensureFQDN(record.getTarget()));
             case DNSRecord.AAAA:
-                return new AAAARecord(Name.fromString(record.name, root),
-                        DClass.IN, ttl, InetAddress.getByName(record.target));
+                return new AAAARecord(Name.fromString(record.getName(), root),
+                        DClass.IN, record.getTtl(), InetAddress.getByName(record.getTarget()));
             case DNSRecord.A:
-                return new ARecord(Name.fromString(record.name, root),
-                        DClass.IN, ttl, InetAddress.getByName(record.target));
+                return new ARecord(Name.fromString(record.getName(), root),
+                        DClass.IN, record.getTtl(), InetAddress.getByName(record.getTarget()));
             default:
                 throw new IllegalArgumentException("Invalid DNS record type");
         }
     }
 
     public void addOrUpdate(DNSRecord r, String zoneLabel) {
+        if (r.validate() && DNSRecords.getZoneMapping().containsKey(zoneLabel.toLowerCase())) {
+            DNSRecords.getDaoForZone(zoneLabel).ifPresent((dao) -> {
+                try {
+                    dao.createOrUpdate(r);
 
+                    // todo : atm a full zone rebuild is triggered per modification,
+                    // obviously that is not so good for performance
+                    renderZonesToZK();
+                } catch (Exception ex) {
+                    Logger.getLogger(getClass()).error("Failed to modify dns record " +
+                            r.getName() + " in zone " + zoneLabel, ex);
+                }
+            });
+        } else {
+            throw new IllegalArgumentException("Illegal DNSRecord and/or zone name");
+        }
+    }
+
+    public final Name ensureFQDN(String name) {
+        if (!name.endsWith(".")) {
+            name += ".";
+        }
+
+        try {
+            return Name.fromString(name);
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Failed to get FQDN from " + name, ex);
+        }
+
+        return null;
     }
 }
