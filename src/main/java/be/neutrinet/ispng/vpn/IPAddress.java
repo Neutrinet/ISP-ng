@@ -54,5 +54,15 @@ public class IPAddress {
     public final static class Purpose {
         public final static String CLIENT_ASSIGN = "CLIENT_ASSIGN";
         public final static String INTERCONNECT = "CLIENT_INTERCONNECT";
+
+        protected final static String[] purposes = new String[]{CLIENT_ASSIGN, INTERCONNECT};
+
+        public final static boolean valid(String purpose) {
+            for (String pp : purposes) {
+                if (pp.equals(purpose.toUpperCase().trim())) return true;
+            }
+
+            return false;
+        }
     }
 }
