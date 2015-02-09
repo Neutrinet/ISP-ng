@@ -56,8 +56,10 @@ public class AddressLease extends ResourceBase {
         assert clientId > 0;
         int version = (int) data.get("version");
         assert version == 4 || version == 6;
-        String purpose = data.get("purpose").toString();
-        if (purpose == null) purpose = IPAddress.Purpose.CLIENT_ASSIGN;
+        String purpose = IPAddress.Purpose.CLIENT_ASSIGN;
+
+        if (data.get("purpose") != null)
+            purpose = data.get("purpose").toString();
 
         try {
             Client client = Clients.dao.queryForId("" + clientId);
