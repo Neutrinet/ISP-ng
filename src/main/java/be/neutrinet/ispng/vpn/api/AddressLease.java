@@ -58,7 +58,7 @@ public class AddressLease extends ResourceBase {
         assert version == 4 || version == 6;
         String purpose = IPAddress.Purpose.CLIENT_ASSIGN;
 
-        if (data.get("purpose") != null)
+        if (data.get("purpose") != null && IPAddress.Purpose.valid(data.get("purpose").toString()))
             purpose = data.get("purpose").toString();
 
         try {
