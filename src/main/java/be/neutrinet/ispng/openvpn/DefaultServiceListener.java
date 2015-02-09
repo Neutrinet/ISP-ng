@@ -49,7 +49,11 @@ public class DefaultServiceListener implements ServiceListener {
             User user = Users.authenticate(client.username, client.password);
             if (user != null) {
                 TransactionManager.callInTransaction(VPN.cs, () -> {
-                    Optional<IPAddress> ipv4 = userClient.leases.stream().filter(addr -> addr.ipVersion == 4).findFirst();
+                    Optional<IPAddress> ipv4;
+                    if (userClient.leases == null)
+                        ipv4 = Optional.empty();
+                    else
+                        ipv4 = userClient.leases.stream().filter(addr -> addr.ipVersion == 4).findFirst();
 
                     if (!ipv4.isPresent() && userClient.subnetLeases.isEmpty()) {
                         vpn.denyClient(client.id, client.kid, "No IP address or subnet leases assigned");
