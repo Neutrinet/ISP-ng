@@ -92,13 +92,13 @@ public class DefaultServiceListener implements ServiceListener {
                         }
                     }
 
+                    options.put("push tun-ipv6", "");
+
+                    IPAddress interconnect = userClient.getOrCreateInterconnectIP(6);
+                    // Why /64? See https://community.openvpn.net/openvpn/ticket/264
+                    options.put("ifconfig-ipv6-push", interconnect.address + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.interconnect"));
+
                     if (!userClient.subnetLeases.isEmpty()) {
-                        options.put("push tun-ipv6", "");
-
-                        IPAddress interconnect = userClient.getOrCreateInterconnectIP(6);
-                        // Why /64? See https://community.openvpn.net/openvpn/ticket/264
-                        options.put("ifconfig-ipv6-push", interconnect.address + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.interconnect"));
-
                         for (SubnetLease lease : userClient.subnetLeases) {
                             options.put("push route-ipv6", VPN.cfg.getProperty("vpn.ipv6.network") + "/" + VPN.cfg.getProperty("vpn.ipv6.prefix")
                                     + " " + VPN.cfg.getProperty("vpn.ipv6.localip"));
