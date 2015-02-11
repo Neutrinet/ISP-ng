@@ -593,6 +593,8 @@ function App() {
                 };
                 var version = '1.6';
 
+                var dj = deployJava();
+
                 // fix for Mac OS X 64 bit
                 var javaArgs = '';
                 if (navigator.userAgent.indexOf('Mac OS X 10_6') !== -1
@@ -601,7 +603,7 @@ function App() {
                 }
                 parameters.java_arguments = javaArgs;
                 // fix for IE 7/8
-                var browser = deployJava.getBrowser();
+                var browser = dj.getBrowser();
                 if (browser === 'MSIE') {
                     version = '1.6.0_27';
                 }
@@ -610,7 +612,7 @@ function App() {
                 app.content.fadeIn();
 
                 docWriteWrapper($('#applet-container'), function () {
-                    deployJava.runApplet(attributes, parameters, version);
+                    dj.runApplet(attributes, parameters, version);
                 });
             });
         });
