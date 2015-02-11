@@ -89,10 +89,7 @@ public class VPNClientConfig extends ResourceBase {
                         + " here and name it client.key").getBytes());
                 config.add("cert client.crt");
                 config.add("key client.key");
-            } else {
-                if (client.user.certId == null || client.user.certId.isEmpty()) {
-                    return new JacksonRepresentation(new ClientError("NO_KEYPAIR"));
-                }
+            } else if (client.user.certId != null && !client.user.certId.isEmpty()) {
                 Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user);
                 if (res != null) return res;
             }
@@ -112,6 +109,12 @@ public class VPNClientConfig extends ResourceBase {
             zip.write(file.getBytes());
             zip.putNextEntry(new ZipEntry("ca.crt"));
             zip.write(caCert);
+
+            if (client.user.certId == null || client.user.certId.isEmpty()) {
+                zip.putNextEntry(new ZipEntry("NO_KEYPAIR_DEFINED"));
+                zip.write("Invalid state, no keypair has been defined.".getBytes());
+            }
+
             zip.close();
 
             ByteArrayRepresentation rep = new ByteArrayRepresentation(baos.toByteArray());
