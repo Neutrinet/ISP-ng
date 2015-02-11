@@ -73,7 +73,7 @@ public class UserManagement extends ResourceBase {
 
             if (getQueryValue("changePassword") != null) {
                 // Deserialized object contains plaintext new password
-                user.setPassword(user.getPassword());
+                old.setPassword(user.getPassword());
                 Users.dao.update(old);
                 return new JacksonRepresentation<>(old);
             }
