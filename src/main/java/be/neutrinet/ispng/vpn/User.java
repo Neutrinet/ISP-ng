@@ -75,6 +75,10 @@ public class User implements OwnedEntity {
         this.password = BCrypt.hashpw(password, salt);
     }
 
+    public void setRawPassword(String hashedPassword) {
+        this.password = hashedPassword;
+    }
+
     public boolean validate() throws IllegalArgumentException {
         boolean validCountry = false;
         for (String c : ALLOWED_COUNTRIES)

@@ -73,7 +73,8 @@ public class UserManagement extends ResourceBase {
 
             if (getQueryValue("changePassword") != null) {
                 // Deserialized object contains plaintext new password
-                old.setPassword(user.getPassword());
+                // the setPassword is invoked by Restlet, set the hash directly (do not rehash)
+                old.setRawPassword(user.getPassword());
                 Users.dao.update(old);
                 return new JacksonRepresentation<>(old);
             }
