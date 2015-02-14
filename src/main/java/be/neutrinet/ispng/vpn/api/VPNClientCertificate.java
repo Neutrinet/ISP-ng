@@ -152,6 +152,25 @@ public class VPNClientCertificate extends ResourceBase {
             SubjectPublicKeyInfo pkInfo = csr.getSubjectPublicKeyInfo();
             RSAKeyParameters rsa = (RSAKeyParameters) PublicKeyFactory.createKey(pkInfo);
 
+            // This makes the NSA work harder on their quantum computer
+            // Require 4096 bit key
+            // http://stackoverflow.com/a/20622933
+            if (!(rsa.getModulus().bitLength() > 2048)) {
+                ClientError err = new ClientError("ILLEGAL_KEY_SIZE");
+                return new JacksonRepresentation(err);
+            }
+
+            X500Name subject = X500Name.getInstance(csr.getSubject());
+            RDN[] rdns = subject.getRDNs(BCStyle.CN);
+            if (rdns == null || rdns.length == 0) {
+                return clientError("NO_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+
+            String CN = IETFUtils.valueToString(rdns[0].getFirst().getValue());
+            if (CN == null || CN.isEmpty()) {
+                return clientError("INVALID_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+
             if (getQueryValue("rekey") != null && Boolean.parseBoolean(getQueryValue("rekey"))) {
                 if (!getRequestAttributes().containsKey("cert")) {
                     return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
@@ -178,25 +197,6 @@ public class VPNClientCertificate extends ResourceBase {
                 if (existingCert.revocationDate.getTime() > System.currentTimeMillis()) {
                     return clientError("ANOTHER_CLIENT_CERT_ACTIVE", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
                 }
-            }
-
-            // This makes the NSA work harder on their quantum computer
-            // Require 4096 bit key
-            // http://stackoverflow.com/a/20622933
-            if (!(rsa.getModulus().bitLength() > 2048)) {
-                ClientError err = new ClientError("ILLEGAL_KEY_SIZE");
-                return new JacksonRepresentation(err);
-            }
-
-            X500Name subject = X500Name.getInstance(csr.getSubject());
-            RDN[] rdns = subject.getRDNs(BCStyle.CN);
-            if (rdns == null || rdns.length == 0) {
-                return clientError("NO_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-
-            String CN = IETFUtils.valueToString(rdns[0].getFirst().getValue());
-            if (CN == null || CN.isEmpty()) {
-                return clientError("INVALID_CSR_CN", Status.CLIENT_ERROR_BAD_REQUEST);
             }
 
             // couple CN to client
