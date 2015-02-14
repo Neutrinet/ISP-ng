@@ -73,6 +73,7 @@ public class Client implements OwnedEntity, Serializable {
 
             User user = users.get(0);
             c.user = user;
+            c.enabled = true;
 
             Clients.dao.createIfNotExists(c);
         } catch (Exception ex) {
