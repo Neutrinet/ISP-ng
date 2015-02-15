@@ -5,8 +5,8 @@
  */
 package be.neutrinet.ispng.vpn.admin;
 
-import be.neutrinet.ispng.DateUtil;
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.util.DateUtil;
 import be.neutrinet.ispng.vpn.*;
 import be.neutrinet.ispng.vpn.api.VPNClientCertificate;
 import be.neutrinet.ispng.vpn.ca.Certificate;
@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.util.*;
 
 /**
- *
  * @author wannes
  */
 @DatabaseTable(tableName = "registrations")
@@ -103,7 +102,7 @@ public class Registration {
                 for (Certificate cert : certs) {
                     VPNClientCertificate.sign(cert);
                 }
-                
+
                 Registrations.dao.update(this);
                 if (sendConfirmationEmail) VPN.generator.sendRegistrationConfirmation(this);
                 return true;
