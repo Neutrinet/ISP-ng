@@ -24,6 +24,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  *
@@ -36,6 +37,8 @@ public class User implements OwnedEntity {
     public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
     @DatabaseField(generatedId = true)
     public int id;
+    @DatabaseField(canBeNull = false)
+    public UUID globalId;
     @DatabaseField(canBeNull = false, index = true, unique = true)
     public String email;
     @DatabaseField(canBeNull = false)
