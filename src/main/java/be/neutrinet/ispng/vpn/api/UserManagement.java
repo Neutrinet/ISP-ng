@@ -28,6 +28,8 @@ public class UserManagement extends ResourceBase {
 
     @Get
     public Representation get() {
+        if (!sessionAvailable()) return DEFAULT_ERROR;
+
         try {
             if (!getRequestAttributes().containsKey("user") ||
                     getAttribute("user").equals("all")) {
