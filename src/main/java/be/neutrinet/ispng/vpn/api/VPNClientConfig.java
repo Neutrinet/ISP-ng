@@ -7,10 +7,7 @@ package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.security.Policy;
-import be.neutrinet.ispng.vpn.Client;
-import be.neutrinet.ispng.vpn.ClientError;
-import be.neutrinet.ispng.vpn.Clients;
-import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.vpn.*;
 import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
 import org.apache.commons.io.IOUtils;
@@ -22,6 +19,7 @@ import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
 import java.io.ByteArrayOutputStream;
@@ -58,6 +56,35 @@ public class VPNClientConfig extends ResourceBase {
 
     public static byte[] caCert;
 
+    @Get
+    public Representation getPKCS11Config() {
+        if (getQueryValue("user") != null && getQueryValue("platform") != null) {
+            String userId = getQueryValue("user");
+            String platform = getQueryValue("platform");
+
+            try {
+                User user = Users.dao.queryForId(userId);
+                if (user.certId == null) return clientError("NO_KEYPAIR", Status.CLIENT_ERROR_FAILED_DEPENDENCY);
+
+                ArrayList<String> config = new ArrayList<>();
+                config.addAll(Arrays.asList(DEFAULTS));
+
+                // create zip
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ZipOutputStream zip = new ZipOutputStream(baos);
+
+                Representation res = addPKCS11config(platform.toLowerCase(), config, user);
+                if (res != null) return res;
+
+                return finalizeZip(config, zip, baos);
+            } catch (Exception ex) {
+                Logger.getLogger(getClass()).debug("Failed to build PKCS11 config for user " + userId, ex);
+            }
+        }
+
+        return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
+    }
+
     @Post
     public Representation getConfig(Map<String, String> data) {
         try {
@@ -93,41 +120,45 @@ public class VPNClientConfig extends ResourceBase {
                 Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user);
                 if (res != null) return res;
             }
-            
-            String file = "";
-            for (String s : config) {
-                file += s + '\n';
-            }
-
-            if (caCert == null) {
-                caCert = IOUtils.toByteArray(new FileInputStream(VPN.cfg.getProperty("ca.crt")));
-            }
-
-            ZipEntry configFile = new ZipEntry("neutrinet.ovpn");
-            configFile.setCreationTime(FileTime.from(Instant.now()));
-            zip.putNextEntry(configFile);
-            zip.write(file.getBytes());
-            zip.putNextEntry(new ZipEntry("ca.crt"));
-            zip.write(caCert);
 
             if (client.user.certId == null || client.user.certId.isEmpty()) {
                 zip.putNextEntry(new ZipEntry("NO_KEYPAIR_DEFINED"));
                 zip.write("Invalid state, no keypair has been defined.".getBytes());
             }
 
-            zip.close();
-
-            ByteArrayRepresentation rep = new ByteArrayRepresentation(baos.toByteArray());
-            rep.setMediaType(MediaType.APPLICATION_ZIP);
-            rep.setSize(baos.size());
-            rep.setCharacterSet(CharacterSet.UTF_8);
-            rep.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
-            return rep;
+            return finalizeZip(config, zip, baos);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to generate config file archive", ex);
         }
 
         return DEFAULT_ERROR;
+    }
+
+    protected Representation finalizeZip(List<String> config, ZipOutputStream zip, ByteArrayOutputStream baos) throws Exception {
+        String file = "";
+        for (String s : config) {
+            file += s + '\n';
+        }
+
+        if (caCert == null) {
+            caCert = IOUtils.toByteArray(new FileInputStream(VPN.cfg.getProperty("ca.crt")));
+        }
+
+        ZipEntry configFile = new ZipEntry("neutrinet.ovpn");
+        configFile.setCreationTime(FileTime.from(Instant.now()));
+        zip.putNextEntry(configFile);
+        zip.write(file.getBytes());
+        zip.putNextEntry(new ZipEntry("ca.crt"));
+        zip.write(caCert);
+
+        zip.close();
+
+        ByteArrayRepresentation rep = new ByteArrayRepresentation(baos.toByteArray());
+        rep.setMediaType(MediaType.APPLICATION_ZIP);
+        rep.setSize(baos.size());
+        rep.setCharacterSet(CharacterSet.UTF_8);
+        rep.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
+        return rep;
     }
     
     protected Representation addPKCS11config (String platform, List<String> config, User user) {
