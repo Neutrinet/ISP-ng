@@ -107,4 +107,8 @@ public abstract class ResourceBase extends ServerResource {
     public User getLoggedInUser() {
         return getSessionToken().get().getUser();
     }
+
+    public boolean sessionAvailable() {
+        return getSessionToken().isPresent();
+    }
 }
