@@ -84,7 +84,7 @@ public class VPNClientCertificate extends ResourceBase {
             List<Certificate> certs = Certificates.dao.queryForEq("client_id", clientId);
 
             if (getQueryValue("active") != null && Boolean.parseBoolean(getQueryValue("active"))) {
-                certs = certs.stream().filter(cert -> cert.valid()).collect(Collectors.toList());
+                certs = certs.stream().filter(Certificate::valid).collect(Collectors.toList());
             }
 
             if (getQueryValue("raw") != null) {
