@@ -6,11 +6,12 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.security.SessionManager;
+import be.neutrinet.ispng.security.SessionToken;
+import be.neutrinet.ispng.security.SessionTokens;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
-import be.neutrinet.ispng.vpn.api.*;
-import be.neutrinet.ispng.vpn.api.DNS;
+import org.apache.log4j.Logger;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
@@ -74,6 +75,15 @@ public class RestletServlet extends HttpServlet {
                     UUID id = UUID.fromString(request.getCookies().getFirstValue("Registration-ID"));
                     if (Registration.getActiveRegistrations().containsKey(id)) {
                         response.setStatus(Status.SUCCESS_OK);
+                        Registration r = Registration.getActiveRegistrations().get(id);
+
+                        try {
+                            SessionToken st = new SessionToken(r.user, request.getClientInfo().getAddress());
+                            SessionTokens.dao.create(st);
+                            request.getCookies().add("Session", st.getToken().toString());
+                        } catch (Exception ex) {
+                            Logger.getLogger(getClass()).error("Failed to create session", ex);
+                        }
                         return CONTINUE;
                     }
                 }
