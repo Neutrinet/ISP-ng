@@ -67,3 +67,11 @@ monitoring.opentsdb.uri=
 
 # Auth
 users.admin=
+# e.g. Billy user
+users.service=
+
+# DNS builder
+dns.zone.rev-ipv4=0.0.0.in-addr.arpa.
+
+# External systems
+billing.api.uri = http://
