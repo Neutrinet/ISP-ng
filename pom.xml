@@ -81,31 +81,36 @@
             <artifactId>jetty-http</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.2.2.v20140723</version>
+            <version>9.2.7.v20150116</version>
         </dependency>
         <dependency>
             <artifactId>jetty-io</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.2.2.v20140723</version>
+            <version>9.2.7.v20150116</version>
         </dependency>
         <dependency>
             <artifactId>jetty-server</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.2.2.v20140723</version>
+            <version>9.2.7.v20150116</version>
         </dependency>
         <dependency>
             <artifactId>jetty-util</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.2.2.v20140723</version>
+            <version>9.2.7.v20150116</version>
         </dependency>
         <dependency>
             <artifactId>jetty-servlet</artifactId>
             <groupId>org.eclipse.jetty</groupId>
             <type>jar</type>
-            <version>9.2.2.v20140723</version>
+            <version>9.2.7.v20150116</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.spdy</groupId>
+            <artifactId>spdy-http-server</artifactId>
+            <version>9.2.7.v20150116</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.java-ipv6</groupId>
@@ -138,14 +143,24 @@
             <version>5.1.31</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-recipes</artifactId>
-            <version>2.6.0</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.4-1200-jdbc41</version>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.killa.kept</groupId>
+            <artifactId>KeptCollections</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <artifactId>bctsp-jdk16</artifactId>
@@ -168,6 +183,16 @@
             <groupId>org.bouncycastle</groupId>
             <type>jar</type>
             <version>1.50</version>
+        </dependency>
+        <dependency>
+            <groupId>dnsjava</groupId>
+            <artifactId>dnsjava</artifactId>
+            <version>2.1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mitre.dsmiley.httpproxy</groupId>
+            <artifactId>smiley-http-proxy-servlet</artifactId>
+            <version>1.6</version>
         </dependency>
     </dependencies>
     <repositories>
