@@ -6,7 +6,7 @@
 package be.neutrinet.ispng.vpn.api;
 
 import be.neutrinet.ispng.security.Policy;
-import be.neutrinet.ispng.vpn.ClientError;
+import be.neutrinet.ispng.util.UUIDUtil;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import org.apache.log4j.Logger;
@@ -19,6 +19,7 @@ import org.restlet.resource.Post;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  *
@@ -37,17 +38,35 @@ public class UserManagement extends ResourceBase {
                 return new JacksonRepresentation(Policy.filterAccessible(getSessionToken().get().getUser(), users));
             }
 
-            int userId = Integer.parseInt(getAttribute("user").toString());
+            String id = getAttribute("user");
+            if (UUIDUtil.isUUID(id)) {
+                User user;
 
-            if (!Users.dao.idExists("" + userId)) {
-                return new JacksonRepresentation(new ClientError("NO_SUCH_OBJECT"));
-            }
+                List<User> users = Users.dao.queryForEq("globalId", UUID.fromString(id));
+                if (users.isEmpty()) {
+                    return clientError("NO_SUCH_OBJECT", Status.SUCCESS_NO_CONTENT);
+                } else {
+                    user = users.get(0);
+                }
 
-            User user = Users.dao.queryForId("" + userId);
-            if (Policy.get().canAccess(getSessionToken().get().getUser(), user)) {
-                return new JacksonRepresentation(user);
+                if (Policy.get().canAccess(getSessionToken().get().getUser(), user)) {
+                    return new JacksonRepresentation(user);
+                } else {
+                    return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+                }
             } else {
-                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+                int userId = Integer.parseInt(getAttribute("user"));
+
+                if (!Users.dao.idExists("" + userId)) {
+                    return clientError("NO_SUCH_OBJECT", Status.SUCCESS_NO_CONTENT);
+                }
+
+                User user = Users.dao.queryForId("" + userId);
+                if (Policy.get().canAccess(getSessionToken().get().getUser(), user)) {
+                    return new JacksonRepresentation(user);
+                } else {
+                    return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+                }
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve users", ex);
@@ -58,6 +77,8 @@ public class UserManagement extends ResourceBase {
     
     @Post
     public Representation update(User user) {
+        if (!sessionAvailable()) return DEFAULT_ERROR;
+
         if (!getRequestAttributes().containsKey("user") ||
                 getAttribute("user").equals("all")) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
