@@ -41,6 +41,7 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.mitre.dsmiley.httpproxy.ProxyServlet;
 
 import java.io.FileInputStream;
 import java.util.Optional;
@@ -147,6 +148,12 @@ public class VPN implements Daemon {
 
         RestletServlet rs = new RestletServlet();
         sch.addServlet(new ServletHolder(rs), "/api/*");
+
+        if (cfg.containsKey("billing.api.uri")) {
+            ServletHolder psh = new ServletHolder(new ProxyServlet());
+            psh.setInitParameter("targetUri", cfg.getProperty("billing.api.uri"));
+            sch.addServlet(psh, "/billing/*");
+        }
 
         sch.addServlet(FlowServlet.class, "/flow/*");
 
