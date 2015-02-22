@@ -1,4 +1,5 @@
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.vpn.IPAddress;
 import be.neutrinet.ispng.vpn.IPAddresses;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
@@ -25,6 +26,6 @@ public class Bootstrap {
         user.setPassword("password");
         Users.dao.create(user);
 
-        IPAddresses.addv4SubnetToPool("192.168.221.129/25");
+        IPAddresses.addv4SubnetToPool("192.168.221.129/25", IPAddress.Purpose.CLIENT_ASSIGN);
     }
 }
