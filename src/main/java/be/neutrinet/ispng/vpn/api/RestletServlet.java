@@ -60,6 +60,7 @@ public class RestletServlet extends HttpServlet {
         router.attach("/user/login", UserLogin.class);
         router.attach("/user/{user}", UserManagement.class);
         router.attach("/dns/{zone}", DNS.class);
+        router.attach("/session/{session}", UserSession.class);
 
         ChallengeAuthenticator auth = new ChallengeAuthenticator(this.adapter.getContext(), ChallengeScheme.HTTP_BASIC, "Neutrinet API") {
 
