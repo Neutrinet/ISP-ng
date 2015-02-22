@@ -56,8 +56,9 @@ public class SessionToken {
     }
 
     public boolean valid() {
-        if (System.currentTimeMillis() - this.creationTime > 360000) return false;
+        if (Policy.get().isRelatedService(this.user)) return true;
 
-        return true;
+        return System.currentTimeMillis() - this.creationTime <= 360000;
+
     }
 }

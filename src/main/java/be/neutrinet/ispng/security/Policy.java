@@ -45,13 +45,27 @@ public class Policy {
         return false;
     }
 
-    private boolean isAdmin(User user) {
+    public final boolean isAdmin(User user) {
         if (VPN.cfg.getProperty("users.admin") == null) return false;
 
         boolean match = false;
         String[] str = VPN.cfg.getProperty("users.admin").split(";");
         for (String s : str) {
-            if (Integer.parseInt(s) == user.id) {
+            if (user.id == Integer.parseInt(s)) {
+                match = true;
+            }
+        }
+
+        return match;
+    }
+
+    public final boolean isRelatedService(User user) {
+        if (VPN.cfg.getProperty("users.service") == null) return false;
+
+        boolean match = false;
+        String[] str = VPN.cfg.getProperty("users.service").split(";");
+        for (String s : str) {
+            if (user.id == Integer.parseInt(s)) {
                 match = true;
             }
         }
