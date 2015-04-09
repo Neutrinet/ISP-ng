@@ -11,6 +11,7 @@ import be.neutrinet.ispng.security.SessionTokens;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
+import be.neutrinet.ispng.vpn.admin.Registrations;
 import org.apache.log4j.Logger;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -56,6 +57,7 @@ public class RestletServlet extends HttpServlet {
         router.attach("/client/{client}/cert/{cert}", VPNClientCertificate.class);
         router.attach("/client/{client}/config", VPNClientConfig.class);
         router.attach("/client/{client}", VPNClient.class);
+        router.attach("/user/{user}/permissions", UserPermissions.class);
         router.attach("/user/{user}/setting/{setting}", UserSettings.class);
         router.attach("/user/login", UserLogin.class);
         router.attach("/user/{user}", UserManagement.class);
@@ -74,18 +76,23 @@ public class RestletServlet extends HttpServlet {
 
                 if (request.getCookies().getFirst("Registration-ID") != null) {
                     UUID id = UUID.fromString(request.getCookies().getFirstValue("Registration-ID"));
-                    if (Registration.getActiveRegistrations().containsKey(id)) {
-                        response.setStatus(Status.SUCCESS_OK);
-                        Registration r = Registration.getActiveRegistrations().get(id);
+                    try {
+                        Registration reg = Registrations.dao.queryForEq("id", id).get(0);
+                        // if the registration is older than a day, bail out
+                        if (reg != null && (System.currentTimeMillis() - reg.timeInitiated.getTime() < 86400)) {
+                            response.setStatus(Status.SUCCESS_OK);
 
-                        try {
-                            SessionToken st = new SessionToken(r.user, request.getClientInfo().getAddress());
-                            SessionTokens.dao.create(st);
-                            request.getCookies().add("Session", st.getToken().toString());
-                        } catch (Exception ex) {
-                            Logger.getLogger(getClass()).error("Failed to create session", ex);
+                            try {
+                                SessionToken st = new SessionToken(reg.user, request.getClientInfo().getAddress());
+                                SessionTokens.dao.createOrUpdate(st);
+                                request.getCookies().add("Session", st.getToken().toString());
+                            } catch (Exception ex) {
+                                Logger.getLogger(getClass()).error("Failed to create session", ex);
+                            }
+                            return CONTINUE;
                         }
-                        return CONTINUE;
+                    } catch (Exception ex) {
+                        Logger.getLogger(getClass()).debug("Failed to retrieve Registration " + id, ex);
                     }
                 }
 
