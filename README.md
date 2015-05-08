@@ -26,7 +26,7 @@ For ubuntu:
 2. Install jsvc (commons-daemon) and zookeeper
 3. [Download the JS libraries](https://vpn.neutrinet.be/js.tar.gz) and extract them in the web/registration/js dir
 4. Configure the OpenVPN MGMT channel and database in config.properties (see config.properties.default)
-5. /usr/bin/jsvc -cp ISP-NG-VPN-jar-with-dependencies.jar -home /usr/lib/jvm/java-8-oracle/ -user ispng -pidfile /var/run/ispng.pid -cwd <config file dir>  be.neutrinet.ispng.VPN
+5. /usr/bin/jsvc -cp ISP-NG-VPN-jar-with-dependencies.jar -home /usr/lib/jvm/java-8-oracle/ -user ispng -pidfile /var/run/ispng.pid -cwd [config file dir]  be.neutrinet.ispng.VPN
 
 This will auto-create the database tables and run Jetty embedded on https://[hostname]:[port].
 However it is also possible to use another webserver to serve the static files (CORS headers are set).
