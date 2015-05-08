@@ -29,6 +29,7 @@ import be.neutrinet.ispng.vpn.api.FlowServlet;
 import be.neutrinet.ispng.vpn.api.RestletServlet;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
+import net.kencochrane.raven.log4j.SentryAppender;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.log4j.*;
@@ -89,8 +90,16 @@ public class VPN implements Daemon {
         });
 
         Zookeeper.boot(cfg.getProperty("zookeeper.connectionString"));
-        Config.get().boot();
+        Config.get().boot(cfg);
         generator = new Generator();
+
+        Optional<String> sentryApiKey = Config.get("sentry/api/dsn");
+        if (sentryApiKey.isPresent()) {
+            SentryAppender appender = new SentryAppender();
+            appender.setDsn(sentryApiKey.get());
+            appender.activateOptions();
+            root.addAppender(appender);
+        }
 
         Config.get().getAndWatch("log/level", "INFO", level -> root.setLevel(Level.toLevel(level)));
 
