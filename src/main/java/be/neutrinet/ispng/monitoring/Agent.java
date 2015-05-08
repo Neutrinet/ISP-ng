@@ -1,6 +1,7 @@
 package be.neutrinet.ispng.monitoring;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.external.OpenTSDB;
 import org.apache.log4j.Logger;
 import org.restlet.resource.ClientResource;
 
