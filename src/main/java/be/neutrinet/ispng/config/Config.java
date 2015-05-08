@@ -1,6 +1,5 @@
 package be.neutrinet.ispng.config;
 
-import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.util.Zookeeper;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -12,6 +11,7 @@ import org.apache.zookeeper.data.Stat;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 /**
@@ -41,10 +41,10 @@ public class Config {
         else return defaultValue;
     }
 
-    public final void boot() {
+    public final void boot(Properties cfg) {
         this.cf = Zookeeper.get();
 
-        for (Map.Entry<Object, Object> entry : VPN.cfg.entrySet()) {
+        for (Map.Entry<Object, Object> entry : cfg.entrySet()) {
             write(entry.getKey().toString().replace(".", "/"), entry.getValue().toString());
         }
     }
