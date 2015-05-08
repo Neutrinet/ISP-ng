@@ -31,7 +31,7 @@ For ubuntu:
 This will auto-create the database tables and run Jetty embedded on https://[hostname]:[port].
 However it is also possible to use another webserver to serve the static files (CORS headers are set).
 
-** Install instructions**
+**Install instructions**
 
 1. Copy the supplied SystemD service file to your system directory (e.g. /lib/systemd/system on Debian 8)
 2. systemctl reenable ispng
