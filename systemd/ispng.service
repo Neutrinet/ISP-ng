@@ -1,0 +1,18 @@
+[Unit]
+Description=ISPng service
+Requires=network.target openvpn.service
+After=network.target openvpn.service
+ConditionPathExists=!/etc/ispng/do_not_run
+
+[Service]
+WorkingDirectory=/etc/ispng
+ExecStart=/usr/bin/jsvc -cp ISP-NG-VPN-jar-with-dependencies.jar -home /usr/lib/jvm/java-8-oracle/ -user ispng -pidfile /var/run/ispng.pid -cwd /etc/ispng  be.neutrinet.ispng.VPN
+ExecReload=/bin/kill $(cat /var/run/ispng.pid)
+KillMode=process
+Restart=on-failure
+Type=forking
+PIDFile=/var/run/ispng.pid
+
+[Install]
+WantedBy=multi-user.target
+Alias=ispng.service
