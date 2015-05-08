@@ -62,9 +62,6 @@ ca.storeDir = ca
 # Logging
 log.file = /var/log/ispng/vpn.log
 
-# Monitoring
-monitoring.opentsdb.uri=
-
 # Auth
 users.admin=
 # e.g. Billy user
@@ -75,3 +72,5 @@ dns.zone.rev-ipv4=0.0.0.in-addr.arpa.
 
 # External systems
 billing.api.uri = http://
+sentry.api.dsn =
+monitoring.opentsdb.uri=http://<opentsdb address>:4242/api/put
