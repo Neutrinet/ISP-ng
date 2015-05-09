@@ -10,6 +10,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +89,12 @@ public class Client implements OwnedEntity, Serializable {
         List<IPAddress> interconnects = IPAddresses.forClient(this, ipVersion, IPAddress.Purpose.INTERCONNECT);
         if (interconnects.size() < 1) {
             interconnect = IPAddresses.findUnused(6, IPAddress.Purpose.INTERCONNECT).orElseThrow(() -> new IllegalStateException("No interconnect IPs available"));
+            try {
+                interconnect.client = this;
+                IPAddresses.dao.update(interconnect);
+            } catch (SQLException ex) {
+                Logger.getLogger(getClass()).error("Failed to update interconnect IP information", ex);
+            }
         } else {
             interconnect = interconnects.get(0);
         }
