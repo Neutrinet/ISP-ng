@@ -5,6 +5,7 @@
  */
 package be.neutrinet.ispng.vpn.api;
 
+import be.neutrinet.ispng.config.Config;
 import be.neutrinet.ispng.security.SessionManager;
 import be.neutrinet.ispng.vpn.ClientError;
 import be.neutrinet.ispng.vpn.Clients;
@@ -80,24 +81,36 @@ public class UserRegistration extends ResourceBase {
                 return handleFlow(data);
             }
 
-            String key = (String) data.get("key");
-            List<UnlockKey> keys = UnlockKeys.dao.queryForEq("key", key);
-            assert keys.size() <= 1;
-            if (keys.isEmpty()) {
-                return new JacksonRepresentation(new ClientError("INVALID_UNLOCK_KEY"));
-            } else if (keys.get(0).usedAt != null) {
-                return new JacksonRepresentation<>(new ClientError("INVALID_UNLOCK_KEY"));
-            } else {
-                Registration reg = new Registration(UUID.randomUUID());
-                reg.timeInitiated = new Date();
-                reg.user = new User();
-                reg.user.email = (String) data.get("email");
-                reg.unlockKey = keys.get(0);
+            UnlockKey unlockKey = null;
 
-                Registration.getActiveRegistrations().put(reg.getId(), reg);
-                Registrations.dao.create(reg);
-                return new JacksonRepresentation<>(reg);
+            if (Config.get("vpn/registration/requireUnlockKey", "no").equals("yes")) {
+                String key = (String) data.get("key");
+                List<UnlockKey> keys = UnlockKeys.dao.queryForEq("key", key);
+                assert keys.size() <= 1;
+                if (keys.isEmpty()) {
+                    return new JacksonRepresentation(new ClientError("INVALID_UNLOCK_KEY"));
+                } else if (keys.get(0).usedAt != null) {
+                    return new JacksonRepresentation<>(new ClientError("INVALID_UNLOCK_KEY"));
+                } else {
+                    unlockKey = keys.get(0);
+                }
             }
+
+            Registration reg = new Registration(UUID.randomUUID());
+            reg.timeInitiated = new Date();
+            reg.user = new User();
+            reg.user.email = (String) data.get("email");
+            reg.unlockKey = unlockKey;
+
+            if (data.containsKey("password")) {
+                String password = (String) data.get("password");
+                reg.user.setPassword(password);
+            }
+
+            Registration.getActiveRegistrations().put(reg.getId(), reg);
+            Registrations.dao.create(reg);
+            return new JacksonRepresentation<>(reg);
+
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to validate unlock key", ex);
         }
