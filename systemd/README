@@ -1,6 +1,6 @@
 == Supplied
 
-- SystemD service file, to be placed in your system folder (/lib/systemd/system on Debian)
+- systemd service file, to be placed in your system folder (/lib/systemd/system on Debian)
 To install: <pre>systemctl reenable ispng</pre>
 
 Tested with Debian Jessie 8.0
