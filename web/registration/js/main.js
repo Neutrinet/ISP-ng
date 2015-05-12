@@ -94,6 +94,24 @@ function VPN() {
             }
         });
     };
+
+    this.startFlow = function (email) {
+        app.content.hide();
+        app.preloader.show();
+        $.ajax(vpn.endpoint + 'api/reg/start', {
+            data: JSON.stringify({'email': email}),
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (response, status, xhr) {
+                if (vpn.handleIfError(response))
+                    return;
+                vpn.registration = response;
+                app.preloader.hide();
+                app.content.load('password.html?' + new Date().getTime(), app.unlocked);
+            }
+        });
+    }
 }
 
 function App() {
@@ -103,6 +121,7 @@ function App() {
     this.token = "";
     this.vpn = new VPN();
     this.urlParams = {};
+    this.requireUnlockKey = false;
 
     this.run = function () {
 
@@ -130,26 +149,29 @@ function App() {
                     return;
             }
 
-            $('#content').load('start.html', function () {
-
-                $('#login-link').click(function (e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-
-                    app.content.fadeOut();
-                    app.preloader.fadeIn();
-                    $('#content').load('login.html', self.login);
-                });
-
-                self.preloader.fadeOut();
-                self.content.fadeIn();
-
-                $('form .btn-primary').click(function (event) {
-                    self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
-                });
-            });
+            if (self.requireUnlockKey)
+                $('#content').load('start-with-key.html', self.startLoaded);
+            else
+                $('#content').load('start.html', self.startLoaded);
         });
     };
+
+    this.startLoaded = function () {
+        self.preloader.fadeOut();
+        self.content.fadeIn();
+
+        if (!self.requireUnlockKey) {
+            $('.unlock-key').hide();
+        }
+
+        $('form .btn-primary').click(function (event) {
+            if (self.requireUnlockKey) {
+                self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
+            } else {
+                self.vpn.startFlow($('#signup-email').val());
+            }
+        });
+    }
 
     this.handleFlow = function () {
         self.vpn.registration.id = self.urlParams['id'];
