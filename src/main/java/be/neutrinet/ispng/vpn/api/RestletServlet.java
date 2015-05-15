@@ -79,7 +79,7 @@ public class RestletServlet extends HttpServlet {
                     try {
                         Registration reg = Registrations.dao.queryForEq("id", id).get(0);
                         // if the registration is older than a day, bail out
-                        if (reg != null && (System.currentTimeMillis() - reg.timeInitiated.getTime() < 86400)) {
+                        if (reg != null && (System.currentTimeMillis() - reg.timeInitiated.getTime() * 1000 < 86400 * 1000)) {
                             response.setStatus(Status.SUCCESS_OK);
 
                             try {
