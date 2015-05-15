@@ -6,10 +6,11 @@
 package be.neutrinet.ispng.vpn.admin;
 
 import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.external.billy.ChangeList;
+import be.neutrinet.ispng.federation.Dispatcher;
 import be.neutrinet.ispng.util.DateUtil;
 import be.neutrinet.ispng.vpn.*;
 import be.neutrinet.ispng.vpn.api.VPNClientCertificate;
-import be.neutrinet.ispng.vpn.ca.Certificate;
 import be.neutrinet.ispng.vpn.ca.Certificates;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.misc.TransactionManager;
@@ -18,7 +19,10 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author wannes
@@ -89,21 +93,24 @@ public class Registration {
                     IPAddresses.dao.update(ip4);
                 }
 
-                assert unlockKey.usedAt == null;
-                unlockKey.usedAt = this.timeInitiated;
-                UnlockKeys.dao.update(unlockKey);
+                if (unlockKey != null) {
+                    assert unlockKey.usedAt == null;
+                    unlockKey.usedAt = this.timeInitiated;
+                    UnlockKeys.dao.update(unlockKey);
+                }
 
                 this.completed = new Date();
                 this.client.user.enabled = true;
                 Users.dao.update(this.client.user);
 
                 // Check if user has certificates that need to be signed
-                List<Certificate> certs = Certificates.dao.queryForEq("client_id", client.id);
-                for (Certificate cert : certs) {
-                    VPNClientCertificate.sign(cert);
-                }
+                Certificates.dao.queryForEq("client_id", client.id).forEach(VPNClientCertificate::sign);
 
                 Registrations.dao.update(this);
+
+                // Inform other services that a user change occurred
+                Dispatcher.get().entityChange(new ChangeList("user").put(ChangeList.Operation.CREATE, this.client.user.globalId.toString()));
+
                 if (sendConfirmationEmail) VPN.generator.sendRegistrationConfirmation(this);
                 return true;
             });
