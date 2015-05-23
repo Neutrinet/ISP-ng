@@ -89,6 +89,38 @@ def validate_key():
     })
 
 
+@app.route("/api/reg/enterPassword", methods=['POST'])
+def enter_password():
+    return json.dumps({
+        "user":
+        {
+            "id": 0,
+            "email": "test@test.com",
+            "name": None,
+            "lastName": None,
+            "street": None,
+            "postalCode": None,
+            "municipality": None,
+            "birthPlace": None,
+            "birthDate": None,
+            "enabled": False,
+            "certId": None,
+            "country": None
+        },
+        "timeInitiated": 1413231972887,
+        "ipv4Id": 0,
+        "ipv6Id": 0,
+        "unlockKey":
+        {
+            "key": "pouet",
+            "email": "test@test.com",
+            "usedAt": None
+        },
+        "completed": None,
+        "id": "7ed0cea2-1eef-43a9-b7db-b372aa67700f"
+    })
+
+
 @app.route("/form")
 def form():
     index = BeautifulSoup(open("../../web/registration/index.html", "r").read())
