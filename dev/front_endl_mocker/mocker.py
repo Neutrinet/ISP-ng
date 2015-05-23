@@ -15,7 +15,7 @@ def validate_key():
     if request.json["email"] != "test@test.com" or request.json["key"] != "pouet":
         return json.dumps({
             "errorKey": "INVALID_UNLOCK_KEY",
-            "message":"The unlock key used is invalid or has been used before",
+            "message": "The unlock key used is invalid or has been used before",
             "url": None
         })
 
