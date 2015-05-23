@@ -413,7 +413,7 @@ function App() {
 
         $('#password').keyup(self.validatePassword);
         $('#password-verify').keyup(self.validatePassword);
-        $('#password-done').click(function () {
+        $('#password-entry').submit(function () {
             $.ajax(self.vpn.endpoint + 'api/reg/enterPassword', {
                 data: JSON.stringify({
                     id: self.vpn.registration.id,
