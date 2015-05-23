@@ -535,7 +535,7 @@ function App() {
         app.preloader.hide();
         app.content.show();
 
-        $('#reg').click(function () {
+        $('#reg-form').submit(function () {
             var data = {};
 
             var fields = $('#reg-form').children('input[type=text]');
