@@ -426,7 +426,7 @@ function App() {
                     self.vpn.registration['user'] = response;
                     app.content.hide();
                     app.preloader.fadeIn();
-                    $('#content').load('eid.html', self.useEIDIdentification);
+                    $('#content').load('eid.html?' + new Date().getTime(), self.useEIDIdentification);
                 }
             });
         });
