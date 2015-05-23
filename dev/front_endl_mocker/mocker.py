@@ -121,6 +121,17 @@ def enter_password():
     })
 
 
+@app.route("/eid")
+def eid():
+    index = BeautifulSoup(open("../../web/registration/index.html", "r").read())
+    index('script')[-1].replaceWith("")  # remove main.js
+    soup2 = BeautifulSoup('<div id="content" style="display: inline-block">' + open("../../web/registration/eid.html", "r").read() + '</div>')
+
+    index.find("div", id="content").replaceWith(soup2)
+
+    return str(index)
+
+
 @app.route("/form")
 def form():
     index = BeautifulSoup(open("../../web/registration/index.html", "r").read())
