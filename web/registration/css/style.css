@@ -137,12 +137,6 @@ textarea {
     background-color: #333;
 }
 
-#applet-container {
-    background-color: #FFF;
-    padding: 15px;
-    box-shadow: 0 0 5px #555;
-}
-
 .box {
     padding: 10px;
     border: solid 1px #444;
