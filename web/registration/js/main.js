@@ -164,7 +164,7 @@ function App() {
             $('.unlock-key').hide();
         }
 
-        $('form .btn-primary').click(function (event) {
+        $('form').submit(function (event) {
             if (self.requireUnlockKey) {
                 self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
             } else {
