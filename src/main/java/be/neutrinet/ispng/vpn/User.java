@@ -65,6 +65,10 @@ public class User implements OwnedEntity {
     private String password;
     private transient UserSettings settings;
 
+    public User() {
+        this.globalId = UUID.randomUUID();
+    }
+
     public boolean validatePassword(String password) {
         return BCrypt.checkpw(password, this.password);
     }
