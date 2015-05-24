@@ -204,6 +204,11 @@
             <artifactId>smiley-http-proxy-servlet</artifactId>
             <version>1.6</version>
         </dependency>
+        <dependency>
+            <groupId>net.kencochrane.raven</groupId>
+            <artifactId>raven-log4j</artifactId>
+            <version>6.0.0</version>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>
