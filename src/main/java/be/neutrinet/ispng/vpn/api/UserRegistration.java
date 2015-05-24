@@ -87,9 +87,7 @@ public class UserRegistration extends ResourceBase {
                 String key = (String) data.get("key");
                 List<UnlockKey> keys = UnlockKeys.dao.queryForEq("key", key);
                 assert keys.size() <= 1;
-                if (keys.isEmpty()) {
-                    return new JacksonRepresentation(new ClientError("INVALID_UNLOCK_KEY"));
-                } else if (keys.get(0).usedAt != null) {
+                if (keys.isEmpty() || keys.get(0).usedAt != null) {
                     return new JacksonRepresentation<>(new ClientError("INVALID_UNLOCK_KEY"));
                 } else {
                     unlockKey = keys.get(0);
