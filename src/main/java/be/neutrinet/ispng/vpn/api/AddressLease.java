@@ -51,10 +51,10 @@ public class AddressLease extends ResourceBase {
     }
 
     @Put
-    public Representation create(Map<String, Object> data) {
-        int clientId = (int) data.get("client");
+    public Representation create(Map<String, String> data) {
+        int clientId = Integer.parseInt(data.get("client"));
         assert clientId > 0;
-        int version = (int) data.get("version");
+        int version = Integer.parseInt(data.get("version"));
         assert version == 4 || version == 6;
         String purpose = IPAddress.Purpose.CLIENT_ASSIGN;
 
@@ -64,7 +64,7 @@ public class AddressLease extends ResourceBase {
         try {
             Client client = Clients.dao.queryForId("" + clientId);
             List<IPAddress> addresses = IPAddresses.forUser(client.user, version);
-            if (addresses.size() > 1)
+            if (addresses.size() >= 1)
                 return clientError("MAX_IP_ADDRESSES_EXCEEDED", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
 
             Optional<IPAddress> oaddr = IPAddresses.findUnused(version);
