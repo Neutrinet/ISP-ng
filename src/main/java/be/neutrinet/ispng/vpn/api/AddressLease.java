@@ -107,10 +107,9 @@ public class AddressLease extends ResourceBase {
 
     @Delete
     public Representation deleteLease(Map<String, String> data) {
-        int ipVersion = Integer.parseInt(data.get("version"));
-
         try {
             if (data.containsKey("user")) {
+                int ipVersion = Integer.parseInt(data.get("version"));
                 List<IPAddress> addrs = IPAddresses.forClient(Clients.dao.queryForId(data.get("client")), ipVersion);
                 for (IPAddress addr : addrs) {
                     addr.client = Clients.NONE;
