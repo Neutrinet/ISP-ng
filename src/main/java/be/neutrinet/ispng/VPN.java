@@ -19,6 +19,7 @@ package be.neutrinet.ispng;
 
 import be.fedict.eid.applet.service.AppletServiceServlet;
 import be.neutrinet.ispng.config.Config;
+import be.neutrinet.ispng.external.LDAP;
 import be.neutrinet.ispng.mail.Generator;
 import be.neutrinet.ispng.monitoring.Agent;
 import be.neutrinet.ispng.util.MariaDBType;
@@ -91,6 +92,7 @@ public class VPN implements Daemon {
 
         Zookeeper.boot(cfg.getProperty("zookeeper.connectionString"));
         Config.get().boot(cfg);
+        LDAP.get().boot();
         generator = new Generator();
 
         Optional<String> sentryApiKey = Config.get("sentry/api/dsn");

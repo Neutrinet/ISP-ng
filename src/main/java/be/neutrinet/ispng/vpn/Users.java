@@ -17,14 +17,19 @@
  */
 package be.neutrinet.ispng.vpn;
 
-import be.neutrinet.ispng.VPN;
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.table.TableUtils;
+import be.neutrinet.ispng.config.Config;
+import be.neutrinet.ispng.external.LDAP;
+import com.unboundid.ldap.sdk.*;
+import com.unboundid.ldap.sdk.persist.LDAPPersistException;
+import com.unboundid.ldap.sdk.persist.LDAPPersister;
+import com.unboundid.ldap.sdk.persist.ObjectSearchListener;
+import com.unboundid.ldap.sdk.persist.PersistedObjects;
 import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  *
@@ -32,39 +37,118 @@ import java.util.List;
  */
 public class Users {
 
-    public static Dao<User, String> dao;
+    public static LDAPPersister<User> persister;
     public static User NOBODY;
 
     public final static User authenticate(String email, String password) {
         try {
-            List<User> users = dao.queryForEq("email", email);
-            if (users.isEmpty()) {
-                return null;
-            }
-            if (users.size() > 1) {
-                throw new IllegalStateException("User " + email + " has multiple entries!");
-            }
-            User user = users.get(0);
-            if (user.enabled && user.validatePassword(password)) {
-                return user;
-            }
-        } catch (SQLException ex) {
+            SearchRequest searchRequest = new SearchRequest("", SearchScope.SUB, email);
+
+        } catch (LDAPException ex) {
             Logger.getLogger(Users.class).error("Failed to authenticate", ex);
         }
 
         return null;
     }
 
+    public static void add(User user) {
+        try {
+            persister.add(user, LDAP.connection(), usersDN());
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to add user", ex);
+        }
+    }
+
+    public static List<User> query(String field, Object value) {
+        ArrayList<User> users = new ArrayList<>();
+        try {
+            PersistedObjects<User> objects = persister.search(LDAP.connection(),
+                    usersDN(),
+                    SearchScope.SUB,
+                    DereferencePolicy.ALWAYS,
+                    Integer.MAX_VALUE,
+                    0,
+                    Filter.create("(" + LDAP.findAttributeName(User.class, field) + "=" + value + ")"));
+
+            User user = objects.next();
+            while (user != null) {
+                users.add(user);
+                user = objects.next();
+            }
+
+            objects.close();
+
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to query LDAP for user(s)", ex);
+        }
+
+        return users;
+    }
+
+    public static User queryForId(String id) {
+        List<User> users = query("uid", id);
+        assert users.size() <= 1;
+        if (users.size() == 1) return users.get(0);
+        else return null;
+    }
+
+    public static User queryForId(UUID id) {
+        assert id != null;
+        return queryForId(id.toString());
+    }
+
+    public static List<User> queryForAll() {
+        ArrayList<User> users = new ArrayList<>();
+        try {
+            persister.getAll(LDAP.connection(), usersDN(), new ObjectSearchListener<User>() {
+                @Override
+                public void objectReturned(User user) {
+                    users.add(user);
+                }
+
+                @Override
+                public void unparsableEntryReturned(SearchResultEntry searchResultEntry, LDAPPersistException e) {
+
+                }
+
+                @Override
+                public void searchReferenceReturned(SearchResultReference searchResultReference) {
+
+                }
+            });
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to list all users", ex);
+        }
+
+        return users;
+    }
+
+    public static User update(User user) {
+        try {
+            persister.modify(user, LDAP.connection(), usersDN(), true);
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to update user " + user.email, ex);
+        }
+
+        return user;
+    }
+
+    protected static String usersDN() {
+        Optional<String> dn = Config.get().getValue("ldap/users/dn");
+        if (!dn.isPresent()) {
+            throw new IllegalArgumentException("No LDAP users DN set");
+        } else return dn.get();
+    }
+
     static {
         Class cls = User.class;
         try {
-            dao = DaoManager.createDao(VPN.cs, cls);
-            TableUtils.createTableIfNotExists(VPN.cs, cls);
-        } catch (SQLException ex) {
-            org.apache.log4j.Logger.getLogger(cls).error("Failed to create DAO", ex);
+            persister = LDAPPersister.getInstance(cls);
+        } catch (LDAPPersistException ex) {
+            org.apache.log4j.Logger.getLogger(cls).error("Failed to create LDAP persister", ex);
         }
         
         NOBODY = new User();
-        NOBODY.id = -1;
+        NOBODY.globalId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 }

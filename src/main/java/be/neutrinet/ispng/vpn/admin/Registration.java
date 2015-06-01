@@ -6,8 +6,6 @@
 package be.neutrinet.ispng.vpn.admin;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.external.billy.ChangeList;
-import be.neutrinet.ispng.federation.Dispatcher;
 import be.neutrinet.ispng.util.DateUtil;
 import be.neutrinet.ispng.vpn.*;
 import be.neutrinet.ispng.vpn.api.VPNClientCertificate;
@@ -70,7 +68,7 @@ public class Registration {
         try {
             this.client = new Client();
             this.client.commonName = "!!TEMPORARY_CN!!";
-            this.client.user = this.user;
+            this.client.userId = this.user.globalId;
             this.client.enabled = true;
 
             Clients.dao.create(client);
@@ -100,16 +98,13 @@ public class Registration {
                 }
 
                 this.completed = new Date();
-                this.client.user.enabled = true;
-                Users.dao.update(this.client.user);
+                this.client.user().enabled = true;
+                Users.update(this.client.user());
 
                 // Check if user has certificates that need to be signed
                 Certificates.dao.queryForEq("client_id", client.id).forEach(VPNClientCertificate::sign);
 
                 Registrations.dao.update(this);
-
-                // Inform other services that a user change occurred
-                Dispatcher.get().entityChange(new ChangeList("user").put(ChangeList.Operation.CREATE, this.client.user.globalId.toString()));
 
                 if (sendConfirmationEmail) VPN.generator.sendRegistrationConfirmation(this);
                 return true;

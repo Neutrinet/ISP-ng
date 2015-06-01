@@ -18,8 +18,9 @@
 package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.security.OwnedEntity;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
+import com.unboundid.ldap.sdk.persist.LDAPField;
+import com.unboundid.ldap.sdk.persist.LDAPGetter;
+import com.unboundid.ldap.sdk.persist.LDAPObject;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Calendar;
@@ -30,38 +31,36 @@ import java.util.UUID;
  *
  * @author wannes
  */
-@DatabaseTable(tableName = "users")
+@LDAPObject(requestAllAttributes = true, structuralClass = "inetOrgPerson", auxiliaryClass = {"ispngAccount", "extensibleObject"})
 public class User implements OwnedEntity {
 
     // Currently allowed countries = benelux
     public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
-    @DatabaseField(generatedId = true)
-    public int id;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "uid", objectClass = "inetOrgPerson", requiredForEncode = true)
     public UUID globalId;
-    @DatabaseField(canBeNull = false, index = true, unique = true)
+    @LDAPField(attribute = "mail", inRDN = true, requiredForEncode = true)
     public String email;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "gn", objectClass = "inetOrgPerson", requiredForEncode = true)
     public String name;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "sn", objectClass = "inetOrgPerson", requiredForEncode = true)
     public String lastName;
-    @DatabaseField
+    @LDAPField(objectClass = "inetOrgPerson")
     public String street;
-    @DatabaseField
+    @LDAPField(objectClass = "inetOrgPerson")
     public String postalCode;
-    @DatabaseField
+    @LDAPField(attribute = "l", requiredForEncode = true)
     public String municipality;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(objectClass = "ispngAccount")
     public String birthPlace;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(objectClass = "ispngAccount")
     public Date birthDate;
-    @DatabaseField
+    @LDAPField(objectClass = "ispngAccount")
     public boolean enabled;
-    @DatabaseField
+    @LDAPField(attribute = "PKCScertificateIdentifier", objectClass = "ispngAccount")
     public String certId;
-    @DatabaseField
+    @LDAPField(attribute = "countryName", objectClass = "extensibleObject")
     public String country;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "userPassword", requiredForEncode = true)
     private String password;
     private transient UserSettings settings;
 
@@ -69,8 +68,9 @@ public class User implements OwnedEntity {
         this.globalId = UUID.randomUUID();
     }
 
-    public boolean validatePassword(String password) {
-        return BCrypt.checkpw(password, this.password);
+    @LDAPGetter(attribute = "cn")
+    public String getCN() {
+        return email;
     }
 
     public String getPassword() {
@@ -113,7 +113,7 @@ public class User implements OwnedEntity {
 
     public UserSettings settings() {
         if (settings == null) {
-            settings = new UserSettings("" + id);
+            settings = new UserSettings("" + globalId);
             settings.load();
         }
 
@@ -123,7 +123,7 @@ public class User implements OwnedEntity {
     @Override
     public boolean isOwnedBy(User user) {
         if (user == null) return false;
-        return user.id == id;
+        return user.globalId == globalId;
     }
 
     @Override
@@ -133,13 +133,13 @@ public class User implements OwnedEntity {
 
         User user = (User) o;
 
-        if (id != user.id) return false;
+        if (!globalId.equals(user.globalId)) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return globalId.hashCode();
     }
 }

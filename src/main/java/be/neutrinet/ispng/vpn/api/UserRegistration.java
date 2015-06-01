@@ -60,7 +60,7 @@ public class UserRegistration extends ResourceBase {
 
                     // Legacy fix
                     if (reg.client == null) {
-                        reg.client = Clients.dao.queryForEq("user_id", reg.user.id).get(0);
+                        reg.client = Clients.dao.queryForEq("user_id", reg.user.globalId).get(0);
                     }
 
                 } catch (SQLException ex) {
@@ -154,7 +154,7 @@ public class UserRegistration extends ResourceBase {
                 reg.user.birthPlace = (String) data.get("birthplace");
                 reg.user.country = (String) data.get("country");
 
-                if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
+                if (reg.user.validate()) Users.add(reg.user);
 
                 // Auto-login newly created user
                 getResponse().getCookieSettings().add("Session",

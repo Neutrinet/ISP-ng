@@ -29,10 +29,7 @@ import com.tufar.IPCalculator.IPv4;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author wannes
@@ -77,10 +74,10 @@ public class IPAddresses {
         return Optional.empty();
     }
 
-    public static List<IPAddress> forUser(User user, int ipVersion) {
+    public static List<IPAddress> forUser(UUID userId, int ipVersion) {
         try {
             ArrayList<IPAddress> addrs = new ArrayList<>();
-            List<Client> clients = Clients.dao.queryForEq("user_id", "" + user.id);
+            List<Client> clients = Clients.dao.queryForEq("user_id", "" + userId);
             for (Client client : clients) {
                 addrs.addAll(client.leases);
             }
@@ -107,7 +104,7 @@ public class IPAddresses {
         } catch (SQLException ex) {
             Logger.getLogger(IPAddresses.class).error("Failed to find IP address", ex);
         }
-        return null;
+        return new ArrayList<>();
     }
 
     public static List<IPAddress> addv4SubnetToPool(String subnetCIDR, String purpose) {

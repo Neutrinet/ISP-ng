@@ -63,7 +63,7 @@ public class AddressLease extends ResourceBase {
 
         try {
             Client client = Clients.dao.queryForId("" + clientId);
-            List<IPAddress> addresses = IPAddresses.forUser(client.user, version);
+            List<IPAddress> addresses = IPAddresses.forUser(client.userId, version);
             if (addresses.size() > 1)
                 return clientError("MAX_IP_ADDRESSES_EXCEEDED", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
 

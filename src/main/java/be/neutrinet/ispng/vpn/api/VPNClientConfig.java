@@ -63,7 +63,7 @@ public class VPNClientConfig extends ResourceBase {
             String platform = getQueryValue("platform");
 
             try {
-                User user = Users.dao.queryForId(userId);
+                User user = Users.queryForId(userId);
                 if (user.certId == null) return clientError("NO_KEYPAIR", Status.CLIENT_ERROR_FAILED_DEPENDENCY);
 
                 ArrayList<String> config = new ArrayList<>();
@@ -116,12 +116,12 @@ public class VPNClientConfig extends ResourceBase {
                         + " here and name it client.key").getBytes());
                 config.add("cert client.crt");
                 config.add("key client.key");
-            } else if (client.user.certId != null && !client.user.certId.isEmpty()) {
-                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user);
+            } else if (client.user().certId != null && !client.user().certId.isEmpty()) {
+                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user());
                 if (res != null) return res;
             }
 
-            if (client.user.certId == null || client.user.certId.isEmpty()) {
+            if (client.user().certId == null || client.user().certId.isEmpty()) {
                 zip.putNextEntry(new ZipEntry("NO_KEYPAIR_DEFINED"));
                 zip.write("Invalid state, no keypair has been defined.".getBytes());
             }

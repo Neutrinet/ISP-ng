@@ -5,6 +5,7 @@ import be.neutrinet.ispng.vpn.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +52,7 @@ public class Policy {
         boolean match = false;
         String[] str = VPN.cfg.getProperty("users.admin").split(";");
         for (String s : str) {
-            if (user.id == Integer.parseInt(s)) {
+            if (user.globalId.equals(UUID.fromString(s))) {
                 match = true;
             }
         }
@@ -65,7 +66,7 @@ public class Policy {
         boolean match = false;
         String[] str = VPN.cfg.getProperty("users.service").split(";");
         for (String s : str) {
-            if (user.id == Integer.parseInt(s)) {
+            if (user.globalId.equals(UUID.fromString(s))) {
                 match = true;
             }
         }

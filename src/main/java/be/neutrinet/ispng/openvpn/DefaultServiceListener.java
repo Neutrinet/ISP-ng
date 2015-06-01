@@ -2,7 +2,6 @@ package be.neutrinet.ispng.openvpn;
 
 import be.neutrinet.ispng.VPN;
 import be.neutrinet.ispng.config.Config;
-import be.neutrinet.ispng.monitoring.DataPoint;
 import be.neutrinet.ispng.vpn.*;
 import be.neutrinet.ispng.vpn.ip.SubnetLease;
 import com.google.common.collect.LinkedListMultimap;
@@ -26,9 +25,11 @@ public class DefaultServiceListener implements ServiceListener {
     protected ManagementInterface vpn;
     protected boolean acceptNewConnections, acceptConnections;
     protected HashMap<Integer, Connection> pendingConnections;
+    protected Monitoring monitoringAgent;
 
     public DefaultServiceListener() {
         pendingConnections = new HashMap<>();
+        monitoringAgent = new Monitoring();
 
         Config.get().getAndWatch("OpenVPN/connections/accept", YES, value -> acceptConnections = YES.equals(value));
         Config.get().getAndWatch("OpenVPN/connections/acceptNew", YES, value -> acceptNewConnections = YES.equals(value));
@@ -43,7 +44,10 @@ public class DefaultServiceListener implements ServiceListener {
 
         be.neutrinet.ispng.vpn.Client userClient = be.neutrinet.ispng.vpn.Client.match(client).orElseGet(() -> be.neutrinet.ispng.vpn.Client.create(client));
 
-        if (!userClient.enabled) vpn.denyClient(client.id, client.kid, "Client is disabled");
+        if (!userClient.enabled) {
+            vpn.denyClient(client.id, client.kid, "Client is disabled");
+            return;
+        }
 
         try {
             User user = Users.authenticate(client.username, client.password);
@@ -55,10 +59,10 @@ public class DefaultServiceListener implements ServiceListener {
                     else
                         ipv4 = userClient.leases.stream().filter(addr -> addr.ipVersion == 4).findFirst();
 
-                    if (!ipv4.isPresent() && userClient.subnetLeases.isEmpty()) {
+                    /*if (!ipv4.isPresent() && userClient.subnetLeases.isEmpty()) {
                         vpn.denyClient(client.id, client.kid, "No IP address or subnet leases assigned");
                         return null;
-                    }
+                    }*/
 
                     Connection c = new Connection(userClient);
                     c.openvpnInstance = vpn.getInstanceId();
@@ -98,6 +102,18 @@ public class DefaultServiceListener implements ServiceListener {
                     // Why /64? See https://community.openvpn.net/openvpn/ticket/264
                     options.put("ifconfig-ipv6-push", interconnect.address + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.interconnect"));
 
+                    if (!ipv4.isPresent()) {
+                        /* because OpenVPN does not acknowledge that IPv6-only connectivity is a thing now, we need
+                        to assign an ephemeral IPv4 address.
+                         */
+
+                    }
+
+                    if (user.settings().get("ip.route.ipv6.defaultRoute", true).equals(true)) {
+                        //options.put("push redirect-gateway-ipv6", "def1");
+                        options.put("push route-ipv6", "2000::/3");
+                    }
+
                     if (!userClient.subnetLeases.isEmpty()) {
                         for (SubnetLease lease : userClient.subnetLeases) {
                             options.put("push route-ipv6", VPN.cfg.getProperty("vpn.ipv6.network") + "/" + VPN.cfg.getProperty("vpn.ipv6.prefix")
@@ -105,11 +121,6 @@ public class DefaultServiceListener implements ServiceListener {
                             // route assigned IPv6 subnet through client
                             options.put("iroute-ipv6", lease.subnet.subnet);
                             options.put("setenv-safe DELEGATED_IPv6_PREFIX", lease.subnet.subnet);
-                        }
-
-                        if (user.settings().get("ip.route.ipv6.defaultRoute").isPresent()) {
-                            //options.put("push redirect-gateway-ipv6", "def1");
-                            options.put("push route-ipv6", "2000::/3");
                         }
                     }
 
@@ -228,25 +239,7 @@ public class DefaultServiceListener implements ServiceListener {
 
     @Override
     public void bytecount(Client client, long bytesIn, long bytesOut) {
-        HashMap<String, String> tags = new HashMap<>();
-        tags.put("client", "" + client.id);
-        tags.put("connection", "" + client.kid);
-        tags.put("vpnInstance", "" + vpn.getInstanceId().replace(':', '-'));
-
-        DataPoint bytesInDataPoint = new DataPoint();
-        bytesInDataPoint.metric = "vpn.client.bytesIn";
-        bytesInDataPoint.timestamp = System.currentTimeMillis();
-        bytesInDataPoint.value = bytesIn;
-        bytesInDataPoint.tags = tags;
-
-        DataPoint bytesOutDataPoint = new DataPoint();
-        bytesOutDataPoint.metric = "vpn.client.bytesOut";
-        bytesOutDataPoint.timestamp = System.currentTimeMillis();
-        bytesOutDataPoint.value = bytesOut;
-        bytesOutDataPoint.tags = tags;
-
-        VPN.monitoringAgent.addDataPoint(bytesInDataPoint);
-        VPN.monitoringAgent.addDataPoint(bytesOutDataPoint);
+        monitoringAgent.byteCount(client, bytesIn, bytesOut, vpn.getInstanceId().replace(':', '-'));
     }
 
     @Override

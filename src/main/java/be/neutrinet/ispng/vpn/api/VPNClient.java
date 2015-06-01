@@ -44,7 +44,7 @@ public class VPNClient extends ResourceBase {
     @Put
     public Representation addVPNClient(Client client) {
         if ((client.commonName == null || client.commonName.isEmpty()) ||
-                (client.user == null)) {
+                (client.userId == null)) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
