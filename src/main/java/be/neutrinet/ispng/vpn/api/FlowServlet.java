@@ -54,7 +54,7 @@ public class FlowServlet extends HttpServlet {
                             return;
                         }
 
-                        User user = reg.user;
+                        User user = reg.user();
                         user.name = identity.getFirstName() + " " + identity.getMiddleName();
                         user.lastName = identity.getName();
                         user.birthPlace = identity.getPlaceOfBirth();

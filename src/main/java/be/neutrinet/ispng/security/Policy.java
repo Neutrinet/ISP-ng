@@ -1,7 +1,6 @@
 package be.neutrinet.ispng.security;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.vpn.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,41 +17,33 @@ public class Policy {
         return INSTANCE;
     }
 
-    public static <T extends OwnedEntity> List<T> filterAccessible(User user, List<T> entities) {
+    public static <T extends OwnedEntity> List<T> filterAccessible(UUID user, List<T> entities) {
         if (entities == null) return new ArrayList<>();
 
         return entities.parallelStream().filter(e -> INSTANCE.canAccess(user, e)).collect(Collectors.toList());
     }
 
-    public static <T extends OwnedEntity> List<T> filterModifiable(User user, List<T> entities) {
+    public static <T extends OwnedEntity> List<T> filterModifiable(UUID user, List<T> entities) {
         if (entities == null) return new ArrayList<>();
 
         return entities.parallelStream().filter(e -> INSTANCE.canModify(user, e)).collect(Collectors.toList());
     }
 
-    public boolean canAccess(User user, OwnedEntity entity) {
-        if (entity == null || user == null) return false;
-        if (isAdmin(user)) return true;
-        if (entity.isOwnedBy(user)) return true;
-
-        return false;
+    public boolean canAccess(UUID user, OwnedEntity entity) {
+        return !(entity == null || user == null) && (isAdmin(user) || entity.isOwnedBy(user));
     }
 
-    public boolean canModify(User user, OwnedEntity entity) {
-        if (entity == null || user == null) return false;
-        if (isAdmin(user)) return true;
-        if (entity.isOwnedBy(user)) return true;
-
-        return false;
+    public boolean canModify(UUID user, OwnedEntity entity) {
+        return !(entity == null || user == null) && (isAdmin(user) || entity.isOwnedBy(user));
     }
 
-    public final boolean isAdmin(User user) {
+    public final boolean isAdmin(UUID user) {
         if (VPN.cfg.getProperty("users.admin") == null) return false;
 
         boolean match = false;
         String[] str = VPN.cfg.getProperty("users.admin").split(";");
         for (String s : str) {
-            if (user.globalId.equals(UUID.fromString(s))) {
+            if (user.equals(UUID.fromString(s))) {
                 match = true;
             }
         }
@@ -60,13 +51,13 @@ public class Policy {
         return match;
     }
 
-    public final boolean isRelatedService(User user) {
+    public final boolean isRelatedService(UUID user) {
         if (VPN.cfg.getProperty("users.service") == null) return false;
 
         boolean match = false;
         String[] str = VPN.cfg.getProperty("users.service").split(";");
         for (String s : str) {
-            if (user.globalId.equals(UUID.fromString(s))) {
+            if (user.equals(UUID.fromString(s))) {
                 match = true;
             }
         }

@@ -105,12 +105,12 @@ public class Client implements OwnedEntity, Serializable {
     }
 
     public User user() {
-        if (user == null) Users.queryForId(userId);
+        if (user == null) user = Users.queryForId(userId);
         return user;
     }
 
     @Override
-    public boolean isOwnedBy(User user) {
-        return this.userId.equals(user.globalId);
+    public boolean isOwnedBy(UUID user) {
+        return this.userId.equals(user);
     }
 }

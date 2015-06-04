@@ -17,14 +17,14 @@ public class Bootstrap {
         User user = new User();
         user.birthDate = new Date();
         user.birthPlace = "Spaaaace!";
-        user.country = "Botswana";
+        user.country = "Belgium";
         user.email = "boot@strap.be";
         user.lastName = "Bobson";
         user.name = "Alice";
         user.municipality = "Moonbase A6-9K";
         user.postalCode = "42";
         user.setPassword("password");
-        Users.dao.create(user);
+        Users.add(user);
 
         IPAddresses.addv4SubnetToPool("192.168.221.129/25", IPAddress.Purpose.CLIENT_ASSIGN);
     }

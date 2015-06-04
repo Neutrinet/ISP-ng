@@ -8,6 +8,8 @@ import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
+import java.util.UUID;
+
 /**
  * Created by wannes on 3/21/15.
  */
@@ -24,7 +26,7 @@ public class UserPermissions extends ResourceBase {
             return clientError("UNAUTHORIZED", Status.CLIENT_ERROR_FORBIDDEN);
 
         Permissions permissions = new Permissions();
-        permissions.build(user);
+        permissions.build(user.globalId);
         return new JacksonRepresentation<>(permissions);
     }
 
@@ -32,7 +34,7 @@ public class UserPermissions extends ResourceBase {
         public boolean isAdmin;
         public boolean isService;
 
-        public void build(User user) {
+        public void build(UUID user) {
             this.isAdmin = Policy.get().isAdmin(user);
             this.isService = Policy.get().isRelatedService(user);
         }

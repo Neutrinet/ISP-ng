@@ -2,11 +2,11 @@ package be.neutrinet.ispng.dns;
 
 import be.neutrinet.ispng.security.OwnedEntity;
 import be.neutrinet.ispng.vpn.Client;
-import be.neutrinet.ispng.vpn.User;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Created by wannes on 1/27/15.
@@ -102,7 +102,7 @@ public class DNSRecord implements Serializable, OwnedEntity {
     }
 
     @Override
-    public boolean isOwnedBy(User user) {
-        return this.client.user.equals(user);
+    public boolean isOwnedBy(UUID user) {
+        return this.client.userId.equals(user);
     }
 }

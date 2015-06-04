@@ -25,6 +25,7 @@ import com.unboundid.ldap.sdk.persist.LDAPPersister;
 import com.unboundid.ldap.sdk.persist.ObjectSearchListener;
 import com.unboundid.ldap.sdk.persist.PersistedObjects;
 import org.apache.log4j.Logger;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +42,17 @@ public class Users {
     public static User NOBODY;
 
     public final static User authenticate(String email, String password) {
-        try {
-            SearchRequest searchRequest = new SearchRequest("", SearchScope.SUB, email);
 
-        } catch (LDAPException ex) {
-            Logger.getLogger(Users.class).error("Failed to authenticate", ex);
+        List<User> users = query("email", email);
+        assert users.size() <= 1;
+
+        if (users.size() == 1) {
+            User user = users.get(0);
+            String salt = BCrypt.gensalt(10);
+            String pwd = BCrypt.hashpw(password, salt);
+            if (user.getPassword().equals(pwd)) {
+                return user;
+            }
         }
 
         return null;
@@ -125,9 +132,19 @@ public class Users {
 
     public static User update(User user) {
         try {
-            persister.modify(user, LDAP.connection(), usersDN(), true);
+            persister.modify(user, LDAP.connection(), user.getDN(), true);
         } catch (LDAPException ex) {
             Logger.getLogger(Users.class).error("Failed to update user " + user.email, ex);
+        }
+
+        return user;
+    }
+
+    public static User delete(User user) {
+        try {
+            persister.delete(user, LDAP.connection());
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to delete user " + user.email, ex);
         }
 
         return user;

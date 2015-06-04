@@ -40,7 +40,7 @@ public class User implements OwnedEntity {
     public UUID globalId;
     @LDAPField(attribute = "mail", inRDN = true, requiredForEncode = true)
     public String email;
-    @LDAPField(attribute = "gn", objectClass = "inetOrgPerson", requiredForEncode = true)
+    @LDAPField(attribute = "givenName", objectClass = "inetOrgPerson", requiredForEncode = true)
     public String name;
     @LDAPField(attribute = "sn", objectClass = "inetOrgPerson", requiredForEncode = true)
     public String lastName;
@@ -71,6 +71,10 @@ public class User implements OwnedEntity {
     @LDAPGetter(attribute = "cn")
     public String getCN() {
         return email;
+    }
+
+    public String getDN() {
+        return "mail=" + email + "," + Users.usersDN();
     }
 
     public String getPassword() {
@@ -121,9 +125,8 @@ public class User implements OwnedEntity {
     }
 
     @Override
-    public boolean isOwnedBy(User user) {
-        if (user == null) return false;
-        return user.globalId == globalId;
+    public boolean isOwnedBy(UUID user) {
+        return user != null && user.equals(globalId);
     }
 
     @Override
@@ -133,9 +136,8 @@ public class User implements OwnedEntity {
 
         User user = (User) o;
 
-        if (!globalId.equals(user.globalId)) return false;
+        return globalId.equals(user.globalId);
 
-        return true;
     }
 
     @Override

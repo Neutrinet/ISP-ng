@@ -29,8 +29,9 @@ import java.util.UUID;
 public class Registration {
 
     private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
-    public User user;
+    @DatabaseField(canBeNull = false)
+    public UUID user;
+    private User cachedUser;
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public Client client;
     @DatabaseField(canBeNull = false)
@@ -68,7 +69,7 @@ public class Registration {
         try {
             this.client = new Client();
             this.client.commonName = "!!TEMPORARY_CN!!";
-            this.client.userId = this.user.globalId;
+            this.client.userId = this.user;
             this.client.enabled = true;
 
             Clients.dao.create(client);
@@ -112,5 +113,15 @@ public class Registration {
         } catch (SQLException ex) {
             Logger.getLogger(getClass()).error("Registration failed", ex);
         }
+    }
+
+    public User user() {
+        if (cachedUser == null) cachedUser = Users.queryForId(this.id);
+        return cachedUser;
+    }
+
+    public void setUser(User user) {
+        cachedUser = user;
+        this.user = user.globalId;
     }
 }
