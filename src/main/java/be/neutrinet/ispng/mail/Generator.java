@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- *
  * @author wannes
  */
 public class Generator {

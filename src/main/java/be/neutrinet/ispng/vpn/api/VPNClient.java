@@ -64,7 +64,7 @@ public class VPNClient extends ResourceBase {
         try {
             if (getRequestAttributes().containsKey("client"))
                 if (!getAttribute("client").toLowerCase().equals("all"))
-                return new JacksonRepresentation<>(Clients.dao.queryForId(getAttribute("client")));
+                    return new JacksonRepresentation<>(Clients.dao.queryForId(getAttribute("client")));
 
             List<Client> clients;
 

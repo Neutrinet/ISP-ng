@@ -12,7 +12,7 @@ public class SessionManager {
     private static SessionManager instance = new SessionManager();
 
     public static SessionToken createSessionToken(User user, String address) {
-        return new SessionToken(user.globalId, address);
+        return new SessionToken(user.id, address);
     }
 
     public static boolean validateToken(String token, String address) {

@@ -31,7 +31,6 @@ public class Registration {
     private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
     @DatabaseField(canBeNull = false)
     public UUID user;
-    private User cachedUser;
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public Client client;
     @DatabaseField(canBeNull = false)
@@ -44,6 +43,7 @@ public class Registration {
     public UnlockKey unlockKey;
     @DatabaseField
     public Date completed;
+    private User cachedUser;
     @DatabaseField(id = true, canBeNull = false)
     private UUID id;
 
@@ -122,6 +122,6 @@ public class Registration {
 
     public void setUser(User user) {
         cachedUser = user;
-        this.user = user.globalId;
+        this.user = user.id;
     }
 }

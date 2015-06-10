@@ -19,15 +19,8 @@ import java.util.*;
 public class ZoneBuilder {
 
     private final static String PREFIX = "/ispng/dns/";
-    private KeptMap zones;
-    private Map<String, KeptList<DNSRecord>> records = new HashMap<>();
-    // TODO persist zone serial number suffix
-    private Map<String, Integer> suffixes = new HashMap<>();
     private final static SimpleDateFormat SERIAL_NUMBER_FORMAT = new SimpleDateFormat("YYYYMMDD");
     public static Name SAME_AS_ROOT;
-    private int ttl;
-    private List<String> nameServers = new ArrayList<>();
-    private Properties cfg;
 
     static {
         try {
@@ -36,6 +29,14 @@ public class ZoneBuilder {
             Logger.getLogger(ZoneBuilder.class).error("Something went terribly wrong", ex);
         }
     }
+
+    private KeptMap zones;
+    private Map<String, KeptList<DNSRecord>> records = new HashMap<>();
+    // TODO persist zone serial number suffix
+    private Map<String, Integer> suffixes = new HashMap<>();
+    private int ttl;
+    private List<String> nameServers = new ArrayList<>();
+    private Properties cfg;
 
     public void boot(Properties cfg) {
         this.cfg = cfg;

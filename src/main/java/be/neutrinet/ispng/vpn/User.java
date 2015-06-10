@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- *
  * @author wannes
  */
 @LDAPObject(requestAllAttributes = true, structuralClass = "inetOrgPerson", auxiliaryClass = {"ispngAccount", "extensibleObject"})
@@ -37,7 +36,7 @@ public class User implements OwnedEntity {
     // Currently allowed countries = benelux
     public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
     @LDAPField(attribute = "uid", objectClass = "inetOrgPerson", requiredForEncode = true)
-    public UUID globalId;
+    public UUID id;
     @LDAPField(attribute = "mail", inRDN = true, requiredForEncode = true)
     public String email;
     @LDAPField(attribute = "givenName", objectClass = "inetOrgPerson", requiredForEncode = true)
@@ -65,7 +64,7 @@ public class User implements OwnedEntity {
     private transient UserSettings settings;
 
     public User() {
-        this.globalId = UUID.randomUUID();
+        this.id = UUID.randomUUID();
     }
 
     @LDAPGetter(attribute = "cn")
@@ -117,7 +116,7 @@ public class User implements OwnedEntity {
 
     public UserSettings settings() {
         if (settings == null) {
-            settings = new UserSettings("" + globalId);
+            settings = new UserSettings("" + id);
             settings.load();
         }
 
@@ -126,7 +125,7 @@ public class User implements OwnedEntity {
 
     @Override
     public boolean isOwnedBy(UUID user) {
-        return user != null && user.equals(globalId);
+        return user != null && user.equals(id);
     }
 
     @Override
@@ -136,12 +135,12 @@ public class User implements OwnedEntity {
 
         User user = (User) o;
 
-        return globalId.equals(user.globalId);
+        return id.equals(user.id);
 
     }
 
     @Override
     public int hashCode() {
-        return globalId.hashCode();
+        return id.hashCode();
     }
 }

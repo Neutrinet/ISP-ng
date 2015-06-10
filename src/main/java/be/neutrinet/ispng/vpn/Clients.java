@@ -13,6 +13,7 @@ import java.sql.SQLException;
  */
 public class Clients {
     public final static Client NONE;
+    public static Dao<Client, String> dao;
 
     static {
         try {
@@ -25,6 +26,4 @@ public class Clients {
         NONE = new Client();
         NONE.id = -1;
     }
-
-    public static Dao<Client, String> dao;
 }

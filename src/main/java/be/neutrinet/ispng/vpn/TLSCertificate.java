@@ -18,7 +18,6 @@
 package be.neutrinet.ispng.vpn;
 
 /**
- *
  * @author wannes
  */
 public class TLSCertificate {

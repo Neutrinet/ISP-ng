@@ -16,10 +16,9 @@ import java.util.Map;
  */
 public class RequestHandler {
 
-    private Map<Integer, Cache> caches = new HashMap<>();
-
     static final int FLAG_DNSSECOK = 1;
     static final int FLAG_SIGONLY = 2;
+    private Map<Integer, Cache> caches = new HashMap<>();
 
     public Cache getCache(int dclass) {
         Cache c = caches.get(dclass);

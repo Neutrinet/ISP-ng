@@ -1,5 +1,6 @@
 package be.neutrinet.ispng.security;
 
+import be.neutrinet.ispng.vpn.Users;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.apache.log4j.Logger;
@@ -55,7 +56,7 @@ public class SessionToken {
     }
 
     public boolean valid() {
-        if (Policy.get().isRelatedService(this.user)) return true;
+        if (Users.isRelatedService(this.user)) return true;
 
         return System.currentTimeMillis() - this.creationTime <= 3600 * 1000;
 

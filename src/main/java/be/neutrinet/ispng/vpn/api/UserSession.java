@@ -1,8 +1,8 @@
 package be.neutrinet.ispng.vpn.api;
 
-import be.neutrinet.ispng.security.Policy;
 import be.neutrinet.ispng.security.SessionToken;
 import be.neutrinet.ispng.security.SessionTokens;
+import be.neutrinet.ispng.vpn.Users;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class UserSession extends ResourceBase {
     @Get
     public Representation getSessionDetails() {
-        if (!Policy.get().isRelatedService(getLoggedInUser()))
+        if (!Users.isRelatedService(getLoggedInUser()))
             return clientError("ACCESS_DENIED", Status.CLIENT_ERROR_UNAUTHORIZED);
         if (getAttribute("session") == null) return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
 
@@ -27,7 +27,7 @@ public class UserSession extends ResourceBase {
             HashMap<String, Object> sessionDetails = new HashMap<>();
             SessionToken st = SessionTokens.dao.queryForEq("token", UUID.fromString(session)).get(0);
             sessionDetails.put("details", st);
-            sessionDetails.put("isAdmin", Policy.get().isAdmin(st.getUser()));
+            sessionDetails.put("isAdmin", Users.isAdmin(st.getUser()));
             return new JacksonRepresentation<>(sessionDetails);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve session", ex);

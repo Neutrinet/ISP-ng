@@ -46,13 +46,13 @@ public class Client implements OwnedEntity, Serializable {
 
             User user = users.get(0);
             HashMap<String, Object> query = new HashMap<>();
-            query.put("user_id", user.globalId);
+            query.put("user_id", user.id);
             query.put("commonName", vpnClient.commonName);
             List<Client> clients = Clients.dao.queryForFieldValues(query);
 
             if (clients.size() > 1) {
                 Logger.getLogger(Client.class).error("Multiple client definitions, user: " + vpnClient.username +
-                ", commonName: " + vpnClient.commonName);
+                        ", commonName: " + vpnClient.commonName);
                 return Optional.empty();
             }
 
@@ -75,7 +75,7 @@ public class Client implements OwnedEntity, Serializable {
             assert users.size() == 1;
 
             User user = users.get(0);
-            c.userId = user.globalId;
+            c.userId = user.id;
             c.enabled = true;
 
             Clients.dao.createIfNotExists(c);

@@ -50,7 +50,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 /**
- *
  * @author wannes
  */
 public class VPN implements Daemon {

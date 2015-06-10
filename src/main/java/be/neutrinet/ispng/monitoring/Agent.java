@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by wannes on 10/2/14.
  */
 public class Agent {
+    public static int MAX_BACKLOG = 1000;
     protected OpenTSDB api;
     protected ConcurrentLinkedQueue<DataPoint> queue;
-    public static int MAX_BACKLOG = 1000;
     protected Timer timer;
     protected boolean busy;
 

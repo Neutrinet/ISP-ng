@@ -33,13 +33,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- *
  * @author wannes
  */
 public class Users {
 
     public static LDAPPersister<User> persister;
     public static User NOBODY;
+
+    static {
+        Class cls = User.class;
+        try {
+            persister = LDAPPersister.getInstance(cls);
+        } catch (LDAPPersistException ex) {
+            org.apache.log4j.Logger.getLogger(cls).error("Failed to create LDAP persister", ex);
+        }
+
+        NOBODY = new User();
+        NOBODY.id = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    }
 
     public final static User authenticate(String email, String password) {
 
@@ -48,9 +59,7 @@ public class Users {
 
         if (users.size() == 1) {
             User user = users.get(0);
-            String salt = BCrypt.gensalt(10);
-            String pwd = BCrypt.hashpw(password, salt);
-            if (user.getPassword().equals(pwd)) {
+            if (BCrypt.checkpw(password, user.getPassword())) {
                 return user;
             }
         }
@@ -150,22 +159,56 @@ public class Users {
         return user;
     }
 
+    public static boolean isAdmin(UUID user) {
+        try {
+            String filter = "(&(member=" + queryForId(user).getDN() + ")(objectClass=groupOfNames))";
+            SearchResult searchResult = LDAP.connection().search(
+                    "dc=neutrinet,dc=be",
+                    SearchScope.SUB,
+                    DereferencePolicy.ALWAYS,
+                    Integer.MAX_VALUE,
+                    0,
+                    false,
+                    Filter.create(filter));
+
+            for (SearchResultEntry sre : searchResult.getSearchEntries()) {
+                if (sre.getAttribute("cn").getValue().equals("Administrators"))
+                    return true;
+            }
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to get group memberships for user " + user, ex);
+        }
+
+        return false;
+    }
+
+    public static boolean isRelatedService(UUID user) {
+        try {
+            String filter = "(&(member=" + queryForId(user).getDN() + ")(objectClass=groupOfNames))";
+            SearchResult searchResult = LDAP.connection().search(
+                    "dc=neutrinet,dc=be",
+                    SearchScope.SUB,
+                    DereferencePolicy.ALWAYS,
+                    Integer.MAX_VALUE,
+                    0,
+                    false,
+                    Filter.create(filter));
+
+            for (SearchResultEntry sre : searchResult.getSearchEntries()) {
+                if (sre.getAttribute("cn").getValue().equals("ServiceUsers"))
+                    return true;
+            }
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to get group memberships for user " + user, ex);
+        }
+
+        return false;
+    }
+
     protected static String usersDN() {
         Optional<String> dn = Config.get().getValue("ldap/users/dn");
         if (!dn.isPresent()) {
             throw new IllegalArgumentException("No LDAP users DN set");
         } else return dn.get();
-    }
-
-    static {
-        Class cls = User.class;
-        try {
-            persister = LDAPPersister.getInstance(cls);
-        } catch (LDAPPersistException ex) {
-            org.apache.log4j.Logger.getLogger(cls).error("Failed to create LDAP persister", ex);
-        }
-        
-        NOBODY = new User();
-        NOBODY.globalId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 }

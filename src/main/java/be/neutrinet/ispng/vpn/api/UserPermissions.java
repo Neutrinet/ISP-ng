@@ -26,7 +26,7 @@ public class UserPermissions extends ResourceBase {
             return clientError("UNAUTHORIZED", Status.CLIENT_ERROR_FORBIDDEN);
 
         Permissions permissions = new Permissions();
-        permissions.build(user.globalId);
+        permissions.build(user.id);
         return new JacksonRepresentation<>(permissions);
     }
 
@@ -35,8 +35,8 @@ public class UserPermissions extends ResourceBase {
         public boolean isService;
 
         public void build(UUID user) {
-            this.isAdmin = Policy.get().isAdmin(user);
-            this.isService = Policy.get().isRelatedService(user);
+            this.isAdmin = Users.isAdmin(user);
+            this.isService = Users.isRelatedService(user);
         }
     }
 }

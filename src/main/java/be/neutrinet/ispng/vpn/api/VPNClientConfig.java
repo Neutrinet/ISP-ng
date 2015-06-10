@@ -35,21 +35,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- *
  * @author wannes
  */
 public class VPNClientConfig extends ResourceBase {
 
     public final static String[] DEFAULTS = new String[]{
-        "client",
-        "dev tun",
+            "client",
+            "dev tun",
             "proto udp",
-        "remote " + VPN.cfg.getProperty("openvpn.publicaddress") + ' ' + VPN.cfg.getProperty("openvpn.publicport"),
-        "resolv-retry infinite",
-        "nobind",
-        "ns-cert-type server",
-        "comp-lzo",
-        "ca ca.crt",
+            "remote " + VPN.cfg.getProperty("openvpn.publicaddress") + ' ' + VPN.cfg.getProperty("openvpn.publicport"),
+            "resolv-retry infinite",
+            "nobind",
+            "ns-cert-type server",
+            "comp-lzo",
+            "ca ca.crt",
             "auth-user-pass",
             "topology subnet"
     };
@@ -98,7 +97,7 @@ public class VPNClientConfig extends ResourceBase {
 
             ArrayList<String> config = new ArrayList<>();
             config.addAll(Arrays.asList(DEFAULTS));
-            
+
             // create zip
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ZipOutputStream zip = new ZipOutputStream(baos);
@@ -160,8 +159,8 @@ public class VPNClientConfig extends ResourceBase {
         rep.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
         return rep;
     }
-    
-    protected Representation addPKCS11config (String platform, List<String> config, User user) {
+
+    protected Representation addPKCS11config(String platform, List<String> config, User user) {
         switch (platform) {
             case "linux":
                 config.add("pkcs11-providers /usr/lib/libbeidpkcs11.so");

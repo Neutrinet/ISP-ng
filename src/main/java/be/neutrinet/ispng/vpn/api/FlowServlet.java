@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 /**
- *
  * @author wannes
  */
 public class FlowServlet extends HttpServlet {

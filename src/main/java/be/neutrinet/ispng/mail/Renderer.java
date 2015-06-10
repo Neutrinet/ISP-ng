@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author wannes
  */
 public class Renderer {
@@ -28,16 +27,16 @@ public class Renderer {
 
     public String renderInTemplate(String segmentName, Map<String, String> content, boolean plaintext) {
         fillInDefaults(content);
-        
+
         String rseg = render(segmentName, content, plaintext);
         HashMap<String, String> ct = new HashMap<>();
         content.remove("body");
         ct.putAll(content);
         ct.put("body", rseg);
-        
+
         return render(BASE_TEMPLATE, ct, plaintext);
     }
-    
+
     protected void fillInDefaults(Map<String, String> content) {
         if (!content.containsKey("header-img-src")) {
             content.put("header-img-src", VPN.cfg.getProperty("mail.headerImageURL"));

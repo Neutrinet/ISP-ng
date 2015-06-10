@@ -13,9 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @created Jul 3, 2011
  * @author wannes
+ * @created Jul 3, 2011
  */
 public class GenericsUtils {
 
@@ -23,10 +22,10 @@ public class GenericsUtils {
      * Get the underlying class for a type, or null if the type is a variable
      * type.
      *
-     * @author Ian Robertson,
-     * http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      * @param type the type
      * @return the underlying class
+     * @author Ian Robertson,
+     * http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      */
     public static Class<?> getClass(Type type) {
         if (type instanceof Class) {
@@ -50,11 +49,11 @@ public class GenericsUtils {
      * Get the actual type arguments a child class has used to extend a generic
      * base class.
      *
-     * @author Ian Robertson,
-     * http://www.artima.com/weblogs/viewpost.jsp?thread=208860
-     * @param baseClass the base class
+     * @param baseClass  the base class
      * @param childClass the child class
      * @return a list of the raw classes for the actual type arguments.
+     * @author Ian Robertson,
+     * http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      */
     public static <T> List<Class<?>> getTypeArguments(
             Class<T> baseClass, Class<? extends T> childClass) {

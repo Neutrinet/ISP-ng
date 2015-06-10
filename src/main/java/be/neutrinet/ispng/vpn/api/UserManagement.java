@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- *
  * @author wannes
  */
 public class UserManagement extends ResourceBase {
@@ -38,21 +37,13 @@ public class UserManagement extends ResourceBase {
             }
 
             String id = getAttribute("user");
+            User user = Users.queryForId(UUID.fromString(id));
 
-                User user;
-
-            List<User> users = Users.query("globalId", UUID.fromString(id));
-                if (users.isEmpty()) {
-                    return clientError("NO_SUCH_OBJECT", Status.SUCCESS_NO_CONTENT);
-                } else {
-                    user = users.get(0);
-                }
-
-                if (Policy.get().canAccess(getSessionToken().get().getUser(), user)) {
-                    return new JacksonRepresentation(user);
-                } else {
-                    return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
-                }
+            if (Policy.get().canAccess(getSessionToken().get().getUser(), user)) {
+                return new JacksonRepresentation(user);
+            } else {
+                return clientError("FORBIDDEN", Status.CLIENT_ERROR_BAD_REQUEST);
+            }
 
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve users", ex);
@@ -60,7 +51,7 @@ public class UserManagement extends ResourceBase {
 
         return DEFAULT_ERROR;
     }
-    
+
     @Post
     public Representation update(User user) {
         if (!sessionAvailable()) return DEFAULT_ERROR;
@@ -70,7 +61,7 @@ public class UserManagement extends ResourceBase {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
         UUID userId = UUID.fromString(getAttribute("user"));
-        if (!userId.equals(user.globalId)) {
+        if (!userId.equals(user.id)) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 

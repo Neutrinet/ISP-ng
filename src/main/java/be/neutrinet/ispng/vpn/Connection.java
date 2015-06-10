@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 
 /**
- *
  * @author wannes
  */
 @DatabaseTable(tableName = "ovpn_connections")

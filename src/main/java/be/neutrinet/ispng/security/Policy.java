@@ -1,6 +1,6 @@
 package be.neutrinet.ispng.security;
 
-import be.neutrinet.ispng.VPN;
+import be.neutrinet.ispng.vpn.Users;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,38 +30,10 @@ public class Policy {
     }
 
     public boolean canAccess(UUID user, OwnedEntity entity) {
-        return !(entity == null || user == null) && (isAdmin(user) || entity.isOwnedBy(user));
+        return !(entity == null || user == null) && (Users.isAdmin(user) || entity.isOwnedBy(user));
     }
 
     public boolean canModify(UUID user, OwnedEntity entity) {
-        return !(entity == null || user == null) && (isAdmin(user) || entity.isOwnedBy(user));
-    }
-
-    public final boolean isAdmin(UUID user) {
-        if (VPN.cfg.getProperty("users.admin") == null) return false;
-
-        boolean match = false;
-        String[] str = VPN.cfg.getProperty("users.admin").split(";");
-        for (String s : str) {
-            if (user.equals(UUID.fromString(s))) {
-                match = true;
-            }
-        }
-
-        return match;
-    }
-
-    public final boolean isRelatedService(UUID user) {
-        if (VPN.cfg.getProperty("users.service") == null) return false;
-
-        boolean match = false;
-        String[] str = VPN.cfg.getProperty("users.service").split(";");
-        for (String s : str) {
-            if (user.equals(UUID.fromString(s))) {
-                match = true;
-            }
-        }
-
-        return match;
+        return !(entity == null || user == null) && (Users.isAdmin(user) || entity.isOwnedBy(user));
     }
 }

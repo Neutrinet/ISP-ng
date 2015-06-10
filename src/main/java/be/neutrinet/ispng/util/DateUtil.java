@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * Converts between LocalDateTime -> Date LocalDate -> Date Date ->
  * LocalDateTime
- *
+ * <p>
  * Does not convert between Date -> LocalDate, risks loss of precision
  *
  * @author wannes

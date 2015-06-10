@@ -20,9 +20,9 @@ import java.util.Optional;
  * Created by wannes on 27/05/15.
  */
 public class LDAP {
+    private final static LDAP instance = new LDAP();
     private LDAPConnection connection;
     private Logger logger = Logger.getLogger(getClass());
-    private final static LDAP instance = new LDAP();
 
     private LDAP() {
 
@@ -30,6 +30,32 @@ public class LDAP {
 
     public static LDAP get() {
         return instance;
+    }
+
+    public static String findAttributeName(Class clazz, String fieldName) {
+        assert clazz != null;
+        assert fieldName != null;
+
+        try {
+            for (Field f : clazz.getDeclaredFields()) {
+                if (f.getName().equals(fieldName)) {
+                    LDAPField field = f.getAnnotation(LDAPField.class);
+                    if (field != null) {
+                        return field.attribute();
+                    } else {
+                        return fieldName;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(LDAP.class).error("Failed to find LDAP attribute for field " + fieldName, ex);
+        }
+
+        return fieldName;
+    }
+
+    public static LDAPConnection connection() {
+        return instance.connection;
     }
 
     public void boot() {
@@ -75,31 +101,5 @@ public class LDAP {
                 System.exit(666);
             }
         }
-    }
-
-    public static String findAttributeName(Class clazz, String fieldName) {
-        assert clazz != null;
-        assert fieldName != null;
-
-        try {
-            for (Field f : clazz.getDeclaredFields()) {
-                if (f.getName().equals(fieldName)) {
-                    LDAPField field = f.getAnnotation(LDAPField.class);
-                    if (field != null) {
-                        return field.attribute();
-                    } else {
-                        return fieldName;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(LDAP.class).error("Failed to find LDAP attribute for field " + fieldName, ex);
-        }
-
-        return fieldName;
-    }
-
-    public static LDAPConnection connection() {
-        return instance.connection;
     }
 }

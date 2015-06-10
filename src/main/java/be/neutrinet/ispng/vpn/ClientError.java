@@ -8,7 +8,6 @@ package be.neutrinet.ispng.vpn;
 import be.neutrinet.ispng.i18n.I18N;
 
 /**
- *
  * @author wannes
  */
 public class ClientError {

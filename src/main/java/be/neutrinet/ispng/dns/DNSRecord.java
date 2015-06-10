@@ -14,6 +14,15 @@ import java.util.UUID;
 @DatabaseTable
 public class DNSRecord implements Serializable, OwnedEntity {
 
+    public final static String A = "A";
+    public final static String AAAA = "AAAA";
+    public final static String PTR = "PTR";
+    public final static String NS = "NS";
+    public final static String[] ALLOWED_TYPES = new String[]{A, AAAA, PTR, NS};
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    public transient Client client;
+    @DatabaseField
+    public long lastModified;
     @DatabaseField(generatedId = true)
     private int id;
     @DatabaseField(canBeNull = false)
@@ -24,16 +33,6 @@ public class DNSRecord implements Serializable, OwnedEntity {
     private int ttl;
     @DatabaseField(canBeNull = false)
     private String type;
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
-    public transient Client client;
-    @DatabaseField
-    public long lastModified;
-
-    public final static String A = "A";
-    public final static String AAAA = "AAAA";
-    public final static String PTR = "PTR";
-    public final static String NS = "NS";
-    public final static String[] ALLOWED_TYPES = new String[]{A, AAAA, PTR, NS};
 
     private DNSRecord() {
 
