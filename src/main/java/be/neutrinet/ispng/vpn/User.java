@@ -21,11 +21,12 @@ import be.neutrinet.ispng.security.OwnedEntity;
 import com.unboundid.ldap.sdk.persist.LDAPField;
 import com.unboundid.ldap.sdk.persist.LDAPGetter;
 import com.unboundid.ldap.sdk.persist.LDAPObject;
-import org.mindrot.jbcrypt.BCrypt;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
+import java.security.MessageDigest;
+import java.security.Security;
+import java.util.*;
 
 /**
  * @author wannes
@@ -76,13 +77,29 @@ public class User implements OwnedEntity {
         return "mail=" + email + "," + Users.usersDN();
     }
 
-    public String getPassword() {
-        return password;
+    public void setPassword(String password) {
+        assert password != null;
+
+        try {
+            Security.addProvider(new BouncyCastleProvider());
+
+            byte[] salt = new byte[4];
+            new Random().nextBytes(salt);
+
+            MessageDigest md = MessageDigest.getInstance("SHA-512", "BC");
+            md.reset();
+            md.update(salt);
+            byte[] digest = md.digest(password.getBytes());
+
+            this.password = "{ssha512}" + Base64.getEncoder().encodeToString(digest);
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).fatal("Failed to set password. This is a fatal error, shutting down", ex);
+            System.exit(1);
+        }
     }
 
-    public void setPassword(String password) {
-        String salt = BCrypt.gensalt(10);
-        this.password = BCrypt.hashpw(password, salt);
+    public String getPassword() {
+        return password;
     }
 
     public void setRawPassword(String hashedPassword) {

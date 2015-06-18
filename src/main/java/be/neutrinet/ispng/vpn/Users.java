@@ -25,7 +25,6 @@ import com.unboundid.ldap.sdk.persist.LDAPPersister;
 import com.unboundid.ldap.sdk.persist.ObjectSearchListener;
 import com.unboundid.ldap.sdk.persist.PersistedObjects;
 import org.apache.log4j.Logger;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,16 +51,13 @@ public class Users {
         NOBODY.id = UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 
-    public final static User authenticate(String email, String password) {
+    public static User authenticate(String email, String password) {
 
-        List<User> users = query("email", email);
-        assert users.size() <= 1;
+        assert email != null;
+        assert password != null;
 
-        if (users.size() == 1) {
-            User user = users.get(0);
-            if (BCrypt.checkpw(password, user.getPassword())) {
-                return user;
-            }
+        if (LDAP.get().auth("mail=" + email + "," + usersDN(), password)) {
+            return get(email);
         }
 
         return null;
@@ -99,6 +95,16 @@ public class Users {
         }
 
         return users;
+    }
+
+    public static User get(String email) {
+        try {
+            return persister.get("mail=" + email + "," + usersDN(), LDAP.connection());
+        } catch (LDAPException ex) {
+            Logger.getLogger(Users.class).error("Failed to get user", ex);
+        }
+
+        return null;
     }
 
     public static User queryForId(String id) {
