@@ -1,10 +1,7 @@
 package be.neutrinet.ispng.external;
 
 import be.neutrinet.ispng.config.Config;
-import com.unboundid.ldap.sdk.BindRequest;
-import com.unboundid.ldap.sdk.BindResult;
-import com.unboundid.ldap.sdk.LDAPConnection;
-import com.unboundid.ldap.sdk.SimpleBindRequest;
+import com.unboundid.ldap.sdk.*;
 import com.unboundid.ldap.sdk.controls.PasswordExpiredControl;
 import com.unboundid.ldap.sdk.controls.PasswordExpiringControl;
 import com.unboundid.ldap.sdk.persist.LDAPField;
@@ -23,6 +20,8 @@ public class LDAP {
     private final static LDAP instance = new LDAP();
     private LDAPConnection connection;
     private Logger logger = Logger.getLogger(getClass());
+    private SocketFactory socketFactory = null;
+    private Optional<String> host = null;
 
     private LDAP() {
 
@@ -59,11 +58,11 @@ public class LDAP {
     }
 
     public void boot() {
-        Optional<String> host = Config.get("ldap/host");
+        host = Config.get("ldap/host");
         if (host.isPresent()) {
             try {
                 SSLUtil sslUtil = new SSLUtil(null, new TrustAllTrustManager());
-                SocketFactory socketFactory = sslUtil.createSSLSocketFactory();
+                socketFactory = sslUtil.createSSLSocketFactory();
                 connection = new LDAPConnection(socketFactory, host.get(), Integer.parseInt(Config.get("ldap/port", "636")));
 
                 Optional<String> dn = Config.get("ldap/bind/dn");
@@ -101,5 +100,19 @@ public class LDAP {
                 System.exit(666);
             }
         }
+    }
+
+    public boolean auth(String dn, String password) {
+        try {
+            connection = new LDAPConnection(socketFactory, host.get(), Integer.parseInt(Config.get("ldap/port", "636")));
+            BindResult bind = connection.bind(dn, password);
+            boolean success = bind.getResultCode().equals(ResultCode.SUCCESS);
+            connection.close();
+            return success;
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).debug("Failed to auth user " + dn, ex);
+        }
+
+        return false;
     }
 }
