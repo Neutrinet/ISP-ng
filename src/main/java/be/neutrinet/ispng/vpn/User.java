@@ -24,6 +24,7 @@ import com.unboundid.ldap.sdk.persist.LDAPObject;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.Security;
 import java.util.*;
@@ -35,7 +36,7 @@ import java.util.*;
 public class User implements OwnedEntity {
 
     // Currently allowed countries = benelux
-    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
+    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BE", "NL", "LU"};
     @LDAPField(attribute = "uid", objectClass = "inetOrgPerson", requiredForEncode = true)
     public UUID id;
     @LDAPField(attribute = "mail", inRDN = true, requiredForEncode = true)
@@ -88,8 +89,14 @@ public class User implements OwnedEntity {
 
             MessageDigest md = MessageDigest.getInstance("SHA-512", "BC");
             md.reset();
+            md.update(password.getBytes());
             md.update(salt);
-            byte[] digest = md.digest(password.getBytes());
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(md.digest());
+            outputStream.write(salt);
+
+            byte[] digest = outputStream.toByteArray();
 
             this.password = "{ssha512}" + Base64.getEncoder().encodeToString(digest);
         } catch (Exception ex) {
