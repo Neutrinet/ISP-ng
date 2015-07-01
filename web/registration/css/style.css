@@ -123,7 +123,7 @@ textarea {
     border-radius: 5px;
 }
 
-.form-control[type=text], .form-control[type=password], select.form-control {
+.form-control[type=text], .form-control[type=password], select.form-control, .form-control[type=email] {
     width: 69%;
     background-image: linear-gradient(#DDD 0%, #FFF 100%);
     border: solid 1px #000;
@@ -135,12 +135,6 @@ textarea {
 
 .list-group-item {
     background-color: #333;
-}
-
-#applet-container {
-    background-color: #FFF;
-    padding: 15px;
-    box-shadow: 0 0 5px #555;
 }
 
 .box {

@@ -164,7 +164,7 @@ function App() {
             $('.unlock-key').hide();
         }
 
-        $('form .btn-primary').click(function (event) {
+        $('form').submit(function (event) {
             if (self.requireUnlockKey) {
                 self.vpn.validateKey($('#signup-email').val(), $('#signup-key').val());
             } else {
@@ -413,7 +413,7 @@ function App() {
 
         $('#password').keyup(self.validatePassword);
         $('#password-verify').keyup(self.validatePassword);
-        $('#password-done').click(function () {
+        $('#password-entry').submit(function () {
             $.ajax(self.vpn.endpoint + 'api/reg/enterPassword', {
                 data: JSON.stringify({
                     id: self.vpn.registration.id,
@@ -426,7 +426,7 @@ function App() {
                     self.vpn.registration['user'] = response;
                     app.content.hide();
                     app.preloader.fadeIn();
-                    $('#content').load('eid.html', self.useEIDIdentification);
+                    $('#content').load('eid.html?' + new Date().getTime(), self.useEIDIdentification);
                 }
             });
         });
@@ -535,7 +535,7 @@ function App() {
         app.preloader.hide();
         app.content.show();
 
-        $('#reg').click(function () {
+        $('#reg-form').submit(function () {
             var data = {};
 
             var fields = $('#reg-form').children('input[type=text]');
