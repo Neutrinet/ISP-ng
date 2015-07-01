@@ -104,7 +104,7 @@ public class LDAP {
 
     public boolean auth(String dn, String password) {
         try {
-            connection = new LDAPConnection(socketFactory, host.get(), Integer.parseInt(Config.get("ldap/port", "636")));
+            LDAPConnection connection = new LDAPConnection(socketFactory, host.get(), Integer.parseInt(Config.get("ldap/port", "636")));
             BindResult bind = connection.bind(dn, password);
             boolean success = bind.getResultCode().equals(ResultCode.SUCCESS);
             connection.close();
