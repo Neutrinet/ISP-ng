@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by wannes on 11/10/14.
@@ -25,8 +26,8 @@ public class Client implements OwnedEntity, Serializable {
     public int id;
     @DatabaseField(canBeNull = false)
     public String commonName;
-    @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
-    public User user;
+    @DatabaseField(canBeNull = false)
+    public UUID userId;
     @ForeignCollectionField(foreignColumnName = "client")
     @JsonManagedReference
     public ForeignCollection<IPAddress> leases;
@@ -35,10 +36,11 @@ public class Client implements OwnedEntity, Serializable {
     public ForeignCollection<SubnetLease> subnetLeases;
     @DatabaseField(defaultValue = "true")
     public boolean enabled;
+    private User user;
 
     public static Optional<Client> match(be.neutrinet.ispng.openvpn.Client vpnClient) {
         try {
-            List<User> users = Users.dao.queryForEq("email", vpnClient.username);
+            List<User> users = Users.query("email", vpnClient.username);
 
             assert users.size() == 1;
 
@@ -50,7 +52,7 @@ public class Client implements OwnedEntity, Serializable {
 
             if (clients.size() > 1) {
                 Logger.getLogger(Client.class).error("Multiple client definitions, user: " + vpnClient.username +
-                ", commonName: " + vpnClient.commonName);
+                        ", commonName: " + vpnClient.commonName);
                 return Optional.empty();
             }
 
@@ -68,12 +70,12 @@ public class Client implements OwnedEntity, Serializable {
         c.commonName = client.commonName;
 
         try {
-            List<User> users = Users.dao.queryForEq("email", client.username);
+            List<User> users = Users.query("email", client.username);
 
             assert users.size() == 1;
 
             User user = users.get(0);
-            c.user = user;
+            c.userId = user.id;
             c.enabled = true;
 
             Clients.dao.createIfNotExists(c);
@@ -102,8 +104,13 @@ public class Client implements OwnedEntity, Serializable {
         return interconnect;
     }
 
+    public User user() {
+        if (user == null) user = Users.queryForId(userId);
+        return user;
+    }
+
     @Override
-    public boolean isOwnedBy(User user) {
-        return this.user.equals(user);
+    public boolean isOwnedBy(UUID user) {
+        return this.userId.equals(user);
     }
 }

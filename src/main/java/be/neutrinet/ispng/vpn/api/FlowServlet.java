@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 /**
- *
  * @author wannes
  */
 public class FlowServlet extends HttpServlet {
@@ -54,7 +53,7 @@ public class FlowServlet extends HttpServlet {
                             return;
                         }
 
-                        User user = reg.user;
+                        User user = reg.user();
                         user.name = identity.getFirstName() + " " + identity.getMiddleName();
                         user.lastName = identity.getName();
                         user.birthPlace = identity.getPlaceOfBirth();
@@ -64,7 +63,7 @@ public class FlowServlet extends HttpServlet {
                         user.municipality = address.getMunicipality();
                         user.certId = identity.chipNumber;
 
-                        Users.dao.create(user);
+                        Users.add(user);
 
                         reg.createInitialClient();
                         Registrations.dao.update(reg);
@@ -78,8 +77,8 @@ public class FlowServlet extends HttpServlet {
             case "confirm-email":
                 try {
                     Registration r = Registrations.dao.queryForEq("id", id).get(0);
-                    r.client.user.enabled = true;
-                    Users.dao.update(r.client.user);
+                    r.client.user().enabled = true;
+                    Users.update(r.client.user());
 
                     resp.sendRedirect("/?id=" + id + "&flow=emailDone");
                 } catch (SQLException ex) {

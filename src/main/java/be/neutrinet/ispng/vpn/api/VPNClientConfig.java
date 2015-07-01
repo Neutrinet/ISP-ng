@@ -35,21 +35,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- *
  * @author wannes
  */
 public class VPNClientConfig extends ResourceBase {
 
     public final static String[] DEFAULTS = new String[]{
-        "client",
-        "dev tun",
+            "client",
+            "dev tun",
             "proto udp",
-        "remote " + VPN.cfg.getProperty("openvpn.publicaddress") + ' ' + VPN.cfg.getProperty("openvpn.publicport"),
-        "resolv-retry infinite",
-        "nobind",
-        "ns-cert-type server",
-        "comp-lzo",
-        "ca ca.crt",
+            "remote " + VPN.cfg.getProperty("openvpn.publicaddress") + ' ' + VPN.cfg.getProperty("openvpn.publicport"),
+            "resolv-retry infinite",
+            "nobind",
+            "ns-cert-type server",
+            "comp-lzo",
+            "ca ca.crt",
             "auth-user-pass",
             "topology subnet"
     };
@@ -63,7 +62,7 @@ public class VPNClientConfig extends ResourceBase {
             String platform = getQueryValue("platform");
 
             try {
-                User user = Users.dao.queryForId(userId);
+                User user = Users.queryForId(userId);
                 if (user.certId == null) return clientError("NO_KEYPAIR", Status.CLIENT_ERROR_FAILED_DEPENDENCY);
 
                 ArrayList<String> config = new ArrayList<>();
@@ -98,7 +97,7 @@ public class VPNClientConfig extends ResourceBase {
 
             ArrayList<String> config = new ArrayList<>();
             config.addAll(Arrays.asList(DEFAULTS));
-            
+
             // create zip
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ZipOutputStream zip = new ZipOutputStream(baos);
@@ -116,12 +115,12 @@ public class VPNClientConfig extends ResourceBase {
                         + " here and name it client.key").getBytes());
                 config.add("cert client.crt");
                 config.add("key client.key");
-            } else if (client.user.certId != null && !client.user.certId.isEmpty()) {
-                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user);
+            } else if (client.user().certId != null && !client.user().certId.isEmpty()) {
+                Representation res = addPKCS11config(data.get("platform").toLowerCase(), config, client.user());
                 if (res != null) return res;
             }
 
-            if (client.user.certId == null || client.user.certId.isEmpty()) {
+            if (client.user().certId == null || client.user().certId.isEmpty()) {
                 zip.putNextEntry(new ZipEntry("NO_KEYPAIR_DEFINED"));
                 zip.write("Invalid state, no keypair has been defined.".getBytes());
             }
@@ -160,8 +159,8 @@ public class VPNClientConfig extends ResourceBase {
         rep.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
         return rep;
     }
-    
-    protected Representation addPKCS11config (String platform, List<String> config, User user) {
+
+    protected Representation addPKCS11config(String platform, List<String> config, User user) {
         switch (platform) {
             case "linux":
                 config.add("pkcs11-providers /usr/lib/libbeidpkcs11.so");

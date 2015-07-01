@@ -3,16 +3,18 @@ package be.neutrinet.ispng.mail;
 
 import be.neutrinet.ispng.VPN;
 import com.sun.mail.smtp.SMTPTransport;
-import java.security.Security;
-import java.util.Date;
-import java.util.Properties;
+
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.security.Security;
+import java.util.Date;
+import java.util.Properties;
 
 /**
+ * TODO: find out if there are any external services with similar functionality and remove this mail piece
  *
  * @author wannes
  */
@@ -58,9 +60,9 @@ public class Postman {
      * Create MimeMessage using Gandi session
      *
      * @return MimeMessage created message
-     * @throws AddressException if the email address parse failed
+     * @throws AddressException   if the email address parse failed
      * @throws MessagingException if the connection is dead or not in the
-     * connected state or if the message is not a MimeMessage
+     *                            connected state or if the message is not a MimeMessage
      */
     public MimeMessage createNewMessage() throws AddressException, MessagingException {
         if (session == null) {

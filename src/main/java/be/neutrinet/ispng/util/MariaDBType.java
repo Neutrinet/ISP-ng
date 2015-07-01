@@ -1,6 +1,7 @@
 package be.neutrinet.ispng.util;
 
 // source http://stackoverflow.com/questions/14947832/ormlite-date-in-mysql-mariadb-with-millisecond-precision
+
 import com.j256.ormlite.db.MysqlDatabaseType;
 import com.j256.ormlite.field.FieldType;
 

@@ -21,9 +21,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- *
- * @created Jul 8, 2011
  * @author wannes
+ * @created Jul 8, 2011
  */
 public class ReflectionUtils {
 
@@ -109,12 +108,12 @@ public class ReflectionUtils {
     /**
      * Recursive method used to find all classes in a given directory.
      *
-     * @source http://snippets.dzone.com/posts/show/4831
-     * @param directory The base directory
+     * @param directory   The base directory
      * @param packageName The package name for classes found inside the base
-     * directory
+     *                    directory
      * @return The classes
      * @throws ClassNotFoundException
+     * @source http://snippets.dzone.com/posts/show/4831
      */
     private static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
         List<Class> classes = new ArrayList<>();
@@ -148,7 +147,7 @@ public class ReflectionUtils {
     /**
      * Returns difference between instances
      *
-     * @param <T> instance type
+     * @param <T>      instance type
      * @param original
      * @param changed
      * @return <fieldName, value>

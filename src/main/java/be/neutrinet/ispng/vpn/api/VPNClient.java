@@ -44,7 +44,7 @@ public class VPNClient extends ResourceBase {
     @Put
     public Representation addVPNClient(Client client) {
         if ((client.commonName == null || client.commonName.isEmpty()) ||
-                (client.user == null)) {
+                (client.userId == null)) {
             return clientError("MALFORMED_REQUEST", Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
@@ -64,7 +64,7 @@ public class VPNClient extends ResourceBase {
         try {
             if (getRequestAttributes().containsKey("client"))
                 if (!getAttribute("client").toLowerCase().equals("all"))
-                return new JacksonRepresentation<>(Clients.dao.queryForId(getAttribute("client")));
+                    return new JacksonRepresentation<>(Clients.dao.queryForId(getAttribute("client")));
 
             List<Client> clients;
 

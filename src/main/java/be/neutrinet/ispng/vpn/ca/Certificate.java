@@ -75,7 +75,7 @@ public class Certificate {
 
         return null;
     }
-    
+
     public byte[] getRaw() {
         String crtPath = VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + serial + ".crt";
         File crt = new File(crtPath);

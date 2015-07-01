@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- *
  * @author wannes
  */
 public class Generator {
@@ -42,14 +41,14 @@ public class Generator {
     public void sendRegistrationConfirmation(Registration r) {
         try {
             MimeMessage msg = this.postman.createNewMessage();
-            msg.addRecipients(Message.RecipientType.TO, r.user.email);
+            msg.addRecipients(Message.RecipientType.TO, r.user().email);
             msg.setSubject("Registration confirmation");
 
             HashMap<String, String> content = new HashMap<>();
             content.put("title", "Confirmation");
             content.put("preview", "You successfully created your Neutrinet account");
-            content.put("email", r.user.email);
-            content.put("name", r.user.name + " " + r.user.lastName);
+            content.put("email", r.user().email);
+            content.put("name", r.user().name + " " + r.user().lastName);
             content.put("reg-id", r.getId().toString());
             if (r.ipv4Id != 0) {
                 content.put("ipv4", IPAddresses.dao.queryForId("" + r.ipv4Id).address);
@@ -92,7 +91,7 @@ public class Generator {
                 if (c.subnetLeases != null) {
                     for (Iterator<SubnetLease> it = c.subnetLeases.iterator(); it.hasNext(); ) {
                         MimeMessage msg = this.postman.createNewMessage();
-                        msg.addRecipients(Message.RecipientType.TO, c.user.email);
+                        msg.addRecipients(Message.RecipientType.TO, c.user().email);
                         msg.setSubject("Your new IPv6 subnet");
 
                         HashMap<String, String> content = new HashMap<>();

@@ -60,7 +60,7 @@ public class UserRegistration extends ResourceBase {
 
                     // Legacy fix
                     if (reg.client == null) {
-                        reg.client = Clients.dao.queryForEq("user_id", reg.user.id).get(0);
+                        reg.client = Clients.dao.queryForEq("user_id", reg.user).get(0);
                     }
 
                 } catch (SQLException ex) {
@@ -96,13 +96,13 @@ public class UserRegistration extends ResourceBase {
 
             Registration reg = new Registration(UUID.randomUUID());
             reg.timeInitiated = new Date();
-            reg.user = new User();
-            reg.user.email = (String) data.get("email");
+            reg.setUser(new User());
+            reg.user().email = (String) data.get("email");
             reg.unlockKey = unlockKey;
 
             if (data.containsKey("password")) {
                 String password = (String) data.get("password");
-                reg.user.setPassword(password);
+                reg.user().setPassword(password);
             }
 
             Registration.getActiveRegistrations().put(reg.getId(), reg);
@@ -142,23 +142,24 @@ public class UserRegistration extends ResourceBase {
                 return new JacksonRepresentation("OK");
             } else if (data.containsKey("password")) {
                 String password = (String) data.get("password");
-                reg.user.setPassword(password);
+                reg.user().setPassword(password);
                 return new JacksonRepresentation(reg.user);
             } else if (data.containsKey("name")) {
-                reg.user.name = (String) data.get("name");
-                reg.user.lastName = (String) data.get("last-name");
-                reg.user.birthDate = EUROPEAN_DATE_FORMAT.parse((String) data.get("birthdate"));
-                reg.user.street = (String) data.get("street");
-                reg.user.municipality = (String) data.get("municipality");
-                reg.user.postalCode = (String) data.get("postal-code");
-                reg.user.birthPlace = (String) data.get("birthplace");
-                reg.user.country = (String) data.get("country");
+                User user = reg.user();
+                user.name = (String) data.get("name");
+                user.lastName = (String) data.get("last-name");
+                user.birthDate = EUROPEAN_DATE_FORMAT.parse((String) data.get("birthdate"));
+                user.street = (String) data.get("street");
+                user.municipality = (String) data.get("municipality");
+                user.postalCode = (String) data.get("postal-code");
+                user.birthPlace = (String) data.get("birthplace");
+                user.country = (String) data.get("country");
 
-                if (reg.user.validate()) Users.dao.createIfNotExists(reg.user);
+                if (user.validate()) Users.add(user);
 
                 // Auto-login newly created user
                 getResponse().getCookieSettings().add("Session",
-                        SessionManager.createSessionToken(reg.user, getClientInfo().getAddress()).getToken().toString());
+                        SessionManager.createSessionToken(user, getClientInfo().getAddress()).getToken().toString());
 
                 reg.createInitialClient();
                 Registrations.dao.update(reg);

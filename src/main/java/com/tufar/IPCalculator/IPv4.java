@@ -157,6 +157,54 @@ public class IPv4 {
     }
 
     /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        // ipv4.setIP("10.20.30.5", "255.255.255.200");
+        // System.out.println(ipv4.getIP());
+        // System.out.println(ipv4.getNetmask());
+        // System.out.println(ipv4.getCIDR());
+
+        /*
+         * IPv4 ipv4 = new IPv4("10.1.17.0/20");
+         * System.out.println(ipv4.getIP());
+         * System.out.println(ipv4.getNetmask());
+         * System.out.println(ipv4.getCIDR());
+         *
+         * System.out.println("============= Available IPs ===============");
+         * List<String> availableIPs = ipv4.getAvailableIPs(); int counter=0;
+         * for (String ip : availableIPs) { System.out.print(ip);
+         * System.out.print(" "); counter++; if((counter%10)==0)
+         * System.out.print("\n"); }
+         */
+        IPv4 ipv4 = new IPv4("12.12.12.0/16");
+        IPv4 ipv4Child = new IPv4("12.12.12.0/17");
+        // IPv4 ipv4 = new IPv4("192.168.20.0/16");
+        // System.out.println(ipv4.getIP());
+        // System.out.println(ipv4.getNetmask());
+        // System.out.println(ipv4.getCIDR());
+        // System.out.println("======= MATCHES =======");
+        // System.out.println(ipv4.getBinary(ipv4.baseIPnumeric));
+        // System.out.println(ipv4.getBinary(ipv4.netmaskNumeric));
+
+        System.out.println(ipv4.contains(ipv4Child));
+
+        System.out.println(ipv4.getBinary(ipv4.baseIPnumeric));
+        System.out.println(ipv4.getBinary(ipv4.netmaskNumeric));
+
+        System.out.println(ipv4Child.getBinary(ipv4Child.baseIPnumeric));
+        System.out.println(ipv4Child.getBinary(ipv4Child.netmaskNumeric));
+        System.out.println("==============output================");
+        System.out.println(ipv4.contains(ipv4Child));
+        // ipv4.contains("192.168.50.11");
+        // System.out.println("======= DOES NOT MATCH =======");
+        // ipv4.contains("10.2.3.4");
+        // System.out.println(ipv4.validateIPAddress());
+        // System.out.println(ipv4.getBinary(ipv4.baseIPnumeric));
+        // System.out.println(ipv4.getBinary(ipv4.netmaskNumeric));
+    }
+
+    /**
      * Get the IP in symbolic form, i.e. xxx.xxx.xxx.xxx
      *
      * @return
@@ -414,9 +462,9 @@ public class IPv4 {
     }
 
     /**
-     * @author Nico Coetzee <NCoetzee1@fnb.co.za>
      * @param lowBoundary
      * @return
+     * @author Nico Coetzee <NCoetzee1@fnb.co.za>
      */
     private String getBoundaryAddr(boolean lowBoundary) {
         String result = "";
@@ -434,69 +482,21 @@ public class IPv4 {
     }
 
     /**
-     * @author Nico Coetzee <NCoetzee1@fnb.co.za>
      * @param lowBoundary
      * @return the first IP address in the IP range
+     * @author Nico Coetzee <NCoetzee1@fnb.co.za>
      */
     public String getFirstIPAddr() {
         return getBoundaryAddr(true);
     }
 
     /**
-     * @author Nico Coetzee <NCoetzee1@fnb.co.za>
      * @param lowBoundary
      * @return the last IP address in the IP range
+     * @author Nico Coetzee <NCoetzee1@fnb.co.za>
      */
     public String getLastIPAddr() {
         return getBoundaryAddr(false);
-    }
-
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        // ipv4.setIP("10.20.30.5", "255.255.255.200");
-        // System.out.println(ipv4.getIP());
-        // System.out.println(ipv4.getNetmask());
-        // System.out.println(ipv4.getCIDR());
-
-        /*
-         * IPv4 ipv4 = new IPv4("10.1.17.0/20");
-         * System.out.println(ipv4.getIP());
-         * System.out.println(ipv4.getNetmask());
-         * System.out.println(ipv4.getCIDR());
-         * 
-         * System.out.println("============= Available IPs ===============");
-         * List<String> availableIPs = ipv4.getAvailableIPs(); int counter=0;
-         * for (String ip : availableIPs) { System.out.print(ip);
-         * System.out.print(" "); counter++; if((counter%10)==0)
-         * System.out.print("\n"); }
-         */
-        IPv4 ipv4 = new IPv4("12.12.12.0/16");
-        IPv4 ipv4Child = new IPv4("12.12.12.0/17");
-        // IPv4 ipv4 = new IPv4("192.168.20.0/16");
-        // System.out.println(ipv4.getIP());
-        // System.out.println(ipv4.getNetmask());
-        // System.out.println(ipv4.getCIDR());
-        // System.out.println("======= MATCHES =======");
-        // System.out.println(ipv4.getBinary(ipv4.baseIPnumeric));
-        // System.out.println(ipv4.getBinary(ipv4.netmaskNumeric));
-
-        System.out.println(ipv4.contains(ipv4Child));
-
-        System.out.println(ipv4.getBinary(ipv4.baseIPnumeric));
-        System.out.println(ipv4.getBinary(ipv4.netmaskNumeric));
-
-        System.out.println(ipv4Child.getBinary(ipv4Child.baseIPnumeric));
-        System.out.println(ipv4Child.getBinary(ipv4Child.netmaskNumeric));
-        System.out.println("==============output================");
-        System.out.println(ipv4.contains(ipv4Child));
-        // ipv4.contains("192.168.50.11");
-        // System.out.println("======= DOES NOT MATCH =======");
-        // ipv4.contains("10.2.3.4");
-        // System.out.println(ipv4.validateIPAddress());
-        // System.out.println(ipv4.getBinary(ipv4.baseIPnumeric));
-        // System.out.println(ipv4.getBinary(ipv4.netmaskNumeric));
     }
 
 }

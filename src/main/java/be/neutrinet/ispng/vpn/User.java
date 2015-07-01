@@ -18,68 +18,95 @@
 package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.security.OwnedEntity;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
-import org.mindrot.jbcrypt.BCrypt;
+import com.unboundid.ldap.sdk.persist.LDAPField;
+import com.unboundid.ldap.sdk.persist.LDAPGetter;
+import com.unboundid.ldap.sdk.persist.LDAPObject;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
+import java.io.ByteArrayOutputStream;
+import java.security.MessageDigest;
+import java.security.Security;
+import java.util.*;
 
 /**
- *
  * @author wannes
  */
-@DatabaseTable(tableName = "users")
+@LDAPObject(requestAllAttributes = true, structuralClass = "inetOrgPerson", auxiliaryClass = {"ispngAccount", "extensibleObject"})
 public class User implements OwnedEntity {
 
     // Currently allowed countries = benelux
-    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BELGIUM", "NETHERLANDS", "LUXEMBOURG"};
-    @DatabaseField(generatedId = true)
-    public int id;
-    @DatabaseField(canBeNull = false)
-    public UUID globalId;
-    @DatabaseField(canBeNull = false, index = true, unique = true)
+    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BE", "NL", "LU"};
+    @LDAPField(attribute = "uid", objectClass = "inetOrgPerson", requiredForEncode = true)
+    public UUID id;
+    @LDAPField(attribute = "mail", inRDN = true, requiredForEncode = true)
     public String email;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "givenName", objectClass = "inetOrgPerson", requiredForEncode = true)
     public String name;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "sn", objectClass = "inetOrgPerson", requiredForEncode = true)
     public String lastName;
-    @DatabaseField
+    @LDAPField(objectClass = "inetOrgPerson")
     public String street;
-    @DatabaseField
+    @LDAPField(objectClass = "inetOrgPerson")
     public String postalCode;
-    @DatabaseField
+    @LDAPField(attribute = "l", requiredForEncode = true)
     public String municipality;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(objectClass = "ispngAccount")
     public String birthPlace;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(objectClass = "ispngAccount")
     public Date birthDate;
-    @DatabaseField
+    @LDAPField(objectClass = "ispngAccount")
     public boolean enabled;
-    @DatabaseField
+    @LDAPField(attribute = "PKCScertificateIdentifier", objectClass = "ispngAccount")
     public String certId;
-    @DatabaseField
+    @LDAPField(attribute = "countryName", objectClass = "extensibleObject")
     public String country;
-    @DatabaseField(canBeNull = false)
+    @LDAPField(attribute = "userPassword", requiredForEncode = true)
     private String password;
     private transient UserSettings settings;
 
     public User() {
-        this.globalId = UUID.randomUUID();
+        this.id = UUID.randomUUID();
     }
 
-    public boolean validatePassword(String password) {
-        return BCrypt.checkpw(password, this.password);
+    @LDAPGetter(attribute = "cn")
+    public String getCN() {
+        return email;
+    }
+
+    public String getDN() {
+        return "mail=" + email + "," + Users.usersDN();
+    }
+
+    public void setPassword(String password) {
+        assert password != null;
+
+        try {
+            Security.addProvider(new BouncyCastleProvider());
+
+            byte[] salt = new byte[4];
+            new Random().nextBytes(salt);
+
+            MessageDigest md = MessageDigest.getInstance("SHA-512", "BC");
+            md.reset();
+            md.update(password.getBytes());
+            md.update(salt);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(md.digest());
+            outputStream.write(salt);
+
+            byte[] digest = outputStream.toByteArray();
+
+            this.password = "{ssha512}" + Base64.getEncoder().encodeToString(digest);
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).fatal("Failed to set password. This is a fatal error, shutting down", ex);
+            System.exit(1);
+        }
     }
 
     public String getPassword() {
         return password;
-    }
-
-    public void setPassword(String password) {
-        String salt = BCrypt.gensalt(10);
-        this.password = BCrypt.hashpw(password, salt);
     }
 
     public void setRawPassword(String hashedPassword) {
@@ -121,9 +148,8 @@ public class User implements OwnedEntity {
     }
 
     @Override
-    public boolean isOwnedBy(User user) {
-        if (user == null) return false;
-        return user.id == id;
+    public boolean isOwnedBy(UUID user) {
+        return user != null && user.equals(id);
     }
 
     @Override
@@ -133,13 +159,12 @@ public class User implements OwnedEntity {
 
         User user = (User) o;
 
-        if (id != user.id) return false;
+        return id.equals(user.id);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return id.hashCode();
     }
 }

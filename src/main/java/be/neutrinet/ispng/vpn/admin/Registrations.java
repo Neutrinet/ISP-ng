@@ -10,15 +10,15 @@ import be.neutrinet.ispng.VPN;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
 import org.apache.log4j.Logger;
 
+import java.sql.SQLException;
+
 /**
- *
  * @author wannes
  */
 public class Registrations {
-        public static Dao<Registration, String> dao;
+    public static Dao<Registration, String> dao;
 
     static {
         Class cls = Registration.class;

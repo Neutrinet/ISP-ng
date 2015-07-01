@@ -6,8 +6,6 @@
 package be.neutrinet.ispng.vpn.admin;
 
 import be.neutrinet.ispng.VPN;
-import be.neutrinet.ispng.external.billy.ChangeList;
-import be.neutrinet.ispng.federation.Dispatcher;
 import be.neutrinet.ispng.util.DateUtil;
 import be.neutrinet.ispng.vpn.*;
 import be.neutrinet.ispng.vpn.api.VPNClientCertificate;
@@ -31,8 +29,8 @@ import java.util.UUID;
 public class Registration {
 
     private static final Map<UUID, Registration> activeRegistrations = new HashMap<>();
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
-    public User user;
+    @DatabaseField(canBeNull = false)
+    public UUID user;
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     public Client client;
     @DatabaseField(canBeNull = false)
@@ -45,6 +43,7 @@ public class Registration {
     public UnlockKey unlockKey;
     @DatabaseField
     public Date completed;
+    private User cachedUser;
     @DatabaseField(id = true, canBeNull = false)
     private UUID id;
 
@@ -70,7 +69,7 @@ public class Registration {
         try {
             this.client = new Client();
             this.client.commonName = "!!TEMPORARY_CN!!";
-            this.client.user = this.user;
+            this.client.userId = this.user;
             this.client.enabled = true;
 
             Clients.dao.create(client);
@@ -100,16 +99,13 @@ public class Registration {
                 }
 
                 this.completed = new Date();
-                this.client.user.enabled = true;
-                Users.dao.update(this.client.user);
+                this.client.user().enabled = true;
+                Users.update(this.client.user());
 
                 // Check if user has certificates that need to be signed
                 Certificates.dao.queryForEq("client_id", client.id).forEach(VPNClientCertificate::sign);
 
                 Registrations.dao.update(this);
-
-                // Inform other services that a user change occurred
-                Dispatcher.get().entityChange(new ChangeList("user").put(ChangeList.Operation.CREATE, this.client.user.globalId.toString()));
 
                 if (sendConfirmationEmail) VPN.generator.sendRegistrationConfirmation(this);
                 return true;
@@ -117,5 +113,15 @@ public class Registration {
         } catch (SQLException ex) {
             Logger.getLogger(getClass()).error("Registration failed", ex);
         }
+    }
+
+    public User user() {
+        if (cachedUser == null) cachedUser = Users.queryForId(this.id);
+        return cachedUser;
+    }
+
+    public void setUser(User user) {
+        cachedUser = user;
+        this.user = user.id;
     }
 }

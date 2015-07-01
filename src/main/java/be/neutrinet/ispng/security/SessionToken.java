@@ -1,6 +1,6 @@
 package be.neutrinet.ispng.security;
 
-import be.neutrinet.ispng.vpn.User;
+import be.neutrinet.ispng.vpn.Users;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.apache.log4j.Logger;
@@ -13,8 +13,8 @@ import java.util.UUID;
  */
 @DatabaseTable(tableName = "session_tokens")
 public class SessionToken {
-    @DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
-    private User user;
+    @DatabaseField(canBeNull = false)
+    private UUID user;
     @DatabaseField(canBeNull = false)
     private String address;
     @DatabaseField(canBeNull = false)
@@ -26,7 +26,7 @@ public class SessionToken {
 
     }
 
-    public SessionToken(User user, String address) {
+    public SessionToken(UUID user, String address) {
         this.user = user;
         this.address = address;
         this.creationTime = System.currentTimeMillis();
@@ -43,7 +43,7 @@ public class SessionToken {
         return token;
     }
 
-    public User getUser() {
+    public UUID getUser() {
         return user;
     }
 
@@ -56,7 +56,7 @@ public class SessionToken {
     }
 
     public boolean valid() {
-        if (Policy.get().isRelatedService(this.user)) return true;
+        if (Users.isRelatedService(this.user)) return true;
 
         return System.currentTimeMillis() - this.creationTime <= 3600 * 1000;
 

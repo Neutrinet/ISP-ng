@@ -7,10 +7,10 @@ package be.neutrinet.ispng.vpn.admin;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
 import java.util.Date;
 
 /**
- *
  * @author wannes
  */
 @DatabaseTable(tableName = "vpn_unlock_keys")

@@ -270,7 +270,7 @@ public class ManagementInterface implements Runnable {
                         Logger.getLogger(getClass()).warn("Recovering from management interface failure");
 
                         // wait one second 'til recover attempt
-                        Thread.sleep(1000);
+                        Thread.sleep(10000000);
                     }
                 }
             } catch (Exception ex) {

@@ -8,7 +8,6 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.security.SessionToken;
 import be.neutrinet.ispng.security.SessionTokens;
 import be.neutrinet.ispng.vpn.ClientError;
-import be.neutrinet.ispng.vpn.User;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.engine.application.CorsResponseHelper;
@@ -104,7 +103,7 @@ public abstract class ResourceBase extends ServerResource {
         return Optional.ofNullable(token);
     }
 
-    public User getLoggedInUser() {
+    public UUID getLoggedInUser() {
         return getSessionToken().get().getUser();
     }
 

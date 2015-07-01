@@ -3,14 +3,12 @@ package be.neutrinet.ispng.vpn.api;
 import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import net.wgr.core.StringUtils;
-import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
-import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -21,19 +19,13 @@ public class UserSettings extends ResourceBase {
     private User getUserFromRequest() {
         String userId = getRequestAttributes().get("user").toString();
 
-        try {
-            User user = null;
-            if (!StringUtils.isNumeric(userId))
-                user = Users.dao.queryForEq("email", userId).get(0);
-            else
-                user = Users.dao.queryForId(userId);
+        User user = null;
+        if (!StringUtils.isNumeric(userId))
+            user = Users.query("email", userId).get(0);
+        else
+            user = Users.queryForId(userId);
 
-            return user;
-        } catch (SQLException e) {
-            Logger.getLogger(getClass()).error("Unknown user", e);
-        }
-
-        return null;
+        return user;
     }
 
     @Get

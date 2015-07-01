@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author wannes
  */
 public class UnlockKey extends ResourceBase {
@@ -74,7 +73,7 @@ public class UnlockKey extends ResourceBase {
             List<be.neutrinet.ispng.vpn.admin.UnlockKey> keys = UnlockKeys.dao.queryForEq("email", data.get("email"));
 
             UnlockKeys.dao.delete(keys);
-            
+
             return DEFAULT_SUCCESS;
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to delete unlock key", ex);
