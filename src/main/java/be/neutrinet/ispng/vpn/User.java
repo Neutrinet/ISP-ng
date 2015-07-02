@@ -36,7 +36,7 @@ import java.util.*;
 public class User implements OwnedEntity {
 
     // Currently allowed countries = benelux
-    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BE", "NL", "LU"};
+    public transient final String[] ALLOWED_COUNTRIES = new String[]{"BE", "NL", "LU", "FR"};
     @LDAPField(attribute = "uid", objectClass = "inetOrgPerson", requiredForEncode = true)
     public UUID id;
     @LDAPField(attribute = "mail", inRDN = true, requiredForEncode = true)
