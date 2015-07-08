@@ -1,6 +1,7 @@
 package be.neutrinet.ispng.external;
 
 import be.neutrinet.ispng.config.Config;
+import be.neutrinet.ispng.util.AuthenticationMigrationAutomationIntegration;
 import com.unboundid.ldap.sdk.*;
 import com.unboundid.ldap.sdk.controls.PasswordExpiredControl;
 import com.unboundid.ldap.sdk.controls.PasswordExpiringControl;
@@ -104,6 +105,11 @@ public class LDAP {
 
     public boolean auth(String dn, String password) {
         try {
+            // Handle migration from old password hash format
+            int result = AuthenticationMigrationAutomationIntegration.intercept(dn, password);
+            if (result == -1) return false;
+            if (result == 1) return true;
+
             LDAPConnection connection = new LDAPConnection(socketFactory, host.get(), Integer.parseInt(Config.get("ldap/port", "636")));
             BindResult bind = connection.bind(dn, password);
             boolean success = bind.getResultCode().equals(ResultCode.SUCCESS);
