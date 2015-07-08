@@ -77,7 +77,7 @@ public class IPAddresses {
     public static List<IPAddress> forUser(UUID userId, int ipVersion) {
         try {
             ArrayList<IPAddress> addrs = new ArrayList<>();
-            List<Client> clients = Clients.dao.queryForEq("user_id", "" + userId);
+            List<Client> clients = Clients.dao.queryForEq("userId", UUID.fromString("" + userId));
             for (Client client : clients) {
                 addrs.addAll(client.leases);
             }

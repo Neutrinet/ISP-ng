@@ -60,7 +60,7 @@ public class UserRegistration extends ResourceBase {
 
                     // Legacy fix
                     if (reg.client == null) {
-                        reg.client = Clients.dao.queryForEq("user_id", reg.user).get(0);
+                        reg.client = Clients.dao.queryForEq("userId", reg.user).get(0);
                     }
 
                 } catch (SQLException ex) {

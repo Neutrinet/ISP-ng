@@ -13,6 +13,7 @@ import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by wannes on 11/10/14.
@@ -69,11 +70,16 @@ public class VPNClient extends ResourceBase {
             List<Client> clients;
 
             if (getQueryValue("user") != null)
-                clients = Clients.dao.queryForEq("user_id", getQueryValue("user"));
+                clients = Clients.dao.queryForEq("userId", UUID.fromString(getQueryValue("user")));
             else
                 clients = Clients.dao.queryForAll();
 
             clients = Policy.filterAccessible(getSessionToken().get().getUser(), clients);
+
+            if (getQueryValue("compose") != null) {
+                clients.forEach(Client::user);
+            }
+
             return new JacksonRepresentation<>(clients);
         } catch (Exception ex) {
             Logger.getLogger(getClass()).error("Failed to retrieve clients", ex);

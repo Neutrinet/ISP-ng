@@ -46,7 +46,7 @@ public class Client implements OwnedEntity, Serializable {
 
             User user = users.get(0);
             HashMap<String, Object> query = new HashMap<>();
-            query.put("user_id", user.id);
+            query.put("userId", user.id);
             query.put("commonName", vpnClient.commonName);
             List<Client> clients = Clients.dao.queryForFieldValues(query);
 
