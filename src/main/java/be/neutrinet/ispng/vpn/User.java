@@ -84,7 +84,7 @@ public class User implements OwnedEntity {
         try {
             Security.addProvider(new BouncyCastleProvider());
 
-            byte[] salt = new byte[4];
+            byte[] salt = new byte[16];
             new Random().nextBytes(salt);
 
             MessageDigest md = MessageDigest.getInstance("SHA-512", "BC");
