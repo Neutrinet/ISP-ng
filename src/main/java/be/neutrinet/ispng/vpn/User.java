@@ -18,6 +18,7 @@
 package be.neutrinet.ispng.vpn;
 
 import be.neutrinet.ispng.security.OwnedEntity;
+import com.unboundid.ldap.sdk.DN;
 import com.unboundid.ldap.sdk.persist.LDAPField;
 import com.unboundid.ldap.sdk.persist.LDAPGetter;
 import com.unboundid.ldap.sdk.persist.LDAPObject;
@@ -75,7 +76,14 @@ public class User implements OwnedEntity {
     }
 
     public String getDN() {
-        return "mail=" + email + "," + Users.usersDN();
+        String dn = "mail=" + email + "," + Users.usersDN();
+        try {
+            return new DN(dn).toString();
+        } catch (Exception ex) {
+            Logger.getLogger(getClass()).error("Malformed DN " + dn, ex);
+        }
+
+        return "";
     }
 
     public void setPassword(String password) {

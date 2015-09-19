@@ -111,7 +111,7 @@ public class LDAP {
             if (result == 1) return true;
 
             LDAPConnection connection = new LDAPConnection(socketFactory, host.get(), Integer.parseInt(Config.get("ldap/port", "636")));
-            BindResult bind = connection.bind(new RDN(dn).toString(), password);
+            BindResult bind = connection.bind(new DN(dn).toString(), password);
             boolean success = bind.getResultCode().equals(ResultCode.SUCCESS);
             connection.close();
             return success;
