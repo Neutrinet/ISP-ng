@@ -26,6 +26,7 @@ import com.unboundid.ldap.sdk.persist.ObjectSearchListener;
 import com.unboundid.ldap.sdk.persist.PersistedObjects;
 import org.apache.log4j.Logger;
 
+import javax.naming.ldap.Rdn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -99,7 +100,7 @@ public class Users {
 
     public static User get(String email) {
         try {
-            return persister.get(new DN("mail=" + email + "," + usersDN()).toString(), LDAP.connection());
+            return persister.get("mail=" + Rdn.escapeValue(email) + "," + usersDN().toString(), LDAP.connection());
         } catch (LDAPException ex) {
             Logger.getLogger(Users.class).error("Failed to get user", ex);
         }
