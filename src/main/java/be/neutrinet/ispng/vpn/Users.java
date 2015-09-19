@@ -99,7 +99,7 @@ public class Users {
 
     public static User get(String email) {
         try {
-            return persister.get("mail=" + email + "," + usersDN(), LDAP.connection());
+            return persister.get(new RDN("mail=" + email + "," + usersDN()).toString(), LDAP.connection());
         } catch (LDAPException ex) {
             Logger.getLogger(Users.class).error("Failed to get user", ex);
         }
