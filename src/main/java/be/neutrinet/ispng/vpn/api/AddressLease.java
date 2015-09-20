@@ -51,10 +51,14 @@ public class AddressLease extends ResourceBase {
     }
 
     @Put
-    public Representation create(Map<String, String> data) {
-        int clientId = Integer.parseInt(data.get("client"));
+    public Representation create(Map<String, Object> data) {
+        if (!data.containsKey("client") && !data.containsKey("version")) {
+            return clientError("INVALID_REQUEST", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
+        }
+
+        int clientId = Integer.parseInt(data.get("client").toString());
         assert clientId > 0;
-        int version = Integer.parseInt(data.get("version"));
+        int version = Integer.parseInt(data.get("version").toString());
         assert version == 4 || version == 6;
         String purpose = IPAddress.Purpose.CLIENT_ASSIGN;
 
