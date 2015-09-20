@@ -124,6 +124,10 @@ public class UserRegistration extends ResourceBase {
         UUID id = UUID.fromString((String) data.get("id"));
         Registration reg = Registration.getActiveRegistrations().get(id);
 
+        if (reg == null) {
+            return clientError("REGISTRATION_EXPIRED", Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+
         try {
             if (data.containsKey("user")) {
                 // finalize registration
