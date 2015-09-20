@@ -74,6 +74,7 @@ public class DefaultServiceListener implements ServiceListener {
 
                     pendingConnections.put(client.id, c);
                     log.info(String.format("Authorized %s (%s,%s)", client.username, client.id, client.kid));
+                    long startHandling = System.currentTimeMillis();
 
                     LinkedListMultimap<String, String> options = LinkedListMultimap.create();
                     options.put("push-reset", null);
@@ -134,6 +135,10 @@ public class DefaultServiceListener implements ServiceListener {
                     }
 
                     vpn.authorizeClient(client.id, client.kid, options);
+                    log.info(String.format("Client %s (%s,%s) handled in " +
+                                    (System.currentTimeMillis() - startHandling) / 1000 + " seconds",
+                            client.username, client.id, client.kid));
+
                     return null;
                 });
 
