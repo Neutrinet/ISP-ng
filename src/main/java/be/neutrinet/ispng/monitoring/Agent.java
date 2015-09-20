@@ -51,8 +51,8 @@ public class Agent {
             for (DataPoint p : pointRange) queue.remove(p);
             busy = false;
         } catch (Exception ex) {
-            while (queue.size() > MAX_BACKLOG) {
-                queue.remove();
+            if (queue.size() > MAX_BACKLOG) {
+                queue.clear();
             }
             busy = false;
             Logger.getLogger(getClass()).debug("Failed to push monitoring data", ex);
@@ -60,6 +60,9 @@ public class Agent {
     }
 
     public void addDataPoint(DataPoint dp) {
+        // Check if OpenTSBD has been setup, if not, return
+        if (api == null) return;
+
         if (valid(dp) && queue != null) {
             queue.add(dp);
         } else {
