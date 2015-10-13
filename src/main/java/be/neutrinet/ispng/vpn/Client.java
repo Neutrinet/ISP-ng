@@ -59,7 +59,7 @@ public class Client implements OwnedEntity, Serializable {
             if (clients.isEmpty()) return Optional.empty();
             else return Optional.of(clients.get(0));
         } catch (Exception ex) {
-            Logger.getLogger(Client.class).warn("Failed to match VPN client", ex);
+            Logger.getLogger(Client.class).warn("Failed to match VPN client for " + vpnClient.username, ex);
         }
 
         return Optional.empty();
@@ -70,6 +70,7 @@ public class Client implements OwnedEntity, Serializable {
         c.commonName = client.commonName;
 
         try {
+            c.subnetLeases = Clients.dao.getEmptyForeignCollection("subnetLeases");
             List<User> users = Users.query("email", client.username);
 
             assert users.size() == 1;
@@ -80,7 +81,7 @@ public class Client implements OwnedEntity, Serializable {
 
             Clients.dao.createIfNotExists(c);
         } catch (Exception ex) {
-            Logger.getLogger(Client.class).error("Failed to create VPN client", ex);
+            Logger.getLogger(Client.class).error("Failed to create VPN client for user " + client.username, ex);
         }
 
         return c;
