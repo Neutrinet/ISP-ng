@@ -23,7 +23,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.restlet.data.MediaType;
@@ -52,9 +52,18 @@ public class VPNClientCertificate extends ResourceBase {
     public final static MediaType PEM_MIME = new MediaType("application/x-pem-file", "PEM encoded object");
 
     public static X509CertificateHolder sign(Certificate cert) {
+        return sign(cert, 1);
+    }
+
+    public static X509CertificateHolder sign(Certificate cert, int validityYears) {
         try {
-            // One year certificate validity
-            LocalDateTime expirationDate = LocalDateTime.now().plusDays(365);
+            if (validityYears > 10) {
+                Logger.getLogger(VPNClientCertificate.class).error("Cannot sign CSR with a validity period longer then 20 years, got " + validityYears);
+                return null;
+            }
+
+            // Set certificate validity
+            LocalDateTime expirationDate = LocalDateTime.now().plusDays(validityYears * 365);
             Date expiration = DateUtil.convert(expirationDate);
 
             cert.signedDate = new Date();
@@ -106,7 +115,7 @@ public class VPNClientCertificate extends ResourceBase {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     OutputStreamWriter osw = new OutputStreamWriter(baos);
                     PemObject po = new PemObject("CERTIFICATE", c.getEncoded());
-                    PEMWriter pw = new PEMWriter(osw);
+                    JcaPEMWriter pw = new JcaPEMWriter(osw);
                     pw.writeObject(po);
                     pw.close();
 
@@ -214,9 +223,13 @@ public class VPNClientCertificate extends ResourceBase {
             Certificates.dao.create(cert);
 
             FileWriter fw = new FileWriter(caStorePath + "/" + cert.id + ".csr");
-            PEMWriter pw = new PEMWriter(fw);
+            JcaPEMWriter pw = new JcaPEMWriter(fw);
             pw.writeObject(csr);
             pw.flush();
+
+            if (getQueryValue("validityTerm") != null) {
+                sign(cert, Integer.parseInt(getQueryValue("validityTerm")));
+            }
 
             return new JacksonRepresentation<>(cert);
         } catch (Exception ex) {
