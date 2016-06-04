@@ -9,7 +9,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
@@ -84,17 +84,17 @@ public class CA {
             KeyUsage keyUsage = new KeyUsage(KeyUsage.digitalSignature);
             ExtendedKeyUsage eku = new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth);
 
-            certgen.addExtension(X509Extension.basicConstraints, false, basicConstraints);
-            certgen.addExtension(X509Extensions.KeyUsage, false, keyUsage);
-            certgen.addExtension(X509Extension.extendedKeyUsage, false, eku);
+            certgen.addExtension(Extension.basicConstraints, false, basicConstraints);
+            certgen.addExtension(Extension.keyUsage, false, keyUsage);
+            certgen.addExtension(Extension.extendedKeyUsage, false, eku);
 
             // Identifiers
-            SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(csr.getSubjectPublicKeyInfo());
+            SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(csr.getSubjectPublicKeyInfo());
             AuthorityKeyIdentifier authorityKeyIdentifier = new AuthorityKeyIdentifier(new GeneralNames
                     (new GeneralName(issuer)), caCert.getSerialNumber());
 
-            certgen.addExtension(X509Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
-            certgen.addExtension(X509Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
+            certgen.addExtension(Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
+            certgen.addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
 
             ContentSigner signer = new BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(PrivateKeyFactory.createKey(caKey.getEncoded()));
             X509CertificateHolder holder = certgen.build(signer);
@@ -102,7 +102,7 @@ public class CA {
 
             PemObject po = new PemObject("CERTIFICATE", certencoded);
             FileOutputStream fos = new FileOutputStream(VPN.cfg.getProperty("ca.storeDir", "ca") + "/" + bigserial.toString() + ".crt");
-            PEMWriter pw = new PEMWriter(new OutputStreamWriter(fos));
+            JcaPEMWriter pw = new JcaPEMWriter(new OutputStreamWriter(fos));
             pw.writeObject(po);
             pw.close();
 
