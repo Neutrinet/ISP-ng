@@ -26,7 +26,6 @@ import com.unboundid.ldap.sdk.persist.ObjectSearchListener;
 import com.unboundid.ldap.sdk.persist.PersistedObjects;
 import org.apache.log4j.Logger;
 
-import javax.naming.ldap.Rdn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,18 +56,19 @@ public class Users {
         assert email != null;
         assert password != null;
 
-        if (LDAP.get().auth("mail=" + email + "," + usersDN(), password)) {
+        if (LDAP.get().auth("mail=" + LDAP.escapeDN(email) + "," + usersDN(), password)) {
             return get(email);
         }
 
         return null;
     }
 
-    public static void add(User user) {
+    public static void add(User user) throws LDAPPersistException {
         try {
             persister.add(user, LDAP.connection(), usersDN());
         } catch (LDAPException ex) {
             Logger.getLogger(Users.class).error("Failed to add user", ex);
+            throw ex;
         }
     }
 
@@ -100,7 +100,7 @@ public class Users {
 
     public static User get(String email) {
         try {
-            return persister.get("mail=" + Rdn.escapeValue(email) + "," + usersDN().toString(), LDAP.connection());
+            return persister.get("mail=" + LDAP.escapeDN(email) + "," + usersDN(), LDAP.connection());
         } catch (LDAPException ex) {
             Logger.getLogger(Users.class).error("Failed to get user", ex);
         }
@@ -218,4 +218,5 @@ public class Users {
             throw new IllegalArgumentException("No LDAP users DN set");
         } else return dn.get();
     }
+
 }

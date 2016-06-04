@@ -11,6 +11,7 @@ import be.neutrinet.ispng.vpn.User;
 import be.neutrinet.ispng.vpn.Users;
 import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
+import com.unboundid.ldap.sdk.persist.LDAPPersistException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -63,11 +64,15 @@ public class FlowServlet extends HttpServlet {
                         user.municipality = address.getMunicipality();
                         user.certId = identity.chipNumber;
 
-                        Users.add(user);
+                        try {
+                            Users.add(user);
 
-                        reg.createInitialClient();
-                        Registrations.dao.update(reg);
-                        resp.sendRedirect("/?id=" + id + "&flow=eIdDone");
+                            reg.createInitialClient();
+                            Registrations.dao.update(reg);
+                            resp.sendRedirect("/?id=" + id + "&flow=eIdDone");
+                        } catch (LDAPPersistException ex) {
+                            Logger.getLogger(getClass()).error("Failed to add user", ex);
+                        }
                     }
                 } catch (SQLException ex) {
                     Logger.getLogger(getClass()).warn("Failed to create user", ex);

@@ -58,6 +58,45 @@ public class LDAP {
         return instance.connection;
     }
 
+    public static String escapeDN(String name) {
+        StringBuilder sb = new StringBuilder();
+        if ((name.length() > 0) && ((name.charAt(0) == ' ') || (name.charAt(0) == '#'))) {
+            sb.append('\\'); // add the leading backslash if needed
+        }
+        for (int i = 0; i < name.length(); i++) {
+            char curChar = name.charAt(i);
+            switch (curChar) {
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case ',':
+                    sb.append("\\,");
+                    break;
+                case '+':
+                    sb.append("\\+");
+                    break;
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                case '<':
+                    sb.append("\\<");
+                    break;
+                case '>':
+                    sb.append("\\>");
+                    break;
+                case ';':
+                    sb.append("\\;");
+                    break;
+                default:
+                    sb.append(curChar);
+            }
+        }
+        if ((name.length() > 1) && (name.charAt(name.length() - 1) == ' ')) {
+            sb.insert(sb.length() - 1, '\\'); // add the trailing backslash if needed
+        }
+        return sb.toString();
+    }
+
     public void boot() {
         host = Config.get("ldap/host");
         if (host.isPresent()) {

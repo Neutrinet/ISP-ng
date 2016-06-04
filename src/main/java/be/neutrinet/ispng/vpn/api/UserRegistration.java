@@ -15,6 +15,7 @@ import be.neutrinet.ispng.vpn.admin.Registration;
 import be.neutrinet.ispng.vpn.admin.Registrations;
 import be.neutrinet.ispng.vpn.admin.UnlockKey;
 import be.neutrinet.ispng.vpn.admin.UnlockKeys;
+import com.unboundid.ldap.sdk.persist.LDAPPersistException;
 import org.apache.log4j.Logger;
 import org.restlet.data.Status;
 import org.restlet.ext.jackson.JacksonRepresentation;
@@ -159,7 +160,14 @@ public class UserRegistration extends ResourceBase {
                 user.birthPlace = (String) data.get("birthplace");
                 user.country = (String) data.get("country");
 
-                if (user.validate()) Users.add(user);
+                try {
+                    if (user.validate()) Users.add(user);
+                } catch (LDAPPersistException ex) {
+                    if (ex.getMessage().contains("already exists")) {
+                        setStatus(Status.REDIRECTION_SEE_OTHER);
+                        return new JacksonRepresentation<>(Users.get(user.email));
+                    }
+                }
 
                 // Auto-login newly created user
                 getResponse().getCookieSettings().add("Session",

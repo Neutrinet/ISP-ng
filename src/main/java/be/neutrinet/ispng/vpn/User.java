@@ -17,6 +17,7 @@
  */
 package be.neutrinet.ispng.vpn;
 
+import be.neutrinet.ispng.external.LDAP;
 import be.neutrinet.ispng.security.OwnedEntity;
 import com.unboundid.ldap.sdk.persist.LDAPField;
 import com.unboundid.ldap.sdk.persist.LDAPGetter;
@@ -24,7 +25,6 @@ import com.unboundid.ldap.sdk.persist.LDAPObject;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import javax.naming.ldap.Rdn;
 import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.Security;
@@ -76,7 +76,7 @@ public class User implements OwnedEntity {
     }
 
     public String getDN() {
-        return "mail=" + Rdn.escapeValue(email) + "," + Users.usersDN();
+        return "mail=" + LDAP.escapeDN(email) + "," + Users.usersDN();
     }
 
     public void setPassword(String password) {
