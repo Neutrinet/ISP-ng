@@ -53,11 +53,16 @@ public class DefaultServiceListener implements ServiceListener {
             User user = Users.authenticate(client.username, client.password);
             if (user != null) {
                 TransactionManager.callInTransaction(VPN.cs, () -> {
+                    log.debug(String.format("[%s] starting authentication", client.username));
                     Optional<IPAddress> ipv4;
-                    if (userClient.leases == null)
+                    if (userClient.leases == null) {
                         ipv4 = Optional.empty();
-                    else
+                        log.debug(String.format("[%s] no ipv4", client.username));
+                    }
+                    else {
                         ipv4 = userClient.leases.stream().filter(addr -> addr.ipVersion == 4).findFirst();
+                        log.debug(String.format("[%s] ipv4: %s", client.username, ipv4.get().address));
+                    }
 
                     /*if (!ipv4.isPresent() && userClient.subnetLeases.isEmpty()) {
                         vpn.denyClient(client.id, client.kid, "No IP address or subnet leases assigned");
@@ -70,6 +75,7 @@ public class DefaultServiceListener implements ServiceListener {
 
                     if (ipv4.isPresent()) {
                         c.addresses.add(ipv4.get());
+                        log.debug(String.format("[%s] adding ipv4 to client", client.username));
                     }
 
                     pendingConnections.put(client.id, c);
@@ -81,27 +87,46 @@ public class DefaultServiceListener implements ServiceListener {
 
                     if (ipv4.isPresent()) {
                         options.put("ifconfig-push", ipv4.get().address + " " + VPN.cfg.getProperty("openvpn.netmask.4"));
+
+                        log.debug(String.format("[%s] pushing 'ifconfig-push' to the client: %s", client.username, ipv4.get().address + " " +
+                                    VPN.cfg.getProperty("openvpn.netmask.4")));
+
                         options.put("push route", VPN.cfg.getProperty("openvpn.network.4") + " " +
                                 VPN.cfg.getProperty("openvpn.netmask.4") + " " + VPN.cfg.getProperty("openvpn.localip.4"));
+
+                        log.debug(String.format("[%s] push route: %s", client.username,
+                                    VPN.cfg.getProperty("openvpn.network.4") + " " + VPN.cfg.getProperty("openvpn.netmask.4") +
+                                    " " + VPN.cfg.getProperty("openvpn.localip.4")));
+
                         // route the OpenVPN server over the default gateway, not over the VPN itself
                         InetAddress[] addr = InetAddress.getAllByName(VPN.cfg.getProperty("openvpn.publicaddress"));
                         for (InetAddress address : addr) {
                             if (address.getAddress().length == 4) {
                                 options.put("push route", address.getHostAddress() + " 255.255.255.255 net_gateway");
+
+                                log.debug(String.format("[%s] push route: %s", client.username,
+                                            address.getHostAddress() + " 255.255.255.255 net_gateway"));
+
                             }
                         }
 
                         if (user.settings().get("routeIPv4TrafficOverVPN", true).equals(true)) {
                             options.put("push redirect-gateway", "def1");
+                            log.debug(String.format("[%s] push redirect-gateway: def1", client.username));
+
                             options.put("push route-gateway", VPN.cfg.getProperty("openvpn.localip.4"));
+                            log.debug(String.format("[%s] push route-gateway: %s", client.username,
+                                        VPN.cfg.getProperty("openvpn.localip.4")));
                         }
                     }
 
                     options.put("push tun-ipv6", "");
+                    log.debug(String.format("[%s] push tun-ipv6: <empty_string>", client.username));
 
                     IPAddress interconnect = userClient.getOrCreateInterconnectIP(6);
                     // Why /64? See https://community.openvpn.net/openvpn/ticket/264
                     options.put("ifconfig-ipv6-push", interconnect.address + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.interconnect"));
+                    log.debug(String.format("[%s] push ifconfig-ipv6-push: %s", client.username, interconnect.address + "/64" + " " + VPN.cfg.getProperty("vpn.ipv6.interconnect")));
 
                     if (!ipv4.isPresent()) {
                         /* because OpenVPN does not acknowledge that IPv6-only connectivity is a thing now, we need
@@ -113,25 +138,43 @@ public class DefaultServiceListener implements ServiceListener {
                     if (user.settings().get("ip.route.ipv6.defaultRoute", true).equals(true)) {
                         //options.put("push redirect-gateway-ipv6", "def1");
                         options.put("push route-ipv6", "2000::/3");
+
+                        log.debug(String.format("[%s] push route-ipv6: 2000::/3", client.username));
+                    } else {
+                        log.debug(String.format("[%s] DON'T push route-ipv6: 2000::/3", client.username));
                     }
 
                     if (!userClient.subnetLeases.isEmpty()) {
                         for (SubnetLease lease : userClient.subnetLeases) {
                             options.put("push route-ipv6", VPN.cfg.getProperty("vpn.ipv6.network") + "/" + VPN.cfg.getProperty("vpn.ipv6.prefix")
                                     + " " + VPN.cfg.getProperty("vpn.ipv6.localip"));
+
+                            log.debug(String.format("[%s] push route-ipv6: %s", client.username,
+                                        VPN.cfg.getProperty("vpn.ipv6.network") + "/" + VPN.cfg.getProperty("vpn.ipv6.prefix")
+                                        + " " + VPN.cfg.getProperty("vpn.ipv6.localip")));
+
                             // route assigned IPv6 subnet through client
                             options.put("iroute-ipv6", lease.subnet.subnet);
+                            log.debug(String.format("[%s] push route-ipv6: %s", client.username, lease.subnet.subnet));
+
                             options.put("setenv-safe DELEGATED_IPv6_PREFIX", lease.subnet.subnet);
+                            log.debug(String.format("[%s] setenv-safe DELEGATED_IPv6_PREFIX: %s", client.username, lease.subnet.subnet));
                         }
+                    } else {
+                        log.debug(String.format("[%s] no SubnetLease, don't push ipv6 route, iroute and DELEGATED_IPv6_PREFIX",
+                                    client.username));
                     }
 
                     if (VPN.cfg.containsKey("openvpn.ping")) {
                         options.put("push ping", VPN.cfg.get("openvpn.ping").toString());
+                        log.debug(String.format("[%s] push ping: %s", client.username, VPN.cfg.get("openvpn.ping").toString()));
+
                         if (VPN.cfg.containsKey("openvpn.pingRestart")) {
                             options.put("push ping-restart", VPN.cfg.get("openvpn.pingRestart").toString());
+                            log.debug(String.format("[%s] push ping-restart: %s", client.username, VPN.cfg.get("openvpn.pingRestart").toString()));
                         }
                     } else {
-                        log.warn("No ping and set, will cause spurious connection resets");
+                        log.warn(String.format("[%s] No ping and set, will cause spurious connection resets", client.username));
                     }
 
                     vpn.authorizeClient(client.id, client.kid, options);
@@ -143,7 +186,7 @@ public class DefaultServiceListener implements ServiceListener {
                 });
 
             } else {
-                log.info(String.format("Refused %s (%s,%s)", client.username, client.id, client.kid));
+                log.info(String.format("Refused %s (%s,%s), invalid user/password combination", client.username, client.id, client.kid));
                 vpn.denyClient(client.id, client.kid, "Invalid user/password combination");
             }
         } catch (Exception ex) {
