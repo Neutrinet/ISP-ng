@@ -4,7 +4,7 @@ We are happy to provide you with an unlock code for our VPN service:
 
 [% key %]
 
-Use this code on https://vpn.neutrinet.be to sign up.
+Use this code on https://api.neutrinet.be to sign up.
 
 Thank you for you interest and enjoy
 The Neutrinet Team
