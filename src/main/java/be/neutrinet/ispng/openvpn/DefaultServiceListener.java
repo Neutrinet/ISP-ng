@@ -143,7 +143,7 @@ public class DefaultServiceListener implements ServiceListener {
                 });
 
             } else {
-                log.info(String.format("Refused %s (%s,%s)", client.username, client.id, client.kid));
+                log.info(String.format("Refused %s (%s,%s), invalid user/password combination", client.username, client.id, client.kid));
                 vpn.denyClient(client.id, client.kid, "Invalid user/password combination");
             }
         } catch (Exception ex) {
