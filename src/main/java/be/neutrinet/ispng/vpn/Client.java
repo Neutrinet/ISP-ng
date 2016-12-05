@@ -28,10 +28,10 @@ public class Client implements OwnedEntity, Serializable {
     public String commonName;
     @DatabaseField(canBeNull = false)
     public UUID userId;
-    @ForeignCollectionField(foreignColumnName = "client")
+    @ForeignCollectionField(foreignFieldName = "client")
     @JsonManagedReference
     public ForeignCollection<IPAddress> leases;
-    @ForeignCollectionField(foreignColumnName = "client")
+    @ForeignCollectionField(foreignFieldName = "client")
     @JsonManagedReference
     public ForeignCollection<SubnetLease> subnetLeases;
     @DatabaseField(defaultValue = "true")
