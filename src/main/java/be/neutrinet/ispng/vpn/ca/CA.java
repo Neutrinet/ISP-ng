@@ -7,6 +7,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -89,7 +90,8 @@ public class CA {
             certgen.addExtension(Extension.extendedKeyUsage, false, eku);
 
             // Identifiers
-            SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(csr.getSubjectPublicKeyInfo());
+            BcX509ExtensionUtils extensionUtils = new BcX509ExtensionUtils();
+            org.bouncycastle.asn1.x509.SubjectKeyIdentifier subjectKeyIdentifier = extensionUtils.createSubjectKeyIdentifier(csr.getSubjectPublicKeyInfo());
             AuthorityKeyIdentifier authorityKeyIdentifier = new AuthorityKeyIdentifier(new GeneralNames
                     (new GeneralName(issuer)), caCert.getSerialNumber());
 
