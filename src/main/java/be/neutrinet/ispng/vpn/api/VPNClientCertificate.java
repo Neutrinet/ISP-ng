@@ -58,7 +58,7 @@ public class VPNClientCertificate extends ResourceBase {
     public static X509CertificateHolder sign(Certificate cert, int validityYears) {
         try {
             if (validityYears > 10) {
-                Logger.getLogger(VPNClientCertificate.class).error("Cannot sign CSR with a validity period longer then 20 years, got " + validityYears);
+                Logger.getLogger(VPNClientCertificate.class).error("Cannot sign CSR with a validity period longer then 10 years, got " + validityYears);
                 return null;
             }
 
@@ -203,6 +203,13 @@ public class VPNClientCertificate extends ResourceBase {
             }
 
             for (Certificate existingCert : Certificates.dao.queryForEq("client_id", client)) {
+                if (existingCert.revocationDate == null) {
+                    // got existing cert which has not been signed yet while trying to store other one
+                    // preemptive deletion
+                    Certificates.dao.delete(existingCert);
+                    continue;
+                }
+
                 if (existingCert.revocationDate.getTime() > System.currentTimeMillis()) {
                     return clientError("ANOTHER_CLIENT_CERT_ACTIVE", Status.CLIENT_ERROR_NOT_ACCEPTABLE);
                 }
