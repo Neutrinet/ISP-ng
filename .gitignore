@@ -34,3 +34,7 @@ web/mgmt
 
 # setting files
 config.properties
+
+# Add igniore CA dir
+ca/
+ca/**
